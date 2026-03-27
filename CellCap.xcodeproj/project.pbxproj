@@ -114,6 +114,34 @@
 			remoteGlobalIDString = FFC2AF4C82AF468DAE37EF57;
 			remoteInfo = Core;
 		};
+		3735C1182B64599738025DBD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 59BB188F43E48A7464E6FAA6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 396B73A7E4E3F7FF5DD3EEA8;
+			remoteInfo = Core;
+		};
+		A0904A8A6CC32EE6EC7D50EA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 59BB188F43E48A7464E6FAA6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ADF07D1ABBE16DF8067D5A68;
+			remoteInfo = Shared;
+		};
+		ACC1B67C7D335F3B0E78443B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 59BB188F43E48A7464E6FAA6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ADF07D1ABBE16DF8067D5A68;
+			remoteInfo = Shared;
+		};
+		C31AEC9CA3EE9E52F5334B3D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 59BB188F43E48A7464E6FAA6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ADF07D1ABBE16DF8067D5A68;
+			remoteInfo = Shared;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -244,6 +272,7 @@
 				CD02B97059C75714B9F471BE /* Sources */,
 				34D14CD497384559E39DACE1 /* Tests */,
 			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		3426C2C76AC504A625EB7C41 /* Products */ = {
@@ -255,7 +284,7 @@
 				7FDE1B46F904D0AB08D02109 /* Helper */,
 				803FDB18160DBEBCEB65C231 /* Shared.framework */,
 			);
-			name = Products;
+			name = "OS X";
 			sourceTree = "<group>";
 		};
 		34D14CD497384559E39DACE1 /* Tests */ = {
@@ -1001,17 +1030,12 @@
 		F50023286AEFE02873EA5F0D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGNING_ALLOWED = NO;
-				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = NO;
-				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.app;
-				PRODUCT_NAME = CellCap;
+				PRODUCT_NAME = CellCapHelper;
 				SDKROOT = macosx;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
