@@ -23,7 +23,16 @@ func eventLoggerBuildsDiagnosticsSummaryFromStructuredEvents() async {
             statuses: [
                 CapabilityStatus(key: .chargeControl, support: .readOnlyFallback, reason: "read-only")
             ],
-            recommendedControllerMode: .readOnly
+            recommendedControllerMode: .readOnly,
+            helperInstallStatus: HelperInstallStatus(
+                state: .bootstrapped,
+                serviceName: CellCapHelperXPC.serviceName,
+                helperPath: CellCapHelperXPC.installedBinaryPath,
+                plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                helperVersion: CellCapHelperXPC.contractVersion,
+                expectedVersion: CellCapHelperXPC.contractVersion,
+                reason: "launchd에 helper가 등록되어 있습니다."
+            )
         ),
         lastTrigger: .appLaunch,
         chargingCommand: .noChange
@@ -56,6 +65,8 @@ func eventLoggerBuildsDiagnosticsSummaryFromStructuredEvents() async {
     #expect(summary.eventCount == 3)
     #expect(summary.currentChargeState == .suspended)
     #expect(summary.currentControllerMode == .readOnly)
+    #expect(summary.helperInstallState == .bootstrapped)
+    #expect(summary.helperVersion == CellCapHelperXPC.contractVersion)
     #expect(summary.lastCapabilityProbeMessage == "Capability probe를 완료했습니다.")
     #expect(summary.lastSelfTestMessage == "Helper self-test degraded")
     #expect(summary.lastReadOnlyFallbackReason == "helper 연결 문제로 read-only 상태를 유지합니다.")

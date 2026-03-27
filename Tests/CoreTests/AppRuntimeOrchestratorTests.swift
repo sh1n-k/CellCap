@@ -22,7 +22,12 @@ func orchestratorBroadcastsInitialLaunchStateFromBatteryAndHelper() async {
                 isChargingEnabled: false,
                 checkedAt: Date(timeIntervalSince1970: 100)
             )
-        ]
+        ],
+        selfTestResult: ControllerSelfTestResult(
+            outcome: .passed,
+            message: "ok",
+            checkedAt: Date(timeIntervalSince1970: 100)
+        )
     )
     let orchestrator = AppRuntimeOrchestrator(
         batteryMonitor: monitor,
@@ -32,6 +37,15 @@ func orchestratorBroadcastsInitialLaunchStateFromBatteryAndHelper() async {
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: Date(timeIntervalSince1970: 100),
+                isChargingEnabled: false
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 100))
         ),
         dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 100))
     )
@@ -48,6 +62,66 @@ func orchestratorBroadcastsInitialLaunchStateFromBatteryAndHelper() async {
     #expect(update?.lastTrigger == .appLaunch)
     #expect(update?.appState.chargeState == .holdingAtLimit)
     #expect(update?.appState.battery?.source == .system)
+}
+
+@Test
+func orchestratorPrefersHelperInstallStatusBeforeCapabilityProbe() async {
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: BatterySnapshot(
+            chargePercent: 82,
+            isPowerConnected: true,
+            isCharging: false,
+            observedAt: Date(timeIntervalSince1970: 110),
+            source: .system
+        )
+    )
+    let controller = SequencedChargeController(
+        statuses: [
+            ControllerStatus(
+                mode: .readOnly,
+                helperConnection: .unavailable,
+                isChargingEnabled: nil,
+                checkedAt: Date(timeIntervalSince1970: 110)
+            )
+        ]
+    )
+    let orchestrator = AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: controller,
+        capabilityChecker: CapabilityChecker(
+            environment: MockRuntimeEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: HelperInstallStatus(
+                state: .notInstalled,
+                serviceName: CellCapHelperXPC.serviceName,
+                helperPath: CellCapHelperXPC.installedBinaryPath,
+                plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                helperVersion: nil,
+                expectedVersion: CellCapHelperXPC.contractVersion,
+                reason: "설치 누락: helper binary, launchd plist",
+                checkedAt: Date(timeIntervalSince1970: 110)
+            )
+        ),
+        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 110))
+    )
+
+    let stream = await orchestrator.makeUpdateStream()
+    let task = Task {
+        var iterator = stream.makeAsyncIterator()
+        return await iterator.next()
+    }
+
+    await orchestrator.start()
+    let update = await task.value
+
+    #expect(update?.capabilityReport.helperInstallStatus?.state == .notInstalled)
+    #expect(update?.capabilityReport.status(for: .helperInstallation)?.support == .readOnlyFallback)
+    let selfTestCount = await controller.selfTestRequestCount()
+    #expect(selfTestCount == 0)
 }
 
 @Test
@@ -75,7 +149,12 @@ func orchestratorResynchronizesWhenControllerStatusDoesNotMatchDesiredCommand() 
                 isChargingEnabled: false,
                 checkedAt: Date(timeIntervalSince1970: 201)
             )
-        ]
+        ],
+        selfTestResult: ControllerSelfTestResult(
+            outcome: .passed,
+            message: "ok",
+            checkedAt: Date(timeIntervalSince1970: 200)
+        )
     )
     let orchestrator = AppRuntimeOrchestrator(
         batteryMonitor: monitor,
@@ -86,13 +165,24 @@ func orchestratorResynchronizesWhenControllerStatusDoesNotMatchDesiredCommand() 
                 isAppleSilicon: true
             )
         ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: Date(timeIntervalSince1970: 200),
+                isChargingEnabled: true
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 200))
+        ),
         dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 200))
     )
 
     await orchestrator.start()
     let requestCount = await controller.statusRequestCount()
+    let commands = await controller.commands()
 
     #expect(requestCount == 2)
+    #expect(commands == [.setChargingEnabled(false)])
 }
 
 @Test
@@ -167,6 +257,15 @@ func orchestratorReevaluatesOnWakeEvent() async {
                 isAppleSilicon: true
             )
         ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: Date(timeIntervalSince1970: 400),
+                isChargingEnabled: false
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 400))
+        ),
         dateProvider: SequenceRuntimeDateProvider(
             dates: [
                 Date(timeIntervalSince1970: 400),
@@ -230,6 +329,15 @@ func orchestratorReevaluatesWhenPolicyChanges() async {
                 isAppleSilicon: true
             )
         ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: Date(timeIntervalSince1970: 500),
+                isChargingEnabled: false
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 500))
+        ),
         dateProvider: SequenceRuntimeDateProvider(
             dates: [
                 Date(timeIntervalSince1970: 500),
@@ -253,10 +361,12 @@ func orchestratorReevaluatesWhenPolicyChanges() async {
         )
     )
     let update = await task.value
+    let commands = await controller.commands()
 
     #expect(update?.lastTrigger == .policyChanged)
     #expect(update?.appState.chargeState == .holdingAtLimit)
     #expect(update?.appState.policy.upperLimit == 76)
+    #expect(commands.isEmpty)
 }
 
 @Test
@@ -284,6 +394,15 @@ func orchestratorReevaluatesOnPowerSourceChange() async {
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: Date(timeIntervalSince1970: 600),
+                isChargingEnabled: false
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 600))
         ),
         dateProvider: SequenceRuntimeDateProvider(
             dates: [
@@ -406,6 +525,18 @@ func orchestratorStoresCapabilityAndSelfTestDiagnostics() async {
             )
         ),
         capabilityProber: MockHelperCapabilityProber(),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: HelperInstallStatus(
+                state: .bootstrapped,
+                serviceName: CellCapHelperXPC.serviceName,
+                helperPath: CellCapHelperXPC.installedBinaryPath,
+                plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                helperVersion: CellCapHelperXPC.contractVersion,
+                expectedVersion: CellCapHelperXPC.contractVersion,
+                reason: "launchd에 helper가 등록되어 있습니다.",
+                checkedAt: Date(timeIntervalSince1970: 800)
+            )
+        ),
         dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 800)),
         eventLogger: logger
     )
@@ -420,10 +551,177 @@ func orchestratorStoresCapabilityAndSelfTestDiagnostics() async {
     #expect(events.contains { $0.category == .selfTest })
 }
 
+@Test
+func orchestratorDoesNotApplyCommandsWhenSelfTestFails() async {
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: BatterySnapshot(
+            chargePercent: 82,
+            isPowerConnected: true,
+            isCharging: true,
+            observedAt: Date(timeIntervalSince1970: 900),
+            source: .system
+        )
+    )
+    let controller = SequencedChargeController(
+        statuses: [
+            ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected,
+                isChargingEnabled: true,
+                checkedAt: Date(timeIntervalSince1970: 900)
+            )
+        ],
+        selfTestResult: ControllerSelfTestResult(
+            outcome: .failed,
+            message: "SMC self-test failed",
+            checkedAt: Date(timeIntervalSince1970: 900)
+        )
+    )
+    let orchestrator = AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: controller,
+        capabilityChecker: CapabilityChecker(
+            environment: MockRuntimeEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: HelperCapabilityProbeSummary(
+                report: fullControlCapabilityReport(reason: "SMC helper가 준비되었습니다."),
+                status: ControllerStatus(
+                    mode: .fullControl,
+                    helperConnection: .connected,
+                    isChargingEnabled: true,
+                    checkedAt: Date(timeIntervalSince1970: 900)
+                )
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: HelperInstallStatus(
+                state: .bootstrapped,
+                serviceName: CellCapHelperXPC.serviceName,
+                helperPath: CellCapHelperXPC.installedBinaryPath,
+                plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                helperVersion: CellCapHelperXPC.contractVersion,
+                expectedVersion: CellCapHelperXPC.contractVersion,
+                reason: "launchd에 helper가 등록되어 있습니다.",
+                checkedAt: Date(timeIntervalSince1970: 900)
+            )
+        ),
+        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 900))
+    )
+
+    await orchestrator.start()
+    let commands = await controller.commands()
+    let stream = await orchestrator.makeUpdateStream()
+    var iterator = stream.makeAsyncIterator()
+    let update = await iterator.next()
+
+    #expect(commands.isEmpty)
+    #expect(update?.appState.controllerStatus.mode == .readOnly)
+    #expect(update?.appState.chargeState == .suspended)
+    #expect(update?.capabilityReport.status(for: .chargeControl)?.support == .readOnlyFallback)
+}
+
+@Test
+func orchestratorDoesNotApplyCommandsWhenCapabilityProbeReportsVersionMismatch() async {
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: BatterySnapshot(
+            chargePercent: 82,
+            isPowerConnected: true,
+            isCharging: true,
+            observedAt: Date(timeIntervalSince1970: 950),
+            source: .system
+        )
+    )
+    let controller = SequencedChargeController(
+        statuses: [
+            ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected,
+                isChargingEnabled: true,
+                checkedAt: Date(timeIntervalSince1970: 950)
+            )
+        ],
+        selfTestResult: ControllerSelfTestResult(
+            outcome: .passed,
+            message: "ok",
+            checkedAt: Date(timeIntervalSince1970: 950)
+        )
+    )
+    let versionMismatchStatus = HelperInstallStatus(
+        state: .versionMismatch,
+        serviceName: CellCapHelperXPC.serviceName,
+        helperPath: CellCapHelperXPC.installedBinaryPath,
+        plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+        helperVersion: "older-helper",
+        expectedVersion: CellCapHelperXPC.contractVersion,
+        reason: "helper 버전이 앱 계약 버전과 다릅니다.",
+        checkedAt: Date(timeIntervalSince1970: 950)
+    )
+    let report = fullControlCapabilityReport(reason: "helper 버전 불일치로 제어를 차단합니다.")
+        .replacingStatus(for: .helperInstallation, support: .readOnlyFallback, reason: versionMismatchStatus.reason)
+        .replacingStatus(for: .helperPrivilege, support: .readOnlyFallback, reason: versionMismatchStatus.reason)
+        .replacingRecommendedControllerMode(.readOnly)
+        .replacingHelperInstallStatus(versionMismatchStatus)
+    let orchestrator = AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: controller,
+        capabilityChecker: CapabilityChecker(
+            environment: MockRuntimeEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: HelperCapabilityProbeSummary(
+                report: report,
+                status: ControllerStatus(
+                    mode: .fullControl,
+                    helperConnection: .connected,
+                    isChargingEnabled: true,
+                    checkedAt: Date(timeIntervalSince1970: 950)
+                )
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: HelperInstallStatus(
+                state: .bootstrapped,
+                serviceName: CellCapHelperXPC.serviceName,
+                helperPath: CellCapHelperXPC.installedBinaryPath,
+                plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                helperVersion: nil,
+                expectedVersion: CellCapHelperXPC.contractVersion,
+                reason: "launchd에 helper가 등록되어 있습니다.",
+                checkedAt: Date(timeIntervalSince1970: 950)
+            )
+        ),
+        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 950))
+    )
+
+    await orchestrator.start()
+    let commands = await controller.commands()
+    let stream = await orchestrator.makeUpdateStream()
+    var iterator = stream.makeAsyncIterator()
+    let update = await iterator.next()
+
+    #expect(commands.isEmpty)
+    #expect(update?.appState.controllerStatus.mode == .readOnly)
+    #expect(update?.capabilityReport.helperInstallStatus?.state == .versionMismatch)
+}
+
 private actor SequencedChargeController: ChargeController {
+    enum Command: Sendable, Equatable {
+        case setChargingEnabled(Bool)
+        case setTemporaryOverride(Date?)
+    }
+
     private var statuses: [ControllerStatus]
     private let selfTestResult: ControllerSelfTestResult
     private var requests = 0
+    private var selfTestRequests = 0
+    private var recordedCommands: [Command] = []
 
     init(
         statuses: [ControllerStatus],
@@ -436,9 +734,23 @@ private actor SequencedChargeController: ChargeController {
         self.selfTestResult = selfTestResult
     }
 
-    func setChargingEnabled(_ enabled: Bool) async throws {}
+    func setChargingEnabled(_ enabled: Bool) async throws {
+        recordedCommands.append(.setChargingEnabled(enabled))
+        statuses = statuses.map { status in
+            var updated = status
+            updated.isChargingEnabled = enabled
+            return updated
+        }
+    }
 
-    func setTemporaryOverride(until: Date?) async throws {}
+    func setTemporaryOverride(until: Date?) async throws {
+        recordedCommands.append(.setTemporaryOverride(until))
+        statuses = statuses.map { status in
+            var updated = status
+            updated.temporaryOverrideUntil = until
+            return updated
+        }
+    }
 
     func getControllerStatus() async -> ControllerStatus {
         requests += 1
@@ -449,21 +761,32 @@ private actor SequencedChargeController: ChargeController {
     }
 
     func selfTest() async -> ControllerSelfTestResult {
-        selfTestResult
+        selfTestRequests += 1
+        return selfTestResult
     }
 
     func statusRequestCount() -> Int {
         requests
     }
+
+    func selfTestRequestCount() -> Int {
+        selfTestRequests
+    }
+
+    func commands() -> [Command] {
+        recordedCommands
+    }
 }
 
 private struct MockHelperCapabilityProber: HelperCapabilityProbing {
-    func capabilityProbe() async throws -> HelperCapabilityProbeSummary {
-        HelperCapabilityProbeSummary(
+    let summary: HelperCapabilityProbeSummary
+
+    init(summary: HelperCapabilityProbeSummary? = nil) {
+        self.summary = summary ?? HelperCapabilityProbeSummary(
             report: CapabilityReport(
                 statuses: [
                     CapabilityStatus(key: .appleSilicon, support: .supported, reason: "Apple Silicon 환경입니다."),
-                    CapabilityStatus(key: .chargeControl, support: .experimental, reason: "제어 경로는 아직 stub입니다.")
+                    CapabilityStatus(key: .chargeControl, support: .experimental, reason: "private SMC helper backend를 사용할 수 있습니다.")
                 ],
                 recommendedControllerMode: .readOnly
             ),
@@ -476,6 +799,71 @@ private struct MockHelperCapabilityProber: HelperCapabilityProbing {
             )
         )
     }
+
+    func capabilityProbe() async throws -> HelperCapabilityProbeSummary {
+        summary
+    }
+}
+
+private struct MockHelperInstallChecker: HelperInstallChecking {
+    let status: HelperInstallStatus
+
+    func currentStatus(now: Date) async -> HelperInstallStatus {
+        status
+    }
+}
+
+private func fullControlCapabilityReport(reason: String) -> CapabilityReport {
+    CapabilityReport(
+        statuses: [
+            CapabilityStatus(key: .appleSilicon, support: .supported, reason: "Apple Silicon 환경입니다."),
+            CapabilityStatus(key: .macOSVersion, support: .supported, reason: "macOS 26+ 조건을 만족합니다."),
+            CapabilityStatus(key: .batteryObservation, support: .supported, reason: "내장 배터리를 읽을 수 있습니다."),
+            CapabilityStatus(key: .powerSourceObservation, support: .supported, reason: "전원 연결 상태를 읽을 수 있습니다."),
+            CapabilityStatus(key: .sleepWakeResynchronization, support: .supported, reason: "wake 이후 재동기화가 가능합니다."),
+            CapabilityStatus(key: .helperInstallation, support: .supported, reason: "helper 설치가 확인되었습니다."),
+            CapabilityStatus(key: .helperPrivilege, support: .supported, reason: "helper 권한이 확인되었습니다."),
+            CapabilityStatus(key: .chargeControl, support: .experimental, reason: reason)
+        ],
+        recommendedControllerMode: .fullControl,
+        helperInstallStatus: HelperInstallStatus(
+            state: .xpcReachable,
+            serviceName: CellCapHelperXPC.serviceName,
+            helperPath: CellCapHelperXPC.installedBinaryPath,
+            plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+            helperVersion: CellCapHelperXPC.contractVersion,
+            expectedVersion: CellCapHelperXPC.contractVersion,
+            reason: "helper XPC 연결이 확인되었습니다.",
+            checkedAt: Date(timeIntervalSince1970: 900)
+        )
+    )
+}
+
+private func fullControlProbeSummary(checkedAt: Date, isChargingEnabled: Bool) -> HelperCapabilityProbeSummary {
+    HelperCapabilityProbeSummary(
+        report: fullControlCapabilityReport(reason: "SMC helper가 준비되었습니다."),
+        status: ControllerStatus(
+            mode: .fullControl,
+            helperConnection: .connected,
+            isChargingEnabled: isChargingEnabled,
+            temporaryOverrideUntil: nil,
+            lastErrorDescription: nil,
+            checkedAt: checkedAt
+        )
+    )
+}
+
+private func bootstrappedHelperInstallStatus(at checkedAt: Date) -> HelperInstallStatus {
+    HelperInstallStatus(
+        state: .bootstrapped,
+        serviceName: CellCapHelperXPC.serviceName,
+        helperPath: CellCapHelperXPC.installedBinaryPath,
+        plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+        helperVersion: CellCapHelperXPC.contractVersion,
+        expectedVersion: CellCapHelperXPC.contractVersion,
+        reason: "launchd에 helper가 등록되어 있습니다.",
+        checkedAt: checkedAt
+    )
 }
 
 private final class MockRuntimeBatteryMonitor: @unchecked Sendable, BatteryMonitoring {

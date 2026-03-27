@@ -38,6 +38,7 @@ public struct CapabilityChecker: CapabilityChecking {
         let osVersion = environment.operatingSystemVersion
         let isSupportedOS = osVersion.majorVersion >= 26
         let hasBattery = snapshot?.isBatteryPresent == true
+        let canAttemptPrivateControl = isAppleSilicon && isSupportedOS && hasBattery
 
         let statuses = [
             CapabilityStatus(
@@ -76,24 +77,31 @@ public struct CapabilityChecker: CapabilityChecking {
                     : "환경은 비권장이지만 sleep/wake 알림 자체는 시도할 수 있습니다."
             ),
             CapabilityStatus(
+                key: .helperInstallation,
+                support: canAttemptPrivateControl ? .readOnlyFallback : .unsupported,
+                reason: canAttemptPrivateControl
+                    ? "helper 설치 상태는 앱 런타임이 launchd와 파일시스템에서 확인합니다."
+                    : "이 환경에서는 helper 설치 여부와 관계없이 충전 제어를 시도하지 않습니다."
+            ),
+            CapabilityStatus(
+                key: .helperPrivilege,
+                support: canAttemptPrivateControl ? .readOnlyFallback : .unsupported,
+                reason: canAttemptPrivateControl
+                    ? "helper root 권한 상태는 capability probe와 self-test에서 확인합니다."
+                    : "이 환경에서는 helper 권한을 요구하지 않습니다."
+            ),
+            CapabilityStatus(
                 key: .chargeControl,
-                support: (isAppleSilicon && isSupportedOS && hasBattery) ? .experimental : .readOnlyFallback,
-                reason: (isAppleSilicon && isSupportedOS && hasBattery)
-                    ? "관측 계층은 준비되었지만 실제 충전 제어 경로는 아직 구현되지 않았습니다."
-                    : "현재 환경에서는 관측 전용 또는 read-only fallback을 권장합니다."
+                support: canAttemptPrivateControl ? .experimental : .unsupported,
+                reason: canAttemptPrivateControl
+                    ? "비문서화된 SMC 기반 helper가 준비되면 충전 제어를 시도할 수 있습니다. 권한 미승인 또는 backend 실패 시 read-only로 내려갑니다."
+                    : "현재 환경에서는 충전 제어를 시도하지 않고 monitoring-only fallback만 제공합니다."
             )
         ]
 
-        let recommendedControllerMode: ControllerStatus.Mode
-        if isAppleSilicon && isSupportedOS && hasBattery {
-            recommendedControllerMode = .readOnly
-        } else {
-            recommendedControllerMode = .monitoringOnly
-        }
-
         return CapabilityReport(
             statuses: statuses,
-            recommendedControllerMode: recommendedControllerMode
+            recommendedControllerMode: canAttemptPrivateControl ? .readOnly : .monitoringOnly
         )
     }
 }

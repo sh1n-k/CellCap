@@ -4,7 +4,7 @@ import Shared
 import Testing
 
 @Test
-func capabilityCheckerReturnsReadOnlyForSupportedMonitoringEnvironment() {
+func capabilityCheckerReturnsReadOnlyBaselineWhenPrivateChargeControlCanBeAttempted() {
     let checker = CapabilityChecker(
         environment: MockSystemEnvironmentProvider(
             operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
@@ -24,6 +24,8 @@ func capabilityCheckerReturnsReadOnlyForSupportedMonitoringEnvironment() {
     #expect(report.recommendedControllerMode == .readOnly)
     #expect(report.status(for: .batteryObservation)?.support == .supported)
     #expect(report.status(for: .chargeControl)?.support == .experimental)
+    #expect(report.status(for: .helperInstallation)?.support == .readOnlyFallback)
+    #expect(report.status(for: .helperPrivilege)?.support == .readOnlyFallback)
 }
 
 @Test
@@ -83,7 +85,7 @@ func capabilityCheckerRejectsUnsupportedOSVersion() {
     )
 
     #expect(report.status(for: .macOSVersion)?.support == .unsupported)
-    #expect(report.status(for: .chargeControl)?.support == .readOnlyFallback)
+    #expect(report.status(for: .chargeControl)?.support == .unsupported)
     #expect(report.recommendedControllerMode == .monitoringOnly)
 }
 

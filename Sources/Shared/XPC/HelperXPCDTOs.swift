@@ -251,10 +251,12 @@ public final class CapabilityReportDTO: NSObject, NSSecureCoding {
 
     public let statuses: [CapabilityStatusDTO]
     public let recommendedControllerModeRawValue: String
+    public let helperInstallStatus: HelperInstallStatusDTO?
 
     public init(report: CapabilityReport) {
         self.statuses = report.statuses.map(CapabilityStatusDTO.init(status:))
         self.recommendedControllerModeRawValue = report.recommendedControllerMode.rawValue
+        self.helperInstallStatus = report.helperInstallStatus.map(HelperInstallStatusDTO.init(status:))
     }
 
     public required init?(coder: NSCoder) {
@@ -273,6 +275,7 @@ public final class CapabilityReportDTO: NSObject, NSSecureCoding {
 
         self.statuses = statuses
         self.recommendedControllerModeRawValue = recommendedControllerModeRawValue
+        self.helperInstallStatus = coder.decodeObject(of: HelperInstallStatusDTO.self, forKey: "helperInstallStatus")
     }
 
     public func encode(with coder: NSCoder) {
@@ -281,12 +284,90 @@ public final class CapabilityReportDTO: NSObject, NSSecureCoding {
             recommendedControllerModeRawValue as NSString,
             forKey: "recommendedControllerModeRawValue"
         )
+        if let helperInstallStatus {
+            coder.encode(helperInstallStatus, forKey: "helperInstallStatus")
+        }
     }
 
     public func makeModel() -> CapabilityReport {
         CapabilityReport(
             statuses: statuses.map { $0.makeModel() },
-            recommendedControllerMode: ControllerStatus.Mode(rawValue: recommendedControllerModeRawValue) ?? .readOnly
+            recommendedControllerMode: ControllerStatus.Mode(rawValue: recommendedControllerModeRawValue) ?? .monitoringOnly,
+            helperInstallStatus: helperInstallStatus?.makeModel()
+        )
+    }
+}
+
+public final class HelperInstallStatusDTO: NSObject, NSSecureCoding {
+    public static var supportsSecureCoding: Bool { true }
+
+    public let stateRawValue: String
+    public let serviceName: String
+    public let helperPath: String
+    public let plistPath: String
+    public let helperVersion: String?
+    public let expectedVersion: String?
+    public let reason: String
+    public let checkedAt: Date
+
+    public init(status: HelperInstallStatus) {
+        self.stateRawValue = status.state.rawValue
+        self.serviceName = status.serviceName
+        self.helperPath = status.helperPath
+        self.plistPath = status.plistPath
+        self.helperVersion = status.helperVersion
+        self.expectedVersion = status.expectedVersion
+        self.reason = status.reason
+        self.checkedAt = status.checkedAt
+    }
+
+    public required init?(coder: NSCoder) {
+        guard
+            let stateRawValue = coder.decodeObject(of: NSString.self, forKey: "stateRawValue") as String?,
+            let serviceName = coder.decodeObject(of: NSString.self, forKey: "serviceName") as String?,
+            let helperPath = coder.decodeObject(of: NSString.self, forKey: "helperPath") as String?,
+            let plistPath = coder.decodeObject(of: NSString.self, forKey: "plistPath") as String?,
+            let reason = coder.decodeObject(of: NSString.self, forKey: "reason") as String?,
+            let checkedAt = coder.decodeObject(of: NSDate.self, forKey: "checkedAt") as Date?
+        else {
+            return nil
+        }
+
+        self.stateRawValue = stateRawValue
+        self.serviceName = serviceName
+        self.helperPath = helperPath
+        self.plistPath = plistPath
+        self.helperVersion = coder.decodeObject(of: NSString.self, forKey: "helperVersion") as String?
+        self.expectedVersion = coder.decodeObject(of: NSString.self, forKey: "expectedVersion") as String?
+        self.reason = reason
+        self.checkedAt = checkedAt
+    }
+
+    public func encode(with coder: NSCoder) {
+        coder.encode(stateRawValue as NSString, forKey: "stateRawValue")
+        coder.encode(serviceName as NSString, forKey: "serviceName")
+        coder.encode(helperPath as NSString, forKey: "helperPath")
+        coder.encode(plistPath as NSString, forKey: "plistPath")
+        if let helperVersion {
+            coder.encode(helperVersion as NSString, forKey: "helperVersion")
+        }
+        if let expectedVersion {
+            coder.encode(expectedVersion as NSString, forKey: "expectedVersion")
+        }
+        coder.encode(reason as NSString, forKey: "reason")
+        coder.encode(checkedAt as NSDate, forKey: "checkedAt")
+    }
+
+    public func makeModel() -> HelperInstallStatus {
+        HelperInstallStatus(
+            state: HelperInstallState(rawValue: stateRawValue) ?? .notInstalled,
+            serviceName: serviceName,
+            helperPath: helperPath,
+            plistPath: plistPath,
+            helperVersion: helperVersion,
+            expectedVersion: expectedVersion,
+            reason: reason,
+            checkedAt: checkedAt
         )
     }
 }

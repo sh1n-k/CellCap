@@ -8,6 +8,9 @@ public struct DiagnosticsSummary: Codable, Sendable, Equatable {
     public var currentPolicyUpperLimit: Int?
     public var currentRechargeThreshold: Int?
     public var lastTransitionReason: String?
+    public var helperInstallState: HelperInstallState?
+    public var helperVersion: String?
+    public var helperInstallReason: String?
     public var lastCapabilityProbeMessage: String?
     public var lastCapabilityProbeAt: Date?
     public var lastSelfTestMessage: String?
@@ -23,6 +26,9 @@ public struct DiagnosticsSummary: Codable, Sendable, Equatable {
         currentPolicyUpperLimit: Int?,
         currentRechargeThreshold: Int?,
         lastTransitionReason: String?,
+        helperInstallState: HelperInstallState?,
+        helperVersion: String?,
+        helperInstallReason: String?,
         lastCapabilityProbeMessage: String?,
         lastCapabilityProbeAt: Date?,
         lastSelfTestMessage: String?,
@@ -37,6 +43,9 @@ public struct DiagnosticsSummary: Codable, Sendable, Equatable {
         self.currentPolicyUpperLimit = currentPolicyUpperLimit
         self.currentRechargeThreshold = currentRechargeThreshold
         self.lastTransitionReason = lastTransitionReason
+        self.helperInstallState = helperInstallState
+        self.helperVersion = helperVersion
+        self.helperInstallReason = helperInstallReason
         self.lastCapabilityProbeMessage = lastCapabilityProbeMessage
         self.lastCapabilityProbeAt = lastCapabilityProbeAt
         self.lastSelfTestMessage = lastSelfTestMessage

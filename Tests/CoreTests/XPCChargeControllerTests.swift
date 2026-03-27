@@ -25,14 +25,14 @@ func xpcChargeControllerDelegatesCapabilityProbeSummary() async throws {
     let report = CapabilityReport(
         statuses: [
             CapabilityStatus(key: .appleSilicon, support: .supported, reason: "ok"),
-            CapabilityStatus(key: .chargeControl, support: .experimental, reason: "stub")
+            CapabilityStatus(key: .chargeControl, support: .experimental, reason: "private helper backend available")
         ],
         recommendedControllerMode: .readOnly
     )
     let status = ControllerStatus(
         mode: .readOnly,
         helperConnection: .connected,
-        lastErrorDescription: "stub"
+        lastErrorDescription: nil
     )
     let transport = MockHelperServiceTransport(
         capabilityProbeResult: .success(
@@ -62,7 +62,7 @@ private struct MockHelperServiceTransport: HelperServiceTransporting {
             report: CapabilityReport(
                 statuses: [
                     CapabilityStatus(key: .appleSilicon, support: .supported, reason: "ok"),
-                    CapabilityStatus(key: .chargeControl, support: .experimental, reason: "stub")
+                    CapabilityStatus(key: .chargeControl, support: .experimental, reason: "private helper backend available")
                 ],
                 recommendedControllerMode: .readOnly
             ),

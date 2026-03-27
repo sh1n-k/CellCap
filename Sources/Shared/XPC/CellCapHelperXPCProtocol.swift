@@ -29,6 +29,9 @@ import Foundation
 
 public enum CellCapHelperXPC {
     public static let serviceName = "com.shin.cellcap.helper"
+    public static let contractVersion = "dev-smc-v1"
+    public static let installedBinaryPath = "/Library/PrivilegedHelperTools/com.shin.cellcap.helper"
+    public static let launchDaemonPlistPath = "/Library/LaunchDaemons/com.shin.cellcap.helper.plist"
 
     public static func makeRemoteInterface() -> NSXPCInterface {
         NSXPCInterface(with: CellCapHelperXPCProtocol.self)

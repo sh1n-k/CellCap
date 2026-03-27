@@ -5,135 +5,204 @@ import Shared
 final class CellCapHelperService: NSObject, CellCapHelperXPCProtocol {
     private let capabilityChecker: CapabilityChecker
     private let snapshotProvider: any BatterySnapshotProviding
+    private let backend: any ChargeControlBackend
 
     init(
         capabilityChecker: CapabilityChecker = CapabilityChecker(),
-        snapshotProvider: any BatterySnapshotProviding = SystemBatterySnapshotProvider()
+        snapshotProvider: any BatterySnapshotProviding = SystemBatterySnapshotProvider(),
+        backend: any ChargeControlBackend = DirectSMCChargeControlBackend()
     ) {
         self.capabilityChecker = capabilityChecker
         self.snapshotProvider = snapshotProvider
+        self.backend = backend
     }
 
     func fetchControllerStatus(
         _ request: HelperRequestDTO,
         withReply reply: @escaping (HelperControllerStatusResponseDTO) -> Void
     ) {
-        let snapshot = try? snapshotProvider.currentSnapshot(now: request.requestedAt)
-        let report = capabilityChecker.evaluate(snapshot: snapshot)
-        let status = makeStatus(
-            recommendedMode: report.recommendedControllerMode,
-            lastErrorDescription: nil,
-            checkedAt: request.requestedAt
-        )
-        reply(HelperControllerStatusResponseDTO(status: ControllerStatusDTO(status: status)))
+        let replyBox = ReplyBox(reply)
+        let requestedAt = request.requestedAt
+        let backend = self.backend
+        Task {
+            let runtimeStatus = await backend.currentStatus(now: requestedAt)
+            let status = makeHelperStatus(from: runtimeStatus)
+            replyBox.reply(HelperControllerStatusResponseDTO(status: ControllerStatusDTO(status: status)))
+        }
     }
 
     func selfTest(
         _ request: HelperSelfTestRequestDTO,
         withReply reply: @escaping (HelperSelfTestResponseDTO) -> Void
     ) {
-        let snapshot = try? snapshotProvider.currentSnapshot(now: request.requestedAt)
-        let report = capabilityChecker.evaluate(snapshot: snapshot)
-        let outcome: ControllerSelfTestResult.Outcome = snapshot == nil ? .failed : .degraded
-        let result = ControllerSelfTestResult(
-            outcome: outcome,
-            message: "Helper XPC 골격은 동작하지만 실제 충전 제어는 아직 stub 상태입니다.",
-            checkedAt: request.requestedAt
-        )
+        let replyBox = ReplyBox(reply)
+        let requestedAt = request.requestedAt
+        let snapshotProvider = self.snapshotProvider
+        let backend = self.backend
+        Task {
+            let snapshot = try? snapshotProvider.currentSnapshot(now: requestedAt)
+            let result = await backend.selfTest(snapshot: snapshot, now: requestedAt)
+            let runtimeStatus = await backend.currentStatus(now: requestedAt)
 
-        reply(
-            HelperSelfTestResponseDTO(
-                result: ControllerSelfTestResultDTO(result: result),
-                status: ControllerStatusDTO(
-                    status: makeStatus(
-                        recommendedMode: report.recommendedControllerMode,
-                        lastErrorDescription: snapshot == nil ? "배터리 스냅샷을 읽지 못했습니다." : nil,
-                        checkedAt: request.requestedAt
+            replyBox.reply(
+                HelperSelfTestResponseDTO(
+                    result: ControllerSelfTestResultDTO(result: result),
+                    status: ControllerStatusDTO(
+                        status: makeHelperStatus(from: runtimeStatus)
                     )
                 )
             )
-        )
+        }
     }
 
     func capabilityProbe(
         _ request: HelperCapabilityProbeRequestDTO,
         withReply reply: @escaping (HelperCapabilityProbeResponseDTO) -> Void
     ) {
-        let snapshot = try? snapshotProvider.currentSnapshot(now: request.requestedAt)
-        let report = capabilityChecker.evaluate(snapshot: snapshot)
-        let status = makeStatus(
-            recommendedMode: report.recommendedControllerMode,
-            lastErrorDescription: nil,
-            checkedAt: request.requestedAt
-        )
-        reply(
-            HelperCapabilityProbeResponseDTO(
-                report: CapabilityReportDTO(report: report),
-                status: ControllerStatusDTO(status: status)
+        let replyBox = ReplyBox(reply)
+        let requestedAt = request.requestedAt
+        let snapshotProvider = self.snapshotProvider
+        let capabilityChecker = self.capabilityChecker
+        let backend = self.backend
+        Task {
+            let snapshot = try? snapshotProvider.currentSnapshot(now: requestedAt)
+            let report = await makeCapabilityReport(
+                snapshot: snapshot,
+                now: requestedAt,
+                capabilityChecker: capabilityChecker,
+                backend: backend
             )
-        )
+            let runtimeStatus = await backend.currentStatus(now: requestedAt)
+            let status = makeHelperStatus(from: runtimeStatus)
+            replyBox.reply(
+                HelperCapabilityProbeResponseDTO(
+                    report: CapabilityReportDTO(report: report),
+                    status: ControllerStatusDTO(status: status)
+                )
+            )
+        }
     }
 
     func setChargingEnabled(
         _ request: HelperSetChargingEnabledRequestDTO,
         withReply reply: @escaping (HelperCommandResponseDTO) -> Void
     ) {
-        reply(
-            HelperCommandResponseDTO(
-                status: ControllerStatusDTO(status: makeStubFailureStatus(at: request.requestedAt)),
-                error: HelperXPCErrorDTO(
-                    code: "stubbed-control",
-                    message: "실제 충전 on/off 제어는 이번 단계에서 구현하지 않습니다.",
-                    isRetryable: false
+        let replyBox = ReplyBox(reply)
+        let requestedAt = request.requestedAt
+        let enabled = request.enabled
+        let backend = self.backend
+        Task {
+            do {
+                let runtimeStatus = try await backend.setChargingEnabled(enabled, now: requestedAt)
+                let status = ControllerStatusDTO(
+                    status: makeHelperStatus(from: runtimeStatus)
                 )
-            )
-        )
+                replyBox.reply(HelperCommandResponseDTO(status: status))
+            } catch {
+                let runtimeStatus = await backend.currentStatus(now: requestedAt)
+                replyBox.reply(
+                    HelperCommandResponseDTO(
+                        status: ControllerStatusDTO(
+                            status: makeHelperStatus(from: runtimeStatus)
+                        ),
+                        error: HelperXPCErrorDTO(
+                            code: "charging-command-failed",
+                            message: error.localizedDescription,
+                            isRetryable: true
+                        )
+                    )
+                )
+            }
+        }
     }
 
     func setTemporaryOverride(
         _ request: HelperSetTemporaryOverrideRequestDTO,
         withReply reply: @escaping (HelperCommandResponseDTO) -> Void
     ) {
-        reply(
-            HelperCommandResponseDTO(
-                status: ControllerStatusDTO(status: makeStubFailureStatus(at: request.requestedAt)),
-                error: HelperXPCErrorDTO(
-                    code: "stubbed-override",
-                    message: "temporary override 제어는 이번 단계에서 stub 상태입니다.",
-                    isRetryable: false
+        let replyBox = ReplyBox(reply)
+        let requestedAt = request.requestedAt
+        let until = request.until
+        let backend = self.backend
+        Task {
+            do {
+                let runtimeStatus = try await backend.setTemporaryOverride(until: until, now: requestedAt)
+                let status = ControllerStatusDTO(
+                    status: makeHelperStatus(from: runtimeStatus)
                 )
-            )
-        )
+                replyBox.reply(HelperCommandResponseDTO(status: status))
+            } catch {
+                let runtimeStatus = await backend.currentStatus(now: requestedAt)
+                replyBox.reply(
+                    HelperCommandResponseDTO(
+                        status: ControllerStatusDTO(
+                            status: makeHelperStatus(from: runtimeStatus)
+                        ),
+                        error: HelperXPCErrorDTO(
+                            code: "temporary-override-failed",
+                            message: error.localizedDescription,
+                            isRetryable: true
+                        )
+                    )
+                )
+            }
+        }
     }
+}
 
-    private func makeReadOnlyStatus(at date: Date = .now) -> ControllerStatus {
-        makeStatus(
-            recommendedMode: .readOnly,
-            lastErrorDescription: nil,
-            checkedAt: date
-        )
-    }
+private final class ReplyBox<Response>: @unchecked Sendable {
+    let reply: (Response) -> Void
 
-    private func makeStubFailureStatus(at date: Date) -> ControllerStatus {
-        makeStatus(
-            recommendedMode: .readOnly,
-            lastErrorDescription: "Stub helper는 제어 요청을 수행하지 않습니다.",
-            checkedAt: date
-        )
+    init(_ reply: @escaping (Response) -> Void) {
+        self.reply = reply
     }
+}
 
-    private func makeStatus(
-        recommendedMode: ControllerStatus.Mode,
-        lastErrorDescription: String?,
-        checkedAt: Date
-    ) -> ControllerStatus {
-        ControllerStatus(
-            mode: recommendedMode,
-            helperConnection: .connected,
-            isChargingEnabled: nil,
-            temporaryOverrideUntil: nil,
-            lastErrorDescription: lastErrorDescription,
-            checkedAt: checkedAt
-        )
-    }
+private func makeCapabilityReport(
+    snapshot: BatterySnapshot?,
+    now: Date,
+    capabilityChecker: CapabilityChecker,
+    backend: any ChargeControlBackend
+) async -> CapabilityReport {
+    let baseReport = capabilityChecker.evaluate(snapshot: snapshot)
+    let capability = await backend.probe(snapshot: snapshot, now: now)
+    return CapabilityReport(
+        statuses: baseReport.statuses.map { status in
+            switch status.key {
+            case .chargeControl:
+                return CapabilityStatus(
+                    key: .chargeControl,
+                    support: capability.support,
+                    reason: capability.reason
+                )
+            case .helperInstallation:
+                return CapabilityStatus(
+                    key: .helperInstallation,
+                    support: capability.helperInstallStatus.installationSupport,
+                    reason: capability.helperInstallStatus.reason
+                )
+            case .helperPrivilege:
+                return CapabilityStatus(
+                    key: .helperPrivilege,
+                    support: capability.helperPrivilegeSupport,
+                    reason: capability.helperPrivilegeReason
+                )
+            default:
+                return status
+            }
+        },
+        recommendedControllerMode: capability.recommendedMode,
+        helperInstallStatus: capability.helperInstallStatus
+    )
+}
+
+private func makeHelperStatus(from runtimeStatus: ChargeControlRuntimeStatus) -> ControllerStatus {
+    ControllerStatus(
+        mode: runtimeStatus.recommendedMode,
+        helperConnection: .connected,
+        isChargingEnabled: runtimeStatus.isChargingEnabled,
+        temporaryOverrideUntil: runtimeStatus.temporaryOverrideUntil,
+        lastErrorDescription: runtimeStatus.lastErrorDescription,
+        checkedAt: runtimeStatus.checkedAt
+    )
 }

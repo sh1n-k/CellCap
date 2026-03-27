@@ -14,6 +14,15 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "CellCapSMCBridge",
+            path: "Sources/CellCapSMCBridge",
+            publicHeadersPath: "include",
+            linkerSettings: [
+                .linkedFramework("CoreFoundation"),
+                .linkedFramework("IOKit")
+            ]
+        ),
+        .target(
             name: "Shared"
         ),
         .target(
@@ -26,11 +35,11 @@ let package = Package(
         ),
         .executableTarget(
             name: "Helper",
-            dependencies: ["Core", "Shared"]
+            dependencies: ["CellCapSMCBridge", "Core", "Shared"]
         ),
         .testTarget(
             name: "CoreTests",
-            dependencies: ["Core", "Shared"]
+            dependencies: ["Core", "Shared", "Helper"]
         )
     ]
 )

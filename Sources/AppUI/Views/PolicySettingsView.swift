@@ -86,7 +86,7 @@ struct PolicySettingsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     sectionHeader(
                         title: "현재 제어 모드",
-                        subtitle: "실제 helper 구현 전까지는 모드와 불가 사유를 먼저 노출합니다."
+                        subtitle: "직접 제어는 helper 권한과 backend 상태에 따라 달라지므로 모드와 사유를 먼저 노출합니다."
                     )
 
                     HStack(spacing: 12) {
@@ -98,6 +98,15 @@ struct PolicySettingsView: View {
 
                         Text(viewModel.helperStatusText)
                             .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Text("설치 상태: \(viewModel.helperInstallStateText)")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+
+                    if let reason = viewModel.helperInstallReasonText {
+                        Text(reason)
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
                             .foregroundStyle(.secondary)
                     }
                 }

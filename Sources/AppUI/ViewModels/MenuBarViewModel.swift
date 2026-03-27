@@ -129,6 +129,23 @@ final class MenuBarViewModel: ObservableObject {
     }
 
     var helperStatusText: String {
+        if let installStatus = capabilityReport.helperInstallStatus {
+            switch installStatus.state {
+            case .notInstalled:
+                return "helper 미설치"
+            case .installedButNotBootstrapped:
+                return "helper 미기동"
+            case .bootstrapped:
+                return "helper 등록됨"
+            case .xpcReachable:
+                break
+            case .permissionMismatch:
+                return "helper 권한 불일치"
+            case .versionMismatch:
+                return "helper 버전 불일치"
+            }
+        }
+
         switch appState.controllerStatus.helperConnection {
         case .connected:
             return "helper 연결 정상"
@@ -148,6 +165,33 @@ final class MenuBarViewModel: ObservableObject {
         case .monitoringOnly:
             return "Monitoring-only"
         }
+    }
+
+    var helperInstallStateText: String {
+        guard let installStatus = capabilityReport.helperInstallStatus else {
+            return "설치 상태 미확인"
+        }
+
+        switch installStatus.state {
+        case .notInstalled:
+            return "미설치"
+        case .installedButNotBootstrapped:
+            return "설치됨, 미기동"
+        case .bootstrapped:
+            return "launchd 등록"
+        case .xpcReachable:
+            return "XPC 연결 확인"
+        case .permissionMismatch:
+            return "권한 불일치"
+        case .versionMismatch:
+            return "버전 불일치"
+        }
+    }
+
+    var helperInstallReasonText: String? {
+        capabilityReport.helperInstallStatus?.reason
+            ?? capabilityReport.status(for: .helperInstallation)?.reason
+            ?? capabilityReport.status(for: .helperPrivilege)?.reason
     }
 
     var menuBarSymbolName: String {
@@ -188,12 +232,21 @@ final class MenuBarViewModel: ObservableObject {
             return .disabled("내장 배터리를 찾지 못했습니다.")
         }
 
-        if let chargeControl = capabilityReport.status(for: .chargeControl) {
-            switch chargeControl.support {
-            case .supported, .experimental:
-                break
-            case .unsupported, .readOnlyFallback:
-                return .disabled(chargeControl.reason)
+        for key in [CapabilityKey.helperInstallation, .helperPrivilege, .chargeControl] {
+            guard let status = capabilityReport.status(for: key) else { continue }
+
+            switch status.support {
+            case .supported:
+                continue
+            case .experimental:
+                if key == .chargeControl {
+                    continue
+                }
+                return .disabled(status.reason)
+            case .unsupported:
+                return .disabled(status.reason)
+            case .readOnlyFallback:
+                return .disabled(status.reason)
             }
         }
 
@@ -233,6 +286,9 @@ final class MenuBarViewModel: ObservableObject {
         }
         if let fallback = diagnosticsSummary.lastReadOnlyFallbackReason {
             parts.append("fallback \(fallback)")
+        }
+        if let helperInstallState = diagnosticsSummary.helperInstallState?.rawValue {
+            parts.append("helper \(helperInstallState)")
         }
         return parts.isEmpty ? "진단 이벤트가 아직 없습니다." : parts.joined(separator: " / ")
     }
@@ -335,6 +391,10 @@ final class MenuBarViewModel: ObservableObject {
             return "전원 연결 감지"
         case .sleepWakeResynchronization:
             return "sleep/wake 재동기화"
+        case .helperInstallation:
+            return "Helper 설치"
+        case .helperPrivilege:
+            return "Helper 권한"
         case .chargeControl:
             return "충전 제어"
         }
@@ -437,9 +497,20 @@ extension MenuBarViewModel {
                     CapabilityStatus(key: .batteryObservation, support: .supported, reason: "내장 배터리 상태를 읽을 수 있습니다."),
                     CapabilityStatus(key: .powerSourceObservation, support: .supported, reason: "전원 연결 여부를 읽을 수 있습니다."),
                     CapabilityStatus(key: .sleepWakeResynchronization, support: .supported, reason: "sleep/wake 이후 재동기화가 가능합니다."),
-                    CapabilityStatus(key: .chargeControl, support: .experimental, reason: "UI와 정책은 준비되었지만 실제 제어 helper는 아직 stub입니다.")
+                    CapabilityStatus(key: .helperInstallation, support: .supported, reason: "개발용 helper가 설치되어 launchd와 XPC 연결이 모두 확인되었습니다."),
+                    CapabilityStatus(key: .helperPrivilege, support: .supported, reason: "helper가 root 권한으로 실행 중입니다."),
+                    CapabilityStatus(key: .chargeControl, support: .experimental, reason: "직접 SMC helper backend가 연결되어 충전 제어를 수행할 수 있습니다.")
                 ],
-                recommendedControllerMode: .readOnly
+                recommendedControllerMode: .fullControl,
+                helperInstallStatus: HelperInstallStatus(
+                    state: .xpcReachable,
+                    serviceName: CellCapHelperXPC.serviceName,
+                    helperPath: CellCapHelperXPC.installedBinaryPath,
+                    plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                    helperVersion: CellCapHelperXPC.contractVersion,
+                    expectedVersion: CellCapHelperXPC.contractVersion,
+                    reason: "개발용 helper가 root로 실행 중입니다."
+                )
             )
         )
     }
@@ -499,7 +570,9 @@ extension MenuBarViewModel {
                     CapabilityStatus(key: .batteryObservation, support: .unsupported, reason: "내장 배터리를 찾지 못했습니다."),
                     CapabilityStatus(key: .powerSourceObservation, support: .readOnlyFallback, reason: "배터리 미탑재 장비에서는 전원 판정이 제한됩니다."),
                     CapabilityStatus(key: .sleepWakeResynchronization, support: .supported, reason: "sleep/wake 알림은 받을 수 있습니다."),
-                    CapabilityStatus(key: .chargeControl, support: .readOnlyFallback, reason: "이 환경에서는 충전 제어 대신 관측 전용으로 남깁니다.")
+                    CapabilityStatus(key: .helperInstallation, support: .unsupported, reason: "이 환경에서는 helper를 설치해도 충전 제어를 시도하지 않습니다."),
+                    CapabilityStatus(key: .helperPrivilege, support: .unsupported, reason: "helper 권한이 필요하지 않은 관측 전용 환경입니다."),
+                    CapabilityStatus(key: .chargeControl, support: .unsupported, reason: "이 환경에서는 SMC 기반 충전 제어를 시도하지 않습니다.")
                 ],
                 recommendedControllerMode: .monitoringOnly
             )

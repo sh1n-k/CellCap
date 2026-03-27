@@ -46,7 +46,14 @@ struct StatusSummaryView: View {
             HStack(spacing: 10) {
                 statusBadge
                 detailPill(title: "helper", value: viewModel.helperStatusText)
+                detailPill(title: "install", value: viewModel.helperInstallStateText)
                 detailPill(title: "reason", value: localized(viewModel.transitionReason))
+            }
+
+            if let installReason = viewModel.helperInstallReasonText {
+                Text(installReason)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(.secondary)
             }
 
             batteryBar

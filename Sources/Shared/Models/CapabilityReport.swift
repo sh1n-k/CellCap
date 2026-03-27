@@ -13,6 +13,8 @@ public enum CapabilityKey: String, Codable, Sendable, CaseIterable {
     case batteryObservation
     case powerSourceObservation
     case sleepWakeResynchronization
+    case helperInstallation
+    case helperPrivilege
     case chargeControl
 }
 
@@ -31,13 +33,16 @@ public struct CapabilityStatus: Codable, Sendable, Equatable {
 public struct CapabilityReport: Codable, Sendable, Equatable {
     public var statuses: [CapabilityStatus]
     public var recommendedControllerMode: ControllerStatus.Mode
+    public var helperInstallStatus: HelperInstallStatus?
 
     public init(
         statuses: [CapabilityStatus],
-        recommendedControllerMode: ControllerStatus.Mode
+        recommendedControllerMode: ControllerStatus.Mode,
+        helperInstallStatus: HelperInstallStatus? = nil
     ) {
         self.statuses = statuses
         self.recommendedControllerMode = recommendedControllerMode
+        self.helperInstallStatus = helperInstallStatus
     }
 
     public func status(for key: CapabilityKey) -> CapabilityStatus? {
@@ -60,7 +65,24 @@ public struct CapabilityReport: Codable, Sendable, Equatable {
 
         return CapabilityReport(
             statuses: updatedStatuses,
-            recommendedControllerMode: recommendedControllerMode
+            recommendedControllerMode: recommendedControllerMode,
+            helperInstallStatus: helperInstallStatus
+        )
+    }
+
+    public func replacingHelperInstallStatus(_ helperInstallStatus: HelperInstallStatus?) -> CapabilityReport {
+        CapabilityReport(
+            statuses: statuses,
+            recommendedControllerMode: recommendedControllerMode,
+            helperInstallStatus: helperInstallStatus
+        )
+    }
+
+    public func replacingRecommendedControllerMode(_ mode: ControllerStatus.Mode) -> CapabilityReport {
+        CapabilityReport(
+            statuses: statuses,
+            recommendedControllerMode: mode,
+            helperInstallStatus: helperInstallStatus
         )
     }
 }
