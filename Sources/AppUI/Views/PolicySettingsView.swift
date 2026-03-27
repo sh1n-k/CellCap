@@ -10,28 +10,10 @@ struct PolicySettingsView: View {
         VStack(alignment: .leading, spacing: 18) {
             sectionHeader(
                 title: "충전 정책",
-                subtitle: "상한과 재충전 하한을 바로 조정합니다."
+                subtitle: "자주 바꾸는 정책만 앞에 두고, 조정 결과를 바로 읽을 수 있게 정리했습니다."
             )
 
-            VStack(alignment: .leading, spacing: 14) {
-                sliderRow(
-                    title: "충전 상한",
-                    valueText: "\(viewModel.appState.policy.upperLimit)%",
-                    explanation: "\(viewModel.appState.policy.upperLimit)%에서 충전을 멈춥니다.",
-                    binding: viewModel.upperLimitBinding,
-                    range: 50...100,
-                    isEnabled: viewModel.controlAvailability.isEnabled
-                )
-
-                sliderRow(
-                    title: "재충전 하한",
-                    valueText: "\(viewModel.appState.policy.rechargeThreshold)%",
-                    explanation: "\(viewModel.appState.policy.rechargeThreshold)% 이하일 때만 다시 충전합니다.",
-                    binding: viewModel.rechargeThresholdBinding,
-                    range: 0...Double(viewModel.appState.policy.upperLimit),
-                    isEnabled: viewModel.controlAvailability.isEnabled
-                )
-            }
+            policyControlLayout
 
             if let reason = viewModel.controlAvailability.reason {
                 disabledCallout(title: viewModel.controlNoticeTitle, reason: reason)
@@ -39,106 +21,16 @@ struct PolicySettingsView: View {
 
             Divider()
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 14) {
                 sectionHeader(
                     title: "임시 100% 충전",
-                    subtitle: "출장이나 장거리 이동 전에 상한을 잠시 해제합니다."
+                    subtitle: "출장이나 장거리 이동 전에 상한을 잠시 해제하고, 끝나면 기존 정책으로 돌아갑니다."
                 )
 
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Text("유예 시간")
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color.black.opacity(0.78))
-                        Spacer()
-                        Text(viewModel.selectedOverrideDurationLabel)
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(Color(red: 0.85, green: 0.91, blue: 1.0), in: Capsule())
-                            .foregroundStyle(Color(red: 0.22, green: 0.38, blue: 0.72))
-                    }
-
-                    durationChipRow
-
-                    Text("임시 해제 길이는 유지되며, 지금은 조작만 잠겨 있습니다.")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color.black.opacity(0.56))
-                        .opacity(viewModel.temporaryOverrideAvailability.isEnabled ? 0 : 1)
-                }
-                .padding(14)
-                .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(Color(red: 0.95, green: 0.95, blue: 0.96).opacity(0.98))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(Color.black.opacity(0.06), lineWidth: 1)
-                )
-
-                HStack(spacing: 10) {
-                    Button {
-                        guard viewModel.temporaryOverrideAvailability.isEnabled else { return }
-                        if viewModel.isTemporaryOverrideActive {
-                            viewModel.clearTemporaryOverride()
-                        } else {
-                            viewModel.startTemporaryOverride()
-                        }
-                    } label: {
-                        Label(
-                            viewModel.isTemporaryOverrideActive ? "임시 해제 종료" : "임시 해제 시작",
-                            systemImage: viewModel.isTemporaryOverrideActive ? "pause.circle.fill" : "bolt.badge.clock"
-                        )
-                    }
-                    .buttonStyle(
-                        OverrideActionButtonStyle(
-                            isEnabled: viewModel.temporaryOverrideAvailability.isEnabled,
-                            isActive: viewModel.isTemporaryOverrideActive
-                        )
-                    )
-                    .allowsHitTesting(viewModel.temporaryOverrideAvailability.isEnabled)
-
-                    if viewModel.isTemporaryOverrideActive || viewModel.isReadOnlyPresentation {
-                        Text(viewModel.summarySentence)
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
-                            .foregroundStyle(Color.black.opacity(0.58))
-                    }
-                }
+                temporaryOverrideLayout
 
                 if let reason = viewModel.temporaryOverrideNoticeReason {
                     disabledCallout(title: viewModel.temporaryOverrideNoticeTitle, reason: reason)
-                }
-            }
-
-            if !compact {
-                Divider()
-
-                VStack(alignment: .leading, spacing: 8) {
-                    sectionHeader(
-                        title: "현재 제어 모드",
-                        subtitle: "직접 제어는 helper 권한과 backend 상태에 따라 달라지므로 모드와 사유를 먼저 노출합니다."
-                    )
-
-                    HStack(spacing: 12) {
-                        Text(viewModel.controllerModeLabel)
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(Color.primary.opacity(0.08), in: Capsule())
-
-                        Text(viewModel.helperStatusText)
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Text("설치 상태: \(viewModel.helperInstallStateText)")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-
-                    if let reason = viewModel.helperInstallReasonText {
-                        Text(reason)
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
-                            .foregroundStyle(.secondary)
-                    }
                 }
             }
         }
@@ -151,6 +43,171 @@ struct PolicySettingsView: View {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(Color.black.opacity(0.08), lineWidth: 1)
         )
+    }
+
+    @ViewBuilder
+    private var policyControlLayout: some View {
+        if compact {
+            VStack(alignment: .leading, spacing: 14) {
+                sliderRow(
+                    title: "충전 상한",
+                    valueText: "\(viewModel.appState.policy.upperLimit)%",
+                    explanation: "\(viewModel.appState.policy.upperLimit)%에서 충전을 멈춥니다.",
+                    binding: viewModel.upperLimitBinding,
+                    range: 50...100,
+                    isEnabled: viewModel.controlAvailability.isEnabled,
+                    minHeight: 0,
+                    explanationLineLimit: nil
+                )
+
+                sliderRow(
+                    title: "재충전 하한",
+                    valueText: "\(viewModel.appState.policy.rechargeThreshold)%",
+                    explanation: "\(viewModel.appState.policy.rechargeThreshold)% 이하일 때만 다시 충전합니다.",
+                    binding: viewModel.rechargeThresholdBinding,
+                    range: 0...Double(viewModel.appState.policy.upperLimit),
+                    isEnabled: viewModel.controlAvailability.isEnabled,
+                    minHeight: 0,
+                    explanationLineLimit: nil
+                )
+            }
+        } else {
+            HStack(alignment: .top, spacing: 14) {
+                sliderRow(
+                    title: "충전 상한",
+                    valueText: "\(viewModel.appState.policy.upperLimit)%",
+                    explanation: "\(viewModel.appState.policy.upperLimit)%에서 충전을 멈춥니다.",
+                    binding: viewModel.upperLimitBinding,
+                    range: 50...100,
+                    isEnabled: viewModel.controlAvailability.isEnabled,
+                    minHeight: 132,
+                    explanationLineLimit: 2
+                )
+
+                sliderRow(
+                    title: "재충전 하한",
+                    valueText: "\(viewModel.appState.policy.rechargeThreshold)%",
+                    explanation: "\(viewModel.appState.policy.rechargeThreshold)% 이하일 때만 다시 충전합니다.",
+                    binding: viewModel.rechargeThresholdBinding,
+                    range: 0...Double(viewModel.appState.policy.upperLimit),
+                    isEnabled: viewModel.controlAvailability.isEnabled,
+                    minHeight: 132,
+                    explanationLineLimit: 2
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var temporaryOverrideLayout: some View {
+        if compact {
+            VStack(alignment: .leading, spacing: 12) {
+                overrideDurationCard
+                overrideSummaryCard
+                overrideActionRow
+            }
+        } else {
+            HStack(alignment: .top, spacing: 14) {
+                overrideDurationCard
+                    .frame(maxWidth: .infinity)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    overrideSummaryCard
+                    overrideActionRow
+                }
+                .frame(maxWidth: 260, alignment: .leading)
+            }
+        }
+    }
+
+    private var overrideDurationCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("유예 시간")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.black.opacity(0.78))
+
+                Spacer()
+
+                Text(viewModel.selectedOverrideDurationLabel)
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color(red: 0.85, green: 0.91, blue: 1.0), in: Capsule())
+                    .foregroundStyle(Color(red: 0.22, green: 0.38, blue: 0.72))
+            }
+
+            durationChipRow
+
+            Text("선택한 시간 동안 100% 충전을 허용한 뒤, 기존 상한과 하한 정책으로 복귀합니다.")
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(Color.black.opacity(0.56))
+                .lineLimit(compact ? nil : 2)
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color(red: 0.95, green: 0.95, blue: 0.96).opacity(0.98))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.black.opacity(0.06), lineWidth: 1)
+        )
+    }
+
+    private var overrideSummaryCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: viewModel.isTemporaryOverrideActive ? "bolt.fill" : "clock")
+                    .foregroundStyle(Color(red: 0.88, green: 0.53, blue: 0.21))
+
+                Text(viewModel.isTemporaryOverrideActive ? "현재 임시 해제가 진행 중입니다" : "준비된 임시 해제")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.black.opacity(0.8))
+            }
+
+            Text(viewModel.temporaryOverrideSummaryText)
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(Color.black.opacity(0.62))
+                .lineLimit(compact ? nil : 3)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.72))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+        )
+    }
+
+    private var overrideActionRow: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Button {
+                guard viewModel.temporaryOverrideAvailability.isEnabled else { return }
+                if viewModel.isTemporaryOverrideActive {
+                    viewModel.clearTemporaryOverride()
+                } else {
+                    viewModel.startTemporaryOverride()
+                }
+            } label: {
+                Label(
+                    viewModel.isTemporaryOverrideActive ? "임시 해제 종료" : "임시 해제 시작",
+                    systemImage: viewModel.isTemporaryOverrideActive ? "pause.circle.fill" : "bolt.badge.clock"
+                )
+            }
+            .buttonStyle(
+                OverrideActionButtonStyle(
+                    isEnabled: viewModel.temporaryOverrideAvailability.isEnabled,
+                    isActive: viewModel.isTemporaryOverrideActive
+                )
+            )
+            .allowsHitTesting(viewModel.temporaryOverrideAvailability.isEnabled)
+
+            Spacer(minLength: 0)
+        }
     }
 
     private func sectionHeader(title: String, subtitle: String) -> some View {
@@ -170,7 +227,9 @@ struct PolicySettingsView: View {
         explanation: String,
         binding: Binding<Double>,
         range: ClosedRange<Double>,
-        isEnabled: Bool
+        isEnabled: Bool,
+        minHeight: CGFloat,
+        explanationLineLimit: Int?
     ) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -198,8 +257,12 @@ struct PolicySettingsView: View {
             Text(explanation)
                 .font(.system(size: 11, weight: .medium, design: .rounded))
                 .foregroundStyle(Color.black.opacity(0.58))
+                .lineLimit(explanationLineLimit)
+
+            Spacer(minLength: 0)
         }
         .padding(14)
+        .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(isEnabled ? Color(red: 0.98, green: 0.98, blue: 0.98).opacity(0.98) : Color(red: 0.95, green: 0.95, blue: 0.96).opacity(0.98))
@@ -343,8 +406,131 @@ private struct OverrideActionButtonStyle: ButtonStyle {
     }
 }
 
+private struct AdvancedStatusSectionView: View {
+    @ObservedObject var viewModel: MenuBarViewModel
+    @Binding var isExpanded: Bool
+
+    var body: some View {
+        DisclosureGroup(isExpanded: $isExpanded) {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 12) {
+                    AdvancedStatusMetric(title: "Helper 상태", value: viewModel.helperStatusText)
+                    AdvancedStatusMetric(title: "설치 상태", value: viewModel.helperInstallStateText)
+                    AdvancedStatusMetric(title: "현재 모드", value: viewModel.controllerModeLabel)
+                }
+
+                if let reason = viewModel.helperInstallReasonText {
+                    Text(reason)
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.6))
+                }
+
+                if let controllerError = viewModel.lastControllerErrorText {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("최근 제어 오류")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.black.opacity(0.45))
+
+                        Text(controllerError)
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color.black.opacity(0.68))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(Color(red: 0.99, green: 0.95, blue: 0.94).opacity(0.99))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(Color(red: 0.91, green: 0.74, blue: 0.69), lineWidth: 1)
+                    )
+                }
+
+                CapabilityStatusListView(viewModel: viewModel, title: "기능 가능 여부")
+            }
+            .padding(.top, 16)
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .center) {
+                    Text("고급 정보")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.84))
+
+                    Spacer()
+
+                    Text(viewModel.advancedSectionStatusText)
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            (viewModel.shouldAutoExpandAdvancedSection
+                                ? Color(red: 0.96, green: 0.88, blue: 0.83)
+                                : Color(red: 0.90, green: 0.96, blue: 0.91)),
+                            in: Capsule()
+                        )
+                        .foregroundStyle(
+                            viewModel.shouldAutoExpandAdvancedSection
+                                ? Color(red: 0.63, green: 0.24, blue: 0.19)
+                                : Color(red: 0.25, green: 0.52, blue: 0.31)
+                        )
+                }
+
+                Text("helper 연결, 설치 상태, 기능 가능 여부를 필요할 때만 펼쳐 확인합니다.")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color.black.opacity(0.58))
+
+                Text(viewModel.compactHelperSummaryText)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color.black.opacity(0.52))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+            }
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color(red: 0.97, green: 0.96, blue: 0.95).opacity(0.96))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.black.opacity(0.08), lineWidth: 1)
+        )
+    }
+}
+
+private struct AdvancedStatusMetric: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.black.opacity(0.45))
+
+            Text(value)
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.black.opacity(0.78))
+                .lineLimit(2)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.72))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+        )
+    }
+}
+
 struct SettingsSceneView: View {
     @ObservedObject var viewModel: MenuBarViewModel
+    @State private var isAdvancedExpanded = false
 
     var body: some View {
         ScrollView {
@@ -352,25 +538,32 @@ struct SettingsSceneView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("CellCap 설정")
                         .font(.system(size: 30, weight: .bold, design: .rounded))
-                    Text("상태 확인과 정책 편집을 분리하지 않고 한 화면에서 함께 조정합니다.")
+                    Text("핵심 상태와 정책 조작을 먼저 보여주고, helper 정보는 필요할 때만 펼쳐 확인합니다.")
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundStyle(.secondary)
                 }
 
-                HStack(alignment: .top, spacing: 18) {
-                    VStack(alignment: .leading, spacing: 18) {
-                        StatusSummaryView(viewModel: viewModel)
-                        CapabilityStatusListView(viewModel: viewModel)
-                    }
+                StatusSummaryView(viewModel: viewModel)
 
-                    PolicySettingsView(viewModel: viewModel, compact: false)
-                        .frame(maxWidth: 360)
-                }
+                PolicySettingsView(viewModel: viewModel, compact: false)
+
+                AdvancedStatusSectionView(
+                    viewModel: viewModel,
+                    isExpanded: $isAdvancedExpanded
+                )
             }
             .padding(22)
         }
-        .frame(minWidth: 860, minHeight: 560)
+        .frame(minWidth: 920, minHeight: 620)
         .background(CellCapPanelBackground())
+        .onAppear {
+            isAdvancedExpanded = viewModel.shouldAutoExpandAdvancedSection
+        }
+        .onChange(of: viewModel.shouldAutoExpandAdvancedSection) { _, shouldExpand in
+            if shouldExpand {
+                isAdvancedExpanded = true
+            }
+        }
     }
 }
 

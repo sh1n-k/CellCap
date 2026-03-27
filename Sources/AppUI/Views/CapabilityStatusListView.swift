@@ -3,10 +3,11 @@ import SwiftUI
 
 struct CapabilityStatusListView: View {
     @ObservedObject var viewModel: MenuBarViewModel
+    var title: String = "가능 여부"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("가능 여부")
+            Text(title)
                 .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.black.opacity(0.84))
 
@@ -14,7 +15,7 @@ struct CapabilityStatusListView: View {
                 ForEach(viewModel.capabilityReport.statuses, id: \.key) { status in
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: icon(for: status.support))
-                            .foregroundStyle(color(for: status.support))
+                            .foregroundStyle(accentColor(for: status))
                             .frame(width: 18, height: 18)
 
                         VStack(alignment: .leading, spacing: 3) {
@@ -29,23 +30,24 @@ struct CapabilityStatusListView: View {
                                     .font(.system(size: 10, weight: .bold, design: .rounded))
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
-                                    .background(color(for: status.support).opacity(0.20), in: Capsule())
-                                    .foregroundStyle(color(for: status.support))
+                                    .background(accentColor(for: status).opacity(0.18), in: Capsule())
+                                    .foregroundStyle(accentColor(for: status))
                             }
 
                             Text(status.reason)
                                 .font(.system(size: 11, weight: .medium, design: .rounded))
                                 .foregroundStyle(Color.black.opacity(0.68))
+                                .lineLimit(2)
                         }
                     }
                     .padding(14)
                     .background(
-                        backgroundColor(for: status.support),
+                        backgroundColor(for: status),
                         in: RoundedRectangle(cornerRadius: 18, style: .continuous)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(color(for: status.support).opacity(0.22), lineWidth: 1)
+                            .stroke(accentColor(for: status).opacity(0.18), lineWidth: 1)
                     )
                 }
             }
@@ -65,8 +67,12 @@ struct CapabilityStatusListView: View {
         }
     }
 
-    private func color(for support: CapabilitySupport) -> Color {
-        switch support {
+    private func accentColor(for status: CapabilityStatus) -> Color {
+        if status.key == .chargeControl, status.support == .experimental {
+            return Color(red: 0.31, green: 0.66, blue: 0.37)
+        }
+
+        switch status.support {
         case .supported:
             return Color(red: 0.31, green: 0.66, blue: 0.37)
         case .unsupported:
@@ -78,8 +84,12 @@ struct CapabilityStatusListView: View {
         }
     }
 
-    private func backgroundColor(for support: CapabilitySupport) -> Color {
-        switch support {
+    private func backgroundColor(for status: CapabilityStatus) -> Color {
+        if status.key == .chargeControl, status.support == .experimental {
+            return Color(red: 0.98, green: 0.99, blue: 0.98).opacity(0.98)
+        }
+
+        switch status.support {
         case .supported:
             return Color(red: 0.98, green: 0.99, blue: 0.98).opacity(0.98)
         case .unsupported:

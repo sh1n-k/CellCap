@@ -194,6 +194,47 @@ final class MenuBarViewModel: ObservableObject {
             ?? capabilityReport.status(for: .helperPrivilege)?.reason
     }
 
+    var compactHelperSummaryText: String {
+        "\(helperStatusText) · \(helperInstallStateText)"
+    }
+
+    var lastControllerErrorText: String? {
+        appState.controllerStatus.lastErrorDescription
+    }
+
+    var temporaryOverrideSummaryText: String {
+        if isTemporaryOverrideActive {
+            return summarySentence
+        }
+
+        if let reason = temporaryOverrideAvailability.reason {
+            return reason
+        }
+
+        return "선택한 \(selectedOverrideDurationLabel) 동안 상한을 해제한 뒤 기존 정책으로 복귀합니다."
+    }
+
+    var shouldAutoExpandAdvancedSection: Bool {
+        if appState.controllerStatus.mode != .fullControl || appState.chargeState == .errorReadOnly {
+            return true
+        }
+
+        return capabilityReport.statuses.contains { status in
+            switch status.support {
+            case .unsupported, .readOnlyFallback:
+                return true
+            case .experimental:
+                return status.key != .chargeControl
+            case .supported:
+                return false
+            }
+        }
+    }
+
+    var advancedSectionStatusText: String {
+        shouldAutoExpandAdvancedSection ? "확인 필요" : "정상"
+    }
+
     var controlNoticeTitle: String {
         switch appState.controllerStatus.mode {
         case .fullControl:

@@ -13,8 +13,20 @@ struct RootView: View {
                 HStack(spacing: 10) {
                     SettingsLink {
                         Label("설정 화면", systemImage: "slider.horizontal.3")
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.black.opacity(0.76))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color.white.opacity(0.74))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(Color.black.opacity(0.10), lineWidth: 1)
+                            )
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.plain)
 
                     Spacer()
 

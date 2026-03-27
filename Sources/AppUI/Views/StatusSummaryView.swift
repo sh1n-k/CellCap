@@ -6,7 +6,7 @@ struct StatusSummaryView: View {
     @ObservedObject var viewModel: MenuBarViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("CellCap")
@@ -14,18 +14,16 @@ struct StatusSummaryView: View {
                     Text(viewModel.summarySentence)
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundStyle(.secondary)
+                        .lineLimit(viewModel.appState.chargeState == .errorReadOnly ? 3 : 2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Spacer()
 
-                Text(viewModel.controllerModeLabel)
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(.white.opacity(0.14), in: Capsule())
+                modeBadge
             }
 
-            HStack(alignment: .bottom, spacing: 14) {
+            HStack(alignment: .bottom, spacing: 16) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(viewModel.batteryPercentText)
                         .font(.system(size: 48, weight: .heavy, design: .rounded))
@@ -43,17 +41,29 @@ struct StatusSummaryView: View {
                     .background(statusTone.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             }
 
-            HStack(spacing: 10) {
+            HStack(alignment: .top, spacing: 12) {
                 statusBadge
-                detailPill(title: "helper", value: viewModel.helperStatusText)
-                detailPill(title: "install", value: viewModel.helperInstallStateText)
-                detailPill(title: "reason", value: localized(viewModel.transitionReason))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(viewModel.helperStatusText)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.88))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+
+                    Text("설치 상태 \(viewModel.helperInstallStateText)")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.62))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             if let installReason = viewModel.helperInstallReasonText {
                 Text(installReason)
                     .font(.system(size: 11, weight: .medium, design: .rounded))
                     .foregroundStyle(.secondary)
+                    .lineLimit(2)
             }
 
             batteryBar
@@ -76,6 +86,14 @@ struct StatusSummaryView: View {
             RoundedRectangle(cornerRadius: 26, style: .continuous)
                 .stroke(statusTone.tint.opacity(0.35), lineWidth: 1)
         )
+    }
+
+    private var modeBadge: some View {
+        Text(viewModel.controllerModeLabel)
+            .font(.system(size: 11, weight: .bold, design: .rounded))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.white.opacity(0.14), in: Capsule())
     }
 
     private var statusBadge: some View {
@@ -112,40 +130,8 @@ struct StatusSummaryView: View {
         .frame(height: 12)
     }
 
-    private func detailPill(title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title.uppercased())
-                .font(.system(size: 9, weight: .bold, design: .rounded))
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-    }
-
     private var statusTone: StatusTone {
         StatusTone(state: viewModel.appState.chargeState)
-    }
-
-    private func localized(_ reason: ChargeTransitionReason) -> String {
-        switch reason {
-        case .missingBattery:
-            return "배터리 없음"
-        case .helperFailure:
-            return "helper 실패"
-        case .controlSuspended:
-            return "제어 중단"
-        case .temporaryOverride:
-            return "임시 해제"
-        case .atUpperLimit:
-            return "상한 도달"
-        case .belowRechargeThreshold:
-            return "하한 도달"
-        case .waitingWithinPolicyBand:
-            return "정책 대기"
-        }
     }
 }
 
