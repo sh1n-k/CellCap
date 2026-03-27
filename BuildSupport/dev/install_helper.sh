@@ -2,18 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-SERVICE_NAME="com.shin.cellcap.helper"
-INSTALL_PATH="/Library/PrivilegedHelperTools/${SERVICE_NAME}"
-PLIST_PATH="/Library/LaunchDaemons/${SERVICE_NAME}.plist"
-LOG_DIR="/Library/Logs/CellCap"
-STDOUT_LOG="${LOG_DIR}/${SERVICE_NAME}.stdout.log"
-STDERR_LOG="${LOG_DIR}/${SERVICE_NAME}.stderr.log"
+source "${ROOT_DIR}/BuildSupport/dev/helper_common.sh"
 TEMPLATE_PATH="${ROOT_DIR}/BuildSupport/dev/${SERVICE_NAME}.plist.template"
 
-if [[ "${EUID}" -ne 0 ]]; then
-  echo "root 권한이 필요합니다. sudo BuildSupport/dev/install_helper.sh 로 다시 실행하세요."
-  exit 1
-fi
+require_root "BuildSupport/dev/install_helper.sh"
 
 find_helper_binary() {
   if [[ $# -gt 0 && -n "$1" && -x "$1" ]]; then

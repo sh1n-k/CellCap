@@ -38,6 +38,10 @@ let package = Package(
             dependencies: ["CellCapSMCBridge", "Core", "Shared"]
         ),
         .testTarget(
+            name: "AppUITests",
+            dependencies: ["AppUI", "Core", "Shared"]
+        ),
+        .testTarget(
             name: "CoreTests",
             dependencies: ["Core", "Shared", "Helper"]
         )

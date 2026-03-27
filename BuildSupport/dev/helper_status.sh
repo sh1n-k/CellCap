@@ -1,11 +1,8 @@
 #!/bin/zsh
 set -euo pipefail
 
-SERVICE_NAME="com.shin.cellcap.helper"
-INSTALL_PATH="/Library/PrivilegedHelperTools/${SERVICE_NAME}"
-PLIST_PATH="/Library/LaunchDaemons/${SERVICE_NAME}.plist"
-STDOUT_LOG="/Library/Logs/CellCap/${SERVICE_NAME}.stdout.log"
-STDERR_LOG="/Library/Logs/CellCap/${SERVICE_NAME}.stderr.log"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "${SCRIPT_DIR}/helper_common.sh"
 
 echo "CellCap helper 상태"
 echo "  binary: $([[ -x "${INSTALL_PATH}" ]] && echo "present" || echo "missing") (${INSTALL_PATH})"

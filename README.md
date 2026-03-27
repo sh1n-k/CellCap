@@ -1,237 +1,69 @@
 # CellCap
 
-Apple Silicon / macOS 26+ 전용 배터리 충전 제어 앱을 목표로 하는 macOS 시스템 유틸리티 프로젝트입니다.
+Apple Silicon / macOS 26+ 전용 배터리 충전 제어 앱을 목표로 하는 macOS 시스템 유틸리티입니다.
+현재 저장소는 `AppUI / Core / Shared / Helper`로 분리된 SwiftPM 프로젝트이며, 개발용 privileged helper 수동 설치 스크립트를 포함합니다.
 
-현재 저장소는 **정책/관측/진단 계층 위에 Helper 내부 직접 SMC 제어 backend**를 붙인 상태입니다. 외부 `batt` 같은 도구에는 의존하지 않지만, **비문서화된 저수준 AppleSMC 경로와 root 권한 helper**를 전제로 합니다.
+직접 충전 제어는 Helper 내부의 비문서화된 AppleSMC backend를 전제로 합니다.
+배포형 helper 설치, 자동 승인, 로그인 자동 실행은 아직 구현되지 않았습니다.
 
-- 공용 모델과 상태 머신
-- 정책 엔진
-- 배터리/전원 상태 관측
-- SwiftUI 메뉴 막대 앱 골격
-- XPC/Helper 통신 골격
-- Helper 내부 직접 SMC read/write bridge
-- 런타임 orchestration
-- 진단 로그와 export 초안
+## 문서
+- 유지보수 규칙: [AGENTS.md](./AGENTS.md)
+- 런타임/Helper 경계 결정: [docs/adr/0001-runtime-and-helper-boundaries.md](./docs/adr/0001-runtime-and-helper-boundaries.md)
+- 공개 API 검토 메모: [03_공개API_충전제어_검토.md](./03_%EA%B3%B5%EA%B0%9CAPI_%EC%B6%A9%EC%A0%84%EC%A0%9C%EC%96%B4_%EA%B2%80%ED%86%A0.md)
 
-개발용 기준의 privileged helper 수동 설치 스크립트와 launchd plist 템플릿은 포함되어 있습니다.
-즉, **코드 차원에서는 직접 제어 backend와 개발용 설치 경로가 모두 존재하지만**, 배포형 helper 설치와 자동 승인 흐름은 아직 없습니다.
-
-## 현재 구현 범위
-
-- `AppUI / Core / Shared / Helper` 4개 타깃 분리
-- `CellCap.xcodeproj` 생성 스크립트 유지
-- `BatterySnapshot`, `ChargePolicy`, `ControllerStatus`, `AppState`, `ChargeState`
-- `ChargeStateMachine`, `ChargeStateResolver`, `PolicyEngine`
-- `BatteryMonitor`, `CapabilityChecker`
-- `ChargeController`, `MockChargeController`, `XPCChargeController`
-- `CellCapHelperXPCProtocol`, Shared DTO, Helper stub service
-- `AppRuntimeOrchestrator`
-- `EventLogger`, `DiagnosticsSummary`, JSON export 초안
-- SwiftPM 기반 단위/통합 테스트
-
-## 프로젝트 구조
-
+## 구조
 ```text
-CellCap/
-├── BuildSupport/
-│   └── generate_xcodeproj.rb
-├── CellCap.xcodeproj/
-├── Package.swift
-├── README.md
-├── Sources/
-│   ├── AppUI/
-│   ├── Core/
-│   ├── Helper/
-│   └── Shared/
-└── Tests/
-    └── CoreTests/
+Sources/AppUI     SwiftUI 화면과 표시용 상태 해석
+Sources/Core      정책 계산, 런타임 동기화, 진단, 관측, XPC 클라이언트
+Sources/Shared    AppUI/Core/Helper 공용 계약과 모델
+Sources/Helper    privileged helper와 직접 SMC backend
+BuildSupport/dev  helper 설치/상태/재시작/제거 스크립트
+Tests/CoreTests   Core/Helper 회귀 테스트
+Tests/AppUITests  AppUI 순수 로직 테스트
 ```
 
-## 타깃 역할
-
-### AppUI
-
-- SwiftUI 메뉴 막대 앱과 설정 화면
-- `MenuBarViewModel`이 `AppRuntimeServicing`을 구독해 상태를 반영
-- 설치/승인/업데이트 UI는 아직 미구현
-
-### Core
-
-- 정책 계산, 상태 전이, 배터리 관측, orchestration, 진단 로직
-- UI에 의존하지 않는 순수 로직 우선
-- 정책 계산, 상태 전이, 배터리 관측, orchestration, 진단 로직
-- App 쪽은 `ChargeController` 추상화만 알고, 실제 제어는 Helper가 담당
-
-### Shared
-
-- 모델, capability 타입, XPC DTO, diagnostics 타입
-- AppUI/Core/Helper 사이의 계약 계층
-
-### Helper
-
-- XPC helper skeleton
-- `fetchControllerStatus`, `selfTest`, `capabilityProbe` 지원
-- 직접 SMC 제어 backend 포함
-- 실제 privileged helper 설치/승인은 아직 없음
-
-## 개발/검증
-
-### SwiftPM
-
+## 개발과 검증
 ```bash
 swift build
 swift test
 ```
 
-### Xcode 프로젝트 재생성
+Xcode 프로젝트가 필요하면 아래 명령으로 재생성합니다.
 
 ```bash
 ruby BuildSupport/generate_xcodeproj.rb
 ```
 
-현재 이 저장소는 SwiftPM 기준 빌드/테스트를 우선 신뢰합니다.
-Xcode CLI 환경이 깨져 있으면 `xcodebuild -runFirstLaunch`가 먼저 필요할 수 있습니다.
+CI는 GitHub Actions에서 `swift build`, `swift test`만 강제합니다.
+root 권한이 필요한 helper smoke test는 자동화하지 않고 수동 절차로 유지합니다.
 
-## 설치 흐름
+## 개발용 helper 절차
+1. `swift build`
+2. `sudo BuildSupport/dev/install_helper.sh`
+3. `BuildSupport/dev/helper_status.sh`
+4. 앱 실행 후 `Helper 설치`, `Helper 권한`, `충전 제어` 상태 확인
+5. 필요하면 `sudo BuildSupport/dev/restart_helper.sh`
+6. 정리 시 `sudo BuildSupport/dev/uninstall_helper.sh`
 
-아래는 **현재 구현 범위 기준의 설치 문서**입니다.
-
-### 현재 가능한 설치 형태
-
-1. 저장소를 클론합니다.
-2. `swift build`를 실행해 `CellCapHelper` SwiftPM 산출물을 생성합니다.
-3. 필요하면 `ruby BuildSupport/generate_xcodeproj.rb`로 앱 UI 디버깅용 Xcode 프로젝트를 생성합니다.
-4. `CellCapHelper` 바이너리가 생성되었는지 확인합니다.
-5. `sudo BuildSupport/dev/install_helper.sh`로 helper를 `/Library/PrivilegedHelperTools`와 `LaunchDaemons`에 설치합니다.
-6. `BuildSupport/dev/helper_status.sh`로 launchd 등록 상태를 확인합니다.
-7. Xcode 또는 SwiftPM으로 `CellCapApp`을 실행합니다.
-
-### 현재 미완료 설치 항목
-
-- 코드 서명된 배포 패키지
-- `.app` 번들 내부에 helper를 포함한 설치 자동화
-- `SMJobBless` 기반 설치/승인 자동화
-- 로그인 자동 실행 자동 등록
-
-### 개발용 helper 스크립트
-
-```bash
-sudo BuildSupport/dev/install_helper.sh
-BuildSupport/dev/helper_status.sh
-sudo BuildSupport/dev/restart_helper.sh
-sudo BuildSupport/dev/uninstall_helper.sh
-```
-
-스크립트는 기본적으로 아래 경로를 사용합니다.
+기본 경로는 아래와 같습니다.
 
 - helper 바이너리: `/Library/PrivilegedHelperTools/com.shin.cellcap.helper`
 - launchd plist: `/Library/LaunchDaemons/com.shin.cellcap.helper.plist`
 - stdout 로그: `/Library/Logs/CellCap/com.shin.cellcap.helper.stdout.log`
 - stderr 로그: `/Library/Logs/CellCap/com.shin.cellcap.helper.stderr.log`
 
-`install_helper.sh`는 먼저 SwiftPM 빌드 산출물에서 `CellCapHelper`를 찾고, 필요하면 `CELLCAP_HELPER_BINARY` 환경 변수로 직접 경로를 지정할 수 있습니다.
-첫 번째 인자로 helper 바이너리 경로를 직접 넘길 수도 있습니다.
+`install_helper.sh`는 SwiftPM 산출물의 `CellCapHelper`를 우선 찾고, 필요하면 `CELLCAP_HELPER_BINARY` 또는 첫 번째 인자로 경로를 받을 수 있습니다.
 
-### 문서상 목표 설치 흐름
+## 수동 점검
+실기기 검증이 필요할 때는 아래 순서를 따릅니다.
 
-향후에는 아래 순서를 목표로 합니다.
+1. helper 설치와 launchd 등록 확인
+2. 앱에서 helper 설치/권한/capability 표시 확인
+3. 상한 이하/하한 이하에서 충전 중단과 재개가 기대대로 반영되는지 확인
+4. sleep/wake 이후 재동기화가 일어나는지 확인
+5. helper 중지 또는 연결 실패 시 `read-only` 또는 `errorReadOnly`로 안전하게 격하되는지 확인
 
-1. 앱 번들 설치
-2. 첫 실행 진단
-3. privileged helper 존재/버전/권한 확인
-4. 필요 시 helper 설치 및 권한 승인
-5. 런타임 capability probe
-6. 로그인 자동 실행 선택
-
-현재 저장소에는 이 흐름의 **3~5단계에 필요한 진단 모델과 상태 판정만 준비**되어 있습니다.
-
-## 첫 실행 흐름
-
-현재 코드 기준 첫 실행 시 앱은 아래 순서로 동작합니다.
-
-1. `CellCapApp`이 `EventLogger`, `BatteryMonitor`, `XPCChargeController`, `AppRuntimeOrchestrator`를 조립합니다.
-2. `MenuBarViewModel`이 orchestration 스트림을 구독합니다.
-3. `AppRuntimeOrchestrator.start()`가 초기 동기화를 시작합니다.
-4. helper 설치 상태 확인
-5. controller status로 XPC 연결 가능 여부 확인
-6. helper가 준비된 경우에만 `selfTest`
-7. 필요 시 `capabilityProbe`
-8. 배터리 스냅샷 조회
-9. `PolicyEngine`으로 상태 계산
-10. UI 상태와 diagnostics summary 갱신
-
-### 첫 실행에서 확인해야 할 진단 항목
-
-- 내장 배터리 감지 여부
-- Apple Silicon 여부
-- macOS 26+ 여부
-- helper 연결 상태
-- helper 설치/launchd/XPC 상태
-- capability probe 결과
-- self-test 결과
-- read-only / monitoring-only 전환 사유
-
-### 현재 미완료 항목
-
-- “첫 실행 안내 화면”
-- 사용자 친화적 권한/승인 유도 UI
-- helper 설치 실패 복구 화면
-
-## helper 승인 절차
-
-현재 저장소에는 **배포형 helper 승인 UI는 없지만**, 개발용 수동 설치 스크립트는 포함되어 있습니다.
-배포형 설치를 만들기 전까지는 아래 수동 절차를 사용합니다.
-
-### 개발용 수동 절차
-
-1. `swift build`
-2. `sudo BuildSupport/dev/install_helper.sh`
-3. `BuildSupport/dev/helper_status.sh`
-4. 앱 실행
-5. 앱에서 `Helper 설치`, `Helper 권한`, `충전 제어` 상태 확인
-
-### 배포형 목표 절차
-
-1. 앱이 helper 필요 여부 판단
-2. helper 버전/설치 상태 확인
-3. 설치 요청
-4. 관리자 승인 또는 시스템 승인 유도
-5. helper 재연결 시도
-6. 실패 시 `read-only fallback`
-
-### 현재 범위에서 이미 준비된 것
-
-- launchd 기반 개발용 설치/재시작/제거 스크립트
-- helper 연결 실패 시 `ControllerStatus`에 반영
-- helper 설치 상태를 `CapabilityReport`와 `DiagnosticsSummary`에 반영
-- `errorReadOnly` 및 `readOnlyFallback` 상태 계산
-- capability probe와 self-test 기록
-- 실패 원인 diagnostics 저장
-
-### 아직 없는 것
-
-- `SMJobBless` 또는 동등한 privileged helper 설치 흐름
-- 사용자 승인 안내 UI
-- 승인 후 재시도 버튼/복구 플로우
-- helper 버전 교체 로직
-
-## 개발용 실사용 테스트 절차
-
-아래 절차는 **배포형 검증이 아니라 단일 개발 장비에서 실제 충전 on/off가 반영되는지 보는 절차**입니다.
-
-1. `swift build`
-2. `sudo BuildSupport/dev/install_helper.sh`
-3. `BuildSupport/dev/helper_status.sh`
-4. `launchctl print system/com.shin.cellcap.helper`로 root launchd 상태 확인
-5. 앱 실행
-6. UI에서 `Helper 설치`, `Helper 권한`, `충전 제어` 항목이 모두 기대한 상태인지 확인
-7. 현재 배터리보다 낮은 상한을 설정해 충전 중단 명령이 내려가는지 확인
-8. 하한 이하로 내려가면 다시 충전 활성화가 내려가는지 확인
-9. sleep 후 wake 하여 상태 재동기화와 helper 재조회가 일어나는지 확인
-10. helper를 수동 중지한 뒤 앱이 `read-only` 또는 `errorReadOnly`로 내려가는지 확인
-11. `sudo BuildSupport/dev/uninstall_helper.sh`
-
-### 실패 시 확인 명령
+문제 추적 시 자주 쓰는 명령:
 
 ```bash
 BuildSupport/dev/helper_status.sh
@@ -240,24 +72,11 @@ tail -n 100 /Library/Logs/CellCap/com.shin.cellcap.helper.stdout.log
 tail -n 100 /Library/Logs/CellCap/com.shin.cellcap.helper.stderr.log
 ```
 
-### 예상 실패 케이스
-
-- root 권한 없이 install 스크립트를 실행한 경우
-- plist 권한이 `root:wheel 644`가 아닌 경우
-- Mach service가 launchd에 bootstrap되지 않은 경우
-- helper는 떠 있지만 SMC write가 실패하는 경우
-- 명령 후 `isChargingEnabled` 재조회가 기대와 달라 앱이 즉시 read-only로 격하되는 경우
-
-## 로그인 자동 실행 처리
-
-현재 저장소에는 **로그인 자동 실행 등록 구현이 없습니다.**
-
-### 권장 구현 방향
-
-- `ServiceManagement` 기반 login item 등록
-- 설정 UI에서 on/off 제어
-- 현재 기기에서 helper 필요 여부와 분리해 관리
-- 실패 시 사용자에게 “자동 실행 실패, 수동 실행 필요”를 명확히 표시
+## 현재 미완료 항목
+- 배포형 privileged helper 설치/승인 흐름
+- 로그인 자동 실행
+- helper 버전 교체 자동화
+- 사용자용 first-run / 복구 UI
 
 ### 현재 문서상 정리만 된 상태
 
