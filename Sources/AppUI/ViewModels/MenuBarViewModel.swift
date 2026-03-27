@@ -209,6 +209,40 @@ final class MenuBarViewModel: ObservableObject {
         controlAvailability.reason
     }
 
+    var temporaryOverrideNoticeTitle: String {
+        switch appState.controllerStatus.mode {
+        case .fullControl:
+            return "임시 해제 가능"
+        case .readOnly:
+            return "지금은 임시 해제를 시작할 수 없습니다"
+        case .monitoringOnly:
+            return "지금은 임시 해제를 사용할 수 없습니다"
+        }
+    }
+
+    var temporaryOverrideNoticeReason: String? {
+        temporaryOverrideAvailability.reason
+    }
+
+    var isReadOnlyPresentation: Bool {
+        !controlAvailability.isEnabled || appState.controllerStatus.mode != .fullControl
+    }
+
+    var selectedOverrideDurationLabel: String {
+        switch Int(overrideDurationMinutes.rounded()) {
+        case 30:
+            return "30분"
+        case 60:
+            return "1시간"
+        case 120:
+            return "2시간"
+        case 240:
+            return "4시간"
+        default:
+            return "\(Int(overrideDurationMinutes.rounded()))분"
+        }
+    }
+
     var menuBarSymbolName: String {
         switch appState.chargeState {
         case .holdingAtLimit:

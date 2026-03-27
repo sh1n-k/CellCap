@@ -137,7 +137,7 @@ public actor NSXPCHelperServiceTransport: HelperServiceTransporting {
     }
 
     private func makeConnection() -> NSXPCConnection {
-        let connection = NSXPCConnection(machServiceName: serviceName, options: [])
+        let connection = NSXPCConnection(machServiceName: serviceName, options: .privileged)
         connection.remoteObjectInterface = CellCapHelperXPC.makeRemoteInterface()
         return connection
     }

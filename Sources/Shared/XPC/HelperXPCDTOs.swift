@@ -1,7 +1,7 @@
 import Foundation
 
 public class HelperRequestDTO: NSObject, NSSecureCoding {
-    public static var supportsSecureCoding: Bool { true }
+    public class var supportsSecureCoding: Bool { true }
 
     public let requestedAt: Date
 
@@ -22,11 +22,17 @@ public class HelperRequestDTO: NSObject, NSSecureCoding {
     }
 }
 
-public final class HelperSelfTestRequestDTO: HelperRequestDTO {}
+public final class HelperSelfTestRequestDTO: HelperRequestDTO {
+    public override class var supportsSecureCoding: Bool { true }
+}
 
-public final class HelperCapabilityProbeRequestDTO: HelperRequestDTO {}
+public final class HelperCapabilityProbeRequestDTO: HelperRequestDTO {
+    public override class var supportsSecureCoding: Bool { true }
+}
 
 public final class HelperSetChargingEnabledRequestDTO: HelperRequestDTO {
+    public override class var supportsSecureCoding: Bool { true }
+
     public let enabled: Bool
 
     public init(enabled: Bool, requestedAt: Date = .now) {
@@ -46,6 +52,8 @@ public final class HelperSetChargingEnabledRequestDTO: HelperRequestDTO {
 }
 
 public final class HelperSetTemporaryOverrideRequestDTO: HelperRequestDTO {
+    public override class var supportsSecureCoding: Bool { true }
+
     public let until: Date?
 
     public init(until: Date?, requestedAt: Date = .now) {

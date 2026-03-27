@@ -4,6 +4,8 @@ struct PolicySettingsView: View {
     @ObservedObject var viewModel: MenuBarViewModel
     let compact: Bool
 
+    private let overrideDurations: [Double] = [30, 60, 120, 240]
+
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             sectionHeader(
@@ -43,17 +45,40 @@ struct PolicySettingsView: View {
                     subtitle: "출장이나 장거리 이동 전에 상한을 잠시 해제합니다."
                 )
 
-                Picker("유예 시간", selection: $viewModel.overrideDurationMinutes) {
-                    Text("30분").tag(30.0)
-                    Text("1시간").tag(60.0)
-                    Text("2시간").tag(120.0)
-                    Text("4시간").tag(240.0)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text("유예 시간")
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.black.opacity(0.78))
+                        Spacer()
+                        Text(viewModel.selectedOverrideDurationLabel)
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color(red: 0.85, green: 0.91, blue: 1.0), in: Capsule())
+                            .foregroundStyle(Color(red: 0.22, green: 0.38, blue: 0.72))
+                    }
+
+                    durationChipRow
+
+                    Text("임시 해제 길이는 유지되며, 지금은 조작만 잠겨 있습니다.")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.56))
+                        .opacity(viewModel.temporaryOverrideAvailability.isEnabled ? 0 : 1)
                 }
-                .pickerStyle(.segmented)
-                .disabled(!viewModel.temporaryOverrideAvailability.isEnabled)
+                .padding(14)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(Color(red: 0.95, green: 0.95, blue: 0.96).opacity(0.98))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                )
 
                 HStack(spacing: 10) {
                     Button {
+                        guard viewModel.temporaryOverrideAvailability.isEnabled else { return }
                         if viewModel.isTemporaryOverrideActive {
                             viewModel.clearTemporaryOverride()
                         } else {
@@ -65,19 +90,23 @@ struct PolicySettingsView: View {
                             systemImage: viewModel.isTemporaryOverrideActive ? "pause.circle.fill" : "bolt.badge.clock"
                         )
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color(red: 0.88, green: 0.53, blue: 0.21))
-                    .disabled(!viewModel.temporaryOverrideAvailability.isEnabled)
+                    .buttonStyle(
+                        OverrideActionButtonStyle(
+                            isEnabled: viewModel.temporaryOverrideAvailability.isEnabled,
+                            isActive: viewModel.isTemporaryOverrideActive
+                        )
+                    )
+                    .allowsHitTesting(viewModel.temporaryOverrideAvailability.isEnabled)
 
-                    if viewModel.isTemporaryOverrideActive {
+                    if viewModel.isTemporaryOverrideActive || viewModel.isReadOnlyPresentation {
                         Text(viewModel.summarySentence)
                             .font(.system(size: 11, weight: .medium, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.black.opacity(0.58))
                     }
                 }
 
-                if let reason = viewModel.temporaryOverrideAvailability.reason {
-                    disabledCallout(title: viewModel.controlNoticeTitle, reason: reason)
+                if let reason = viewModel.temporaryOverrideNoticeReason {
+                    disabledCallout(title: viewModel.temporaryOverrideNoticeTitle, reason: reason)
                 }
             }
 
@@ -116,11 +145,11 @@ struct PolicySettingsView: View {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white.opacity(0.86))
+                .fill(Color(red: 0.97, green: 0.96, blue: 0.95).opacity(0.96))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                .stroke(Color.black.opacity(0.08), lineWidth: 1)
         )
     }
 
@@ -128,9 +157,10 @@ struct PolicySettingsView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.black.opacity(0.84))
             Text(subtitle)
                 .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.black.opacity(0.58))
         }
     }
 
@@ -163,7 +193,7 @@ struct PolicySettingsView: View {
             Slider(value: binding, in: range, step: 1)
                 .tint(Color(red: 0.88, green: 0.53, blue: 0.21))
                 .disabled(!isEnabled)
-                .opacity(isEnabled ? 1 : 0.62)
+                .opacity(isEnabled ? 1 : 0.72)
 
             Text(explanation)
                 .font(.system(size: 11, weight: .medium, design: .rounded))
@@ -172,12 +202,39 @@ struct PolicySettingsView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(isEnabled ? Color.white.opacity(0.74) : Color(red: 0.96, green: 0.96, blue: 0.97).opacity(0.98))
+                .fill(isEnabled ? Color(red: 0.98, green: 0.98, blue: 0.98).opacity(0.98) : Color(red: 0.95, green: 0.95, blue: 0.96).opacity(0.98))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(isEnabled ? Color.black.opacity(0.05) : Color(red: 0.86, green: 0.88, blue: 0.91), lineWidth: 1)
         )
+    }
+
+    private var durationChipRow: some View {
+        HStack(spacing: 10) {
+            ForEach(overrideDurations, id: \.self) { duration in
+                let isSelected = Int(viewModel.overrideDurationMinutes.rounded()) == Int(duration)
+                let isEnabled = viewModel.temporaryOverrideAvailability.isEnabled
+
+                Button {
+                    guard isEnabled else { return }
+                    viewModel.overrideDurationMinutes = duration
+                } label: {
+                    Text(label(for: duration))
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(chipBackground(isSelected: isSelected, isEnabled: isEnabled), in: Capsule())
+                        .foregroundStyle(chipForeground(isSelected: isSelected, isEnabled: isEnabled))
+                        .overlay(
+                            Capsule()
+                                .stroke(chipBorder(isSelected: isSelected, isEnabled: isEnabled), lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+                .allowsHitTesting(isEnabled)
+            }
+        }
     }
 
     private func disabledCallout(title: String, reason: String) -> some View {
@@ -202,6 +259,87 @@ struct PolicySettingsView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(Color(red: 0.91, green: 0.74, blue: 0.69), lineWidth: 1)
         )
+    }
+
+    private func label(for duration: Double) -> String {
+        switch Int(duration.rounded()) {
+        case 30:
+            return "30분"
+        case 60:
+            return "1시간"
+        case 120:
+            return "2시간"
+        case 240:
+            return "4시간"
+        default:
+            return "\(Int(duration.rounded()))분"
+        }
+    }
+
+    private func chipBackground(isSelected: Bool, isEnabled: Bool) -> Color {
+        if isSelected {
+            return isEnabled
+                ? Color(red: 0.55, green: 0.73, blue: 0.98)
+                : Color(red: 0.84, green: 0.90, blue: 0.98)
+        }
+        return isEnabled
+            ? Color.white.opacity(0.88)
+            : Color(red: 0.93, green: 0.93, blue: 0.95)
+    }
+
+    private func chipForeground(isSelected: Bool, isEnabled: Bool) -> Color {
+        if isSelected {
+            return isEnabled ? .white : Color(red: 0.23, green: 0.37, blue: 0.66)
+        }
+        return Color.black.opacity(isEnabled ? 0.72 : 0.62)
+    }
+
+    private func chipBorder(isSelected: Bool, isEnabled: Bool) -> Color {
+        if isSelected {
+            return isEnabled ? Color(red: 0.42, green: 0.59, blue: 0.86) : Color(red: 0.73, green: 0.81, blue: 0.93)
+        }
+        return Color.black.opacity(0.08)
+    }
+}
+
+private struct OverrideActionButtonStyle: ButtonStyle {
+    let isEnabled: Bool
+    let isActive: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 13, weight: .bold, design: .rounded))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(backgroundColor(pressed: configuration.isPressed), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .foregroundStyle(foregroundColor)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(borderColor, lineWidth: 1)
+            )
+            .scaleEffect(configuration.isPressed && isEnabled ? 0.98 : 1)
+    }
+
+    private var foregroundColor: Color {
+        isEnabled ? .white : Color(red: 0.41, green: 0.34, blue: 0.30)
+    }
+
+    private var borderColor: Color {
+        if isEnabled {
+            return isActive ? Color(red: 0.70, green: 0.40, blue: 0.19) : Color(red: 0.79, green: 0.48, blue: 0.22)
+        }
+        return Color(red: 0.87, green: 0.80, blue: 0.73)
+    }
+
+    private func backgroundColor(pressed: Bool) -> Color {
+        if isEnabled {
+            let base = isActive
+                ? Color(red: 0.72, green: 0.42, blue: 0.21)
+                : Color(red: 0.88, green: 0.53, blue: 0.21)
+            return pressed ? base.opacity(0.88) : base
+        }
+
+        return Color(red: 0.95, green: 0.89, blue: 0.82)
     }
 }
 
