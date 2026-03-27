@@ -129,7 +129,7 @@ final class MenuBarViewModel: ObservableObject {
     }
 
     var helperStatusText: String {
-        if let installStatus = capabilityReport.helperInstallStatus {
+        if let installStatus = effectiveHelperInstallStatus {
             switch installStatus.state {
             case .notInstalled:
                 return "helper 미설치"
@@ -168,7 +168,7 @@ final class MenuBarViewModel: ObservableObject {
     }
 
     var helperInstallStateText: String {
-        guard let installStatus = capabilityReport.helperInstallStatus else {
+        guard let installStatus = effectiveHelperInstallStatus else {
             return "설치 상태 미확인"
         }
 
@@ -189,9 +189,24 @@ final class MenuBarViewModel: ObservableObject {
     }
 
     var helperInstallReasonText: String? {
-        capabilityReport.helperInstallStatus?.reason
+        effectiveHelperInstallStatus?.reason
             ?? capabilityReport.status(for: .helperInstallation)?.reason
             ?? capabilityReport.status(for: .helperPrivilege)?.reason
+    }
+
+    var controlNoticeTitle: String {
+        switch appState.controllerStatus.mode {
+        case .fullControl:
+            return "정책 변경 가능"
+        case .readOnly:
+            return "지금은 읽기 전용 상태입니다"
+        case .monitoringOnly:
+            return "지금은 관측 전용 상태입니다"
+        }
+    }
+
+    var controlNoticeReason: String? {
+        controlAvailability.reason
     }
 
     var menuBarSymbolName: String {
@@ -232,7 +247,11 @@ final class MenuBarViewModel: ObservableObject {
             return .disabled("내장 배터리를 찾지 못했습니다.")
         }
 
-        for key in [CapabilityKey.helperInstallation, .helperPrivilege, .chargeControl] {
+        if let installStatus = effectiveHelperInstallStatus, installStatus.installationSupport != .supported {
+            return .disabled(installStatus.reason)
+        }
+
+        for key in [CapabilityKey.helperPrivilege, .chargeControl] {
             guard let status = capabilityReport.status(for: key) else { continue }
 
             switch status.support {
@@ -257,6 +276,32 @@ final class MenuBarViewModel: ObservableObject {
             return .disabled("현재 제어 모드가 읽기 전용입니다.")
         case .monitoringOnly:
             return .disabled("현재 기기는 관측 전용 모드입니다.")
+        }
+    }
+
+    private var effectiveHelperInstallStatus: HelperInstallStatus? {
+        guard let installStatus = capabilityReport.helperInstallStatus else {
+            return nil
+        }
+
+        guard appState.controllerStatus.helperConnection == .connected else {
+            return installStatus
+        }
+
+        switch installStatus.state {
+        case .bootstrapped, .installedButNotBootstrapped:
+            return HelperInstallStatus(
+                state: .xpcReachable,
+                serviceName: installStatus.serviceName,
+                helperPath: installStatus.helperPath,
+                plistPath: installStatus.plistPath,
+                helperVersion: installStatus.helperVersion,
+                expectedVersion: installStatus.expectedVersion,
+                reason: "helper XPC 연결이 확인되었습니다. 권한 및 SMC 키 검사를 계속 진행합니다.",
+                checkedAt: installStatus.checkedAt
+            )
+        case .notInstalled, .xpcReachable, .permissionMismatch, .versionMismatch:
+            return installStatus
         }
     }
 

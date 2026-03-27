@@ -20,6 +20,7 @@ struct CapabilityStatusListView: View {
                             HStack {
                                 Text(viewModel.capabilityTitle(for: status.key))
                                     .font(.system(size: 13, weight: .bold, design: .rounded))
+                                    .foregroundStyle(Color.black.opacity(0.82))
 
                                 Spacer()
 
@@ -27,19 +28,23 @@ struct CapabilityStatusListView: View {
                                     .font(.system(size: 10, weight: .bold, design: .rounded))
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
-                                    .background(color(for: status.support).opacity(0.14), in: Capsule())
+                                    .background(color(for: status.support).opacity(0.16), in: Capsule())
+                                    .foregroundStyle(color(for: status.support))
                             }
 
                             Text(status.reason)
                                 .font(.system(size: 11, weight: .medium, design: .rounded))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.black.opacity(0.62))
                         }
                     }
                     .padding(12)
-                    .background(Color.white.opacity(0.88), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .background(
+                        backgroundColor(for: status.support),
+                        in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(color(for: status.support).opacity(0.14), lineWidth: 1)
+                            .stroke(color(for: status.support).opacity(0.16), lineWidth: 1)
                     )
                 }
             }
@@ -69,6 +74,19 @@ struct CapabilityStatusListView: View {
             return Color(red: 0.91, green: 0.60, blue: 0.18)
         case .readOnlyFallback:
             return Color(red: 0.36, green: 0.53, blue: 0.80)
+        }
+    }
+
+    private func backgroundColor(for support: CapabilitySupport) -> Color {
+        switch support {
+        case .supported:
+            return Color.white.opacity(0.96)
+        case .unsupported:
+            return Color(red: 1.0, green: 0.96, blue: 0.95).opacity(0.98)
+        case .experimental:
+            return Color(red: 1.0, green: 0.98, blue: 0.93).opacity(0.98)
+        case .readOnlyFallback:
+            return Color(red: 0.95, green: 0.97, blue: 1.0).opacity(0.98)
         }
     }
 }

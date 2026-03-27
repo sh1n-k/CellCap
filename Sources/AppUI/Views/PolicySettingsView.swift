@@ -17,7 +17,8 @@ struct PolicySettingsView: View {
                     valueText: "\(viewModel.appState.policy.upperLimit)%",
                     explanation: "\(viewModel.appState.policy.upperLimit)%에서 충전을 멈춥니다.",
                     binding: viewModel.upperLimitBinding,
-                    range: 50...100
+                    range: 50...100,
+                    isEnabled: viewModel.controlAvailability.isEnabled
                 )
 
                 sliderRow(
@@ -25,13 +26,13 @@ struct PolicySettingsView: View {
                     valueText: "\(viewModel.appState.policy.rechargeThreshold)%",
                     explanation: "\(viewModel.appState.policy.rechargeThreshold)% 이하일 때만 다시 충전합니다.",
                     binding: viewModel.rechargeThresholdBinding,
-                    range: 0...Double(viewModel.appState.policy.upperLimit)
+                    range: 0...Double(viewModel.appState.policy.upperLimit),
+                    isEnabled: viewModel.controlAvailability.isEnabled
                 )
             }
-            .disabled(!viewModel.controlAvailability.isEnabled)
 
             if let reason = viewModel.controlAvailability.reason {
-                disabledReason(reason)
+                disabledCallout(title: viewModel.controlNoticeTitle, reason: reason)
             }
 
             Divider()
@@ -76,7 +77,7 @@ struct PolicySettingsView: View {
                 }
 
                 if let reason = viewModel.temporaryOverrideAvailability.reason {
-                    disabledReason(reason)
+                    disabledCallout(title: viewModel.controlNoticeTitle, reason: reason)
                 }
             }
 
@@ -138,33 +139,69 @@ struct PolicySettingsView: View {
         valueText: String,
         explanation: String,
         binding: Binding<Double>,
-        range: ClosedRange<Double>
+        range: ClosedRange<Double>,
+        isEnabled: Bool
     ) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(title)
                     .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.black.opacity(0.82))
                 Spacer()
                 Text(valueText)
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .background(Color.black.opacity(0.06), in: Capsule())
+                    .background(
+                        (isEnabled ? Color.black.opacity(0.06) : Color(red: 0.89, green: 0.91, blue: 0.94))
+                            .opacity(0.96),
+                        in: Capsule()
+                    )
+                    .foregroundStyle(Color.black.opacity(0.75))
             }
 
             Slider(value: binding, in: range, step: 1)
                 .tint(Color(red: 0.88, green: 0.53, blue: 0.21))
+                .disabled(!isEnabled)
+                .opacity(isEnabled ? 1 : 0.62)
 
             Text(explanation)
                 .font(.system(size: 11, weight: .medium, design: .rounded))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.black.opacity(0.58))
         }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(isEnabled ? Color.white.opacity(0.74) : Color(red: 0.96, green: 0.96, blue: 0.97).opacity(0.98))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(isEnabled ? Color.black.opacity(0.05) : Color(red: 0.86, green: 0.88, blue: 0.91), lineWidth: 1)
+        )
     }
 
-    private func disabledReason(_ reason: String) -> some View {
-        Label(reason, systemImage: "lock.slash")
-            .font(.system(size: 11, weight: .semibold, design: .rounded))
-            .foregroundStyle(Color(red: 0.73, green: 0.26, blue: 0.21))
+    private func disabledCallout(title: String, reason: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: "lock.slash")
+                Text(title)
+            }
+            .font(.system(size: 12, weight: .bold, design: .rounded))
+            .foregroundStyle(Color(red: 0.63, green: 0.24, blue: 0.19))
+
+            Text(reason)
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(Color(red: 0.43, green: 0.30, blue: 0.28))
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(red: 0.99, green: 0.95, blue: 0.93))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color(red: 0.91, green: 0.74, blue: 0.69), lineWidth: 1)
+        )
     }
 }
 
