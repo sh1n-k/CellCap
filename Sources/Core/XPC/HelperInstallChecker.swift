@@ -49,7 +49,17 @@ public protocol FileSystemInspecting: Sendable {
     func isExecutableFile(atPath path: String) -> Bool
 }
 
-extension FileManager: FileSystemInspecting {}
+public struct DefaultFileSystemInspector: FileSystemInspecting {
+    public init() {}
+
+    public func fileExists(atPath path: String) -> Bool {
+        FileManager.default.fileExists(atPath: path)
+    }
+
+    public func isExecutableFile(atPath path: String) -> Bool {
+        FileManager.default.isExecutableFile(atPath: path)
+    }
+}
 
 public protocol HelperInstallChecking: Sendable {
     func currentStatus(now: Date) async -> HelperInstallStatus
@@ -60,7 +70,7 @@ public struct SystemHelperInstallChecker: HelperInstallChecking {
     private let commandExecutor: any CommandExecuting
 
     public init(
-        fileSystem: any FileSystemInspecting = FileManager.default,
+        fileSystem: any FileSystemInspecting = DefaultFileSystemInspector(),
         commandExecutor: any CommandExecuting = ProcessCommandExecutor()
     ) {
         self.fileSystem = fileSystem
