@@ -1,0 +1,10 @@
+#!/bin/zsh
+
+APP_PRODUCT_NAME="CellCap"
+APP_BUNDLE_NAME="${APP_PRODUCT_NAME}.app"
+APP_INSTALL_PATH="/Applications/${APP_BUNDLE_NAME}"
+
+HELPER_PRODUCT_NAME="CellCapHelper"
+
+INSTALL_PACKAGE_IDENTIFIER="com.shin.cellcap.pkg"
+UNINSTALL_PACKAGE_IDENTIFIER="com.shin.cellcap.uninstall"

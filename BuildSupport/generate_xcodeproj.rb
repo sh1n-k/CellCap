@@ -45,7 +45,7 @@ def configure_build_settings(target, bundle_id: nil, generate_info_plist: true)
 end
 
 def add_swift_sources(target:, parent_group:, relative_folder:)
-  folder_group = parent_group.new_group(File.basename(relative_folder), relative_folder)
+  folder_group = parent_group.new_group(File.basename(relative_folder), File.basename(relative_folder))
   absolute_folder = ROOT / relative_folder
 
   Dir.glob((absolute_folder / "**/*.swift").to_s).sort.each do |absolute_path|
@@ -56,7 +56,7 @@ def add_swift_sources(target:, parent_group:, relative_folder:)
 end
 
 def add_c_sources(target:, parent_group:, relative_folder:)
-  folder_group = parent_group.new_group(File.basename(relative_folder), relative_folder)
+  folder_group = parent_group.new_group(File.basename(relative_folder), File.basename(relative_folder))
   absolute_folder = ROOT / relative_folder
 
   Dir.glob((absolute_folder / "**/*").to_s).sort.each do |absolute_path|
@@ -123,6 +123,7 @@ end
 
 app_target.build_configurations.each do |configuration|
   configuration.build_settings["PRODUCT_NAME"] = "CellCap"
+  configuration.build_settings["INFOPLIST_KEY_LSUIElement"] = "YES"
   configuration.build_settings["LD_RUNPATH_SEARCH_PATHS"] = [
     "$(inherited)",
     "@executable_path/../Frameworks",
