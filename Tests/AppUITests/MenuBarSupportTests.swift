@@ -1,4 +1,6 @@
 @testable import AppUI
+import Core
+import Foundation
 import Shared
 import Testing
 
@@ -8,9 +10,103 @@ func menuBarPresentationBuildsHoldingSummaryAndLabels() {
     let viewModel = MenuBarPreviewFactory.makeHolding()
 
     #expect(viewModel.chargeStateTitle == "상한 유지 중")
-    #expect(viewModel.summarySentence.contains("80% 상한"))
+    #expect(viewModel.summarySentence == "상한에 도달해 충전을 멈추고 유지하고 있습니다.")
     #expect(viewModel.helperStatusText == "helper 연결 정상")
     #expect(viewModel.capabilityTitle(for: .chargeControl) == "충전 제어")
+}
+
+@MainActor
+@Test
+func menuBarPresentationShowsChargingReadyCopyWhenPowerIsDisconnected() {
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 55,
+            isPowerConnected: false,
+            isCharging: false
+        ),
+        chargeState: .charging
+    )
+
+    #expect(viewModel.chargeStateTitle == "다시 충전 준비")
+    #expect(viewModel.summarySentence == "하한 아래입니다. 전원을 연결하면 다시 충전합니다.")
+    #expect(viewModel.powerStatusText == "배터리 사용 중")
+}
+
+@MainActor
+@Test
+func menuBarPresentationShowsChargingCopyWhenPowerIsConnectedAndCharging() {
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 55,
+            isPowerConnected: true,
+            isCharging: true
+        ),
+        chargeState: .charging
+    )
+
+    #expect(viewModel.chargeStateTitle == "다시 충전 중")
+    #expect(viewModel.summarySentence == "하한 아래로 내려가 충전을 다시 시작했습니다.")
+    #expect(viewModel.powerStatusText == "전원 연결됨")
+}
+
+@MainActor
+@Test
+func menuBarPresentationShowsHoldingBaselineCopyWhenPowerIsDisconnected() {
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 80,
+            isPowerConnected: false,
+            isCharging: false
+        ),
+        chargeState: .holdingAtLimit
+    )
+
+    #expect(viewModel.chargeStateTitle == "상한 기준 유지")
+    #expect(viewModel.summarySentence == "상한 기준이 적용 중입니다. 전원을 연결해도 바로 충전하지 않습니다.")
+}
+
+@MainActor
+@Test
+func menuBarPresentationShowsTemporaryOverrideReservedCopyWhenPowerIsDisconnected() {
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 80,
+            isPowerConnected: false,
+            isCharging: false
+        ),
+        policy: ChargePolicy(
+            upperLimit: 80,
+            rechargeThreshold: 75,
+            temporaryOverrideUntil: Date(timeIntervalSince1970: 2_000)
+        ),
+        chargeState: .temporaryOverride,
+        now: Date(timeIntervalSince1970: 1_000)
+    )
+
+    #expect(viewModel.chargeStateTitle == "임시 해제 예약")
+    #expect(viewModel.summarySentence == "상한 해제가 적용 중입니다. 전원을 연결하면 100% 충전을 허용합니다.")
+}
+
+@MainActor
+@Test
+func menuBarPresentationPrefersControllerErrorForReadOnlyCopy() {
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 78,
+            isPowerConnected: true,
+            isCharging: false
+        ),
+        controllerStatus: ControllerStatus(
+            mode: .readOnly,
+            helperConnection: .disconnected,
+            isChargingEnabled: nil,
+            lastErrorDescription: "XPC 연결이 끊겼습니다."
+        ),
+        chargeState: .errorReadOnly
+    )
+
+    #expect(viewModel.chargeStateTitle == "읽기 전용 오류")
+    #expect(viewModel.summarySentence == "XPC 연결이 끊겼습니다.")
 }
 
 @MainActor
@@ -73,4 +169,28 @@ func previewFactoryExposesExpectedFallbackStates() {
     #expect(errorPreview.controlAvailability.isEnabled == false)
     #expect(monitoringPreview.appState.controllerStatus.mode == .monitoringOnly)
     #expect(monitoringPreview.shouldAutoExpandAdvancedSection)
+}
+
+@MainActor
+private func makeViewModel(
+    battery: BatterySnapshot,
+    policy: ChargePolicy = ChargePolicy(upperLimit: 80, rechargeThreshold: 75),
+    controllerStatus: ControllerStatus = ControllerStatus(
+        mode: .fullControl,
+        helperConnection: .connected,
+        isChargingEnabled: false
+    ),
+    chargeState: ChargeState,
+    now: Date = Date(timeIntervalSince1970: 1_000)
+) -> MenuBarViewModel {
+    MenuBarViewModel(
+        appState: AppState(
+            battery: battery,
+            policy: policy,
+            controllerStatus: controllerStatus,
+            chargeState: chargeState
+        ),
+        capabilityReport: CapabilityChecker().evaluate(snapshot: battery),
+        now: { now }
+    )
 }

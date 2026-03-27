@@ -41,13 +41,13 @@ struct MenuBarPresentation: MenuBarPresenting {
     var chargeStateTitle: String {
         switch appState.chargeState {
         case .charging:
-            return "다시 충전 중"
+            return isPowerConnected && isCharging ? "다시 충전 중" : "다시 충전 준비"
         case .holdingAtLimit:
-            return "상한 유지 중"
+            return isPowerConnected ? "상한 유지 중" : "상한 기준 유지"
         case .waitingForRecharge:
             return "재충전 대기 중"
         case .temporaryOverride:
-            return "임시 해제 중"
+            return isPowerConnected ? "임시 해제 중" : "임시 해제 예약"
         case .suspended:
             return "제어 중단"
         case .errorReadOnly:
@@ -56,31 +56,44 @@ struct MenuBarPresentation: MenuBarPresenting {
     }
 
     var summarySentence: String {
-        let percent = appState.battery?.chargePercent ?? 0
-
         switch appState.chargeState {
         case .charging:
-            return "\(appState.policy.rechargeThreshold)% 이하로 내려가 \(percent)%에서 다시 충전 중입니다."
-        case .holdingAtLimit:
-            return "\(appState.policy.upperLimit)% 상한을 기준으로 충전을 멈추고 유지 중입니다."
-        case .waitingForRecharge:
-            return "\(appState.policy.rechargeThreshold)% 이하가 될 때까지 \(percent)%에서 대기합니다."
-        case .temporaryOverride:
-            if let until = appState.policy.temporaryOverrideUntil {
-                return "\(Self.timeFormatter.string(from: until))까지 상한을 잠시 해제해 전체 충전을 허용합니다."
+            if isPowerConnected && isCharging {
+                return "하한 아래로 내려가 충전을 다시 시작했습니다."
             }
-            return "상한을 잠시 해제해 전체 충전을 허용합니다."
+            if isPowerConnected {
+                return "하한 아래라 충전을 다시 허용했습니다. 곧 충전 상태가 반영됩니다."
+            }
+            return "하한 아래입니다. 전원을 연결하면 다시 충전합니다."
+        case .holdingAtLimit:
+            if isPowerConnected {
+                return "상한에 도달해 충전을 멈추고 유지하고 있습니다."
+            }
+            return "상한 기준이 적용 중입니다. 전원을 연결해도 바로 충전하지 않습니다."
+        case .waitingForRecharge:
+            if isPowerConnected {
+                return "하한 아래로 내려갈 때까지 충전을 멈추고 대기합니다."
+            }
+            return "아직 재충전 구간이 아닙니다. 더 내려가면 전원 연결 시 다시 충전합니다."
+        case .temporaryOverride:
+            if isPowerConnected && isCharging {
+                return "상한을 잠시 해제해 100%까지 충전할 수 있습니다."
+            }
+            if isPowerConnected {
+                return "상한 해제가 적용 중입니다. 필요 시 100%까지 충전합니다."
+            }
+            return "상한 해제가 적용 중입니다. 전원을 연결하면 100% 충전을 허용합니다."
         case .suspended:
-            return "제어를 멈추고 관측 모드로 대기합니다."
+            return "충전 제어를 멈추고 배터리 상태만 확인하고 있습니다."
         case .errorReadOnly:
             return appState.controllerStatus.lastErrorDescription
-                ?? "helper 상태를 신뢰할 수 없어 읽기 전용으로 전환했습니다."
+                ?? "helper 상태를 확인할 수 없어 충전 제어 없이 표시만 유지합니다."
         }
     }
 
     var powerStatusText: String {
         guard let battery = appState.battery else { return "배터리 정보 없음" }
-        return battery.isPowerConnected ? "전원 연결됨" : "배터리 전원 사용 중"
+        return battery.isPowerConnected ? "전원 연결됨" : "배터리 사용 중"
     }
 
     var helperStatusText: String {
@@ -244,6 +257,18 @@ struct MenuBarPresentation: MenuBarPresenting {
             parts.append("helper \(helperInstallState)")
         }
         return parts.isEmpty ? "진단 이벤트가 아직 없습니다." : parts.joined(separator: " / ")
+    }
+
+    private var battery: BatterySnapshot? {
+        appState.battery
+    }
+
+    private var isPowerConnected: Bool {
+        battery?.isPowerConnected == true
+    }
+
+    private var isCharging: Bool {
+        battery?.isCharging == true
     }
 
     func capabilityLabel(for support: CapabilitySupport) -> String {

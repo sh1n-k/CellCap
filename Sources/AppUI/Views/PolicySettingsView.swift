@@ -16,7 +16,7 @@ struct PolicySettingsView: View {
                 sliderRow(
                     title: "충전 상한",
                     valueText: "\(viewModel.appState.policy.upperLimit)%",
-                    explanation: "\(viewModel.appState.policy.upperLimit)%에서 충전을 멈춥니다.",
+                    explanation: "\(viewModel.appState.policy.upperLimit)%까지 충전한 뒤 멈춥니다.",
                     binding: viewModel.upperLimitBinding,
                     range: 50...100,
                     isEnabled: viewModel.controlAvailability.isEnabled,
@@ -27,7 +27,7 @@ struct PolicySettingsView: View {
                 sliderRow(
                     title: "재충전 하한",
                     valueText: "\(viewModel.appState.policy.rechargeThreshold)%",
-                    explanation: "\(viewModel.appState.policy.rechargeThreshold)% 이하일 때만 다시 충전합니다.",
+                    explanation: "\(viewModel.appState.policy.rechargeThreshold)% 이하가 되면 전원 연결 시 다시 충전합니다.",
                     binding: viewModel.rechargeThresholdBinding,
                     range: 0...Double(viewModel.appState.policy.upperLimit),
                     isEnabled: viewModel.controlAvailability.isEnabled,
@@ -359,7 +359,39 @@ struct AdvancedStatusSectionView: View {
     @Binding var isExpanded: Bool
 
     var body: some View {
-        DisclosureGroup(isExpanded: $isExpanded) {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    isExpanded.toggle()
+                }
+            } label: {
+                advancedHeader
+            }
+            .buttonStyle(.plain)
+            .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+
+            if isExpanded {
+                Divider()
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
+
+                advancedContent
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color(red: 0.97, green: 0.96, blue: 0.95).opacity(0.96))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(isExpanded ? Color.black.opacity(0.12) : Color.black.opacity(0.08), lineWidth: 1)
+        )
+    }
+
+    private var advancedContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 12) {
                     AdvancedStatusMetric(title: "Helper 상태", value: viewModel.helperStatusText)
@@ -398,16 +430,31 @@ struct AdvancedStatusSectionView: View {
 
                 CapabilityStatusListView(viewModel: viewModel, title: "기능 가능 여부")
             }
-            .padding(.top, 16)
-        } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(alignment: .center) {
+        }
+    }
+
+    private var advancedHeader: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .center, spacing: 10) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("고급 정보")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(Color.black.opacity(0.84))
 
-                    Spacer()
+                    Text("helper 연결, 설치 상태, 기능 가능 여부를 필요할 때만 펼쳐 확인합니다.")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.58))
 
+                    Text(viewModel.compactHelperSummaryText)
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.52))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 10) {
                     Text(viewModel.advancedSectionStatusText)
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .padding(.horizontal, 10)
@@ -423,28 +470,20 @@ struct AdvancedStatusSectionView: View {
                                 ? Color(red: 0.63, green: 0.24, blue: 0.19)
                                 : Color(red: 0.25, green: 0.52, blue: 0.31)
                         )
+
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(Color.black.opacity(0.66))
+                        .frame(width: 30, height: 30)
+                        .background(Color.white.opacity(0.82), in: Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                        )
                 }
-
-                Text("helper 연결, 설치 상태, 기능 가능 여부를 필요할 때만 펼쳐 확인합니다.")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color.black.opacity(0.58))
-
-                Text(viewModel.compactHelperSummaryText)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color.black.opacity(0.52))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
             }
         }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color(red: 0.97, green: 0.96, blue: 0.95).opacity(0.96))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.black.opacity(0.08), lineWidth: 1)
-        )
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
