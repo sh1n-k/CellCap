@@ -2,7 +2,6 @@ import SwiftUI
 
 struct PolicySettingsView: View {
     @ObservedObject var viewModel: MenuBarViewModel
-    let compact: Bool
 
     private let overrideDurations: [Double] = [30, 60, 120, 240]
 
@@ -10,10 +9,32 @@ struct PolicySettingsView: View {
         VStack(alignment: .leading, spacing: 18) {
             sectionHeader(
                 title: "충전 정책",
-                subtitle: "자주 바꾸는 정책만 앞에 두고, 조정 결과를 바로 읽을 수 있게 정리했습니다."
+                subtitle: "자주 바꾸는 정책을 먼저 두고, 조정 결과를 짧게 읽을 수 있게 정리했습니다."
             )
 
-            policyControlLayout
+            VStack(alignment: .leading, spacing: 14) {
+                sliderRow(
+                    title: "충전 상한",
+                    valueText: "\(viewModel.appState.policy.upperLimit)%",
+                    explanation: "\(viewModel.appState.policy.upperLimit)%에서 충전을 멈춥니다.",
+                    binding: viewModel.upperLimitBinding,
+                    range: 50...100,
+                    isEnabled: viewModel.controlAvailability.isEnabled,
+                    minHeight: 118,
+                    explanationLineLimit: 2
+                )
+
+                sliderRow(
+                    title: "재충전 하한",
+                    valueText: "\(viewModel.appState.policy.rechargeThreshold)%",
+                    explanation: "\(viewModel.appState.policy.rechargeThreshold)% 이하일 때만 다시 충전합니다.",
+                    binding: viewModel.rechargeThresholdBinding,
+                    range: 0...Double(viewModel.appState.policy.upperLimit),
+                    isEnabled: viewModel.controlAvailability.isEnabled,
+                    minHeight: 118,
+                    explanationLineLimit: 2
+                )
+            }
 
             if let reason = viewModel.controlAvailability.reason {
                 disabledCallout(title: viewModel.controlNoticeTitle, reason: reason)
@@ -27,7 +48,9 @@ struct PolicySettingsView: View {
                     subtitle: "출장이나 장거리 이동 전에 상한을 잠시 해제하고, 끝나면 기존 정책으로 돌아갑니다."
                 )
 
-                temporaryOverrideLayout
+                overrideDurationCard
+                overrideSummaryCard
+                overrideActionRow
 
                 if let reason = viewModel.temporaryOverrideNoticeReason {
                     disabledCallout(title: viewModel.temporaryOverrideNoticeTitle, reason: reason)
@@ -43,81 +66,6 @@ struct PolicySettingsView: View {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(Color.black.opacity(0.08), lineWidth: 1)
         )
-    }
-
-    @ViewBuilder
-    private var policyControlLayout: some View {
-        if compact {
-            VStack(alignment: .leading, spacing: 14) {
-                sliderRow(
-                    title: "충전 상한",
-                    valueText: "\(viewModel.appState.policy.upperLimit)%",
-                    explanation: "\(viewModel.appState.policy.upperLimit)%에서 충전을 멈춥니다.",
-                    binding: viewModel.upperLimitBinding,
-                    range: 50...100,
-                    isEnabled: viewModel.controlAvailability.isEnabled,
-                    minHeight: 0,
-                    explanationLineLimit: nil
-                )
-
-                sliderRow(
-                    title: "재충전 하한",
-                    valueText: "\(viewModel.appState.policy.rechargeThreshold)%",
-                    explanation: "\(viewModel.appState.policy.rechargeThreshold)% 이하일 때만 다시 충전합니다.",
-                    binding: viewModel.rechargeThresholdBinding,
-                    range: 0...Double(viewModel.appState.policy.upperLimit),
-                    isEnabled: viewModel.controlAvailability.isEnabled,
-                    minHeight: 0,
-                    explanationLineLimit: nil
-                )
-            }
-        } else {
-            HStack(alignment: .top, spacing: 14) {
-                sliderRow(
-                    title: "충전 상한",
-                    valueText: "\(viewModel.appState.policy.upperLimit)%",
-                    explanation: "\(viewModel.appState.policy.upperLimit)%에서 충전을 멈춥니다.",
-                    binding: viewModel.upperLimitBinding,
-                    range: 50...100,
-                    isEnabled: viewModel.controlAvailability.isEnabled,
-                    minHeight: 132,
-                    explanationLineLimit: 2
-                )
-
-                sliderRow(
-                    title: "재충전 하한",
-                    valueText: "\(viewModel.appState.policy.rechargeThreshold)%",
-                    explanation: "\(viewModel.appState.policy.rechargeThreshold)% 이하일 때만 다시 충전합니다.",
-                    binding: viewModel.rechargeThresholdBinding,
-                    range: 0...Double(viewModel.appState.policy.upperLimit),
-                    isEnabled: viewModel.controlAvailability.isEnabled,
-                    minHeight: 132,
-                    explanationLineLimit: 2
-                )
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var temporaryOverrideLayout: some View {
-        if compact {
-            VStack(alignment: .leading, spacing: 12) {
-                overrideDurationCard
-                overrideSummaryCard
-                overrideActionRow
-            }
-        } else {
-            HStack(alignment: .top, spacing: 14) {
-                overrideDurationCard
-                    .frame(maxWidth: .infinity)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    overrideSummaryCard
-                    overrideActionRow
-                }
-                .frame(maxWidth: 260, alignment: .leading)
-            }
-        }
     }
 
     private var overrideDurationCard: some View {
@@ -142,7 +90,7 @@ struct PolicySettingsView: View {
             Text("선택한 시간 동안 100% 충전을 허용한 뒤, 기존 상한과 하한 정책으로 복귀합니다.")
                 .font(.system(size: 11, weight: .medium, design: .rounded))
                 .foregroundStyle(Color.black.opacity(0.56))
-                .lineLimit(compact ? nil : 2)
+                .lineLimit(2)
         }
         .padding(14)
         .background(
@@ -169,7 +117,7 @@ struct PolicySettingsView: View {
             Text(viewModel.temporaryOverrideSummaryText)
                 .font(.system(size: 11, weight: .medium, design: .rounded))
                 .foregroundStyle(Color.black.opacity(0.62))
-                .lineLimit(compact ? nil : 3)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -406,7 +354,7 @@ private struct OverrideActionButtonStyle: ButtonStyle {
     }
 }
 
-private struct AdvancedStatusSectionView: View {
+struct AdvancedStatusSectionView: View {
     @ObservedObject var viewModel: MenuBarViewModel
     @Binding var isExpanded: Bool
 
@@ -526,47 +474,4 @@ private struct AdvancedStatusMetric: View {
                 .stroke(Color.black.opacity(0.05), lineWidth: 1)
         )
     }
-}
-
-struct SettingsSceneView: View {
-    @ObservedObject var viewModel: MenuBarViewModel
-    @State private var isAdvancedExpanded = false
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("CellCap 설정")
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
-                    Text("핵심 상태와 정책 조작을 먼저 보여주고, helper 정보는 필요할 때만 펼쳐 확인합니다.")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(.secondary)
-                }
-
-                StatusSummaryView(viewModel: viewModel)
-
-                PolicySettingsView(viewModel: viewModel, compact: false)
-
-                AdvancedStatusSectionView(
-                    viewModel: viewModel,
-                    isExpanded: $isAdvancedExpanded
-                )
-            }
-            .padding(22)
-        }
-        .frame(minWidth: 920, minHeight: 620)
-        .background(CellCapPanelBackground())
-        .onAppear {
-            isAdvancedExpanded = viewModel.shouldAutoExpandAdvancedSection
-        }
-        .onChange(of: viewModel.shouldAutoExpandAdvancedSection) { _, shouldExpand in
-            if shouldExpand {
-                isAdvancedExpanded = true
-            }
-        }
-    }
-}
-
-#Preview("설정 화면 - 관측 전용") {
-    SettingsSceneView(viewModel: .previewMonitoringOnly())
 }

@@ -28,9 +28,5 @@ struct CellCapApp: App {
             MenuBarLabelView(viewModel: viewModel)
         }
         .menuBarExtraStyle(.window)
-
-        Settings {
-            SettingsSceneView(viewModel: viewModel)
-        }
     }
 }

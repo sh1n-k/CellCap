@@ -2,34 +2,19 @@ import SwiftUI
 
 struct RootView: View {
     @ObservedObject var viewModel: MenuBarViewModel
+    @State private var isAdvancedExpanded = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 StatusSummaryView(viewModel: viewModel)
-                PolicySettingsView(viewModel: viewModel, compact: true)
-                CapabilityStatusListView(viewModel: viewModel)
+                PolicySettingsView(viewModel: viewModel)
+                AdvancedStatusSectionView(
+                    viewModel: viewModel,
+                    isExpanded: $isAdvancedExpanded
+                )
 
-                HStack(spacing: 10) {
-                    SettingsLink {
-                        Label("설정 화면", systemImage: "slider.horizontal.3")
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color.black.opacity(0.76))
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(Color.white.opacity(0.74))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(Color.black.opacity(0.10), lineWidth: 1)
-                            )
-                    }
-                    .buttonStyle(.plain)
-
-                    Spacer()
-
+                HStack {
                     Button {
                         viewModel.recomputeState()
                     } label: {
@@ -37,12 +22,22 @@ struct RootView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(Color(red: 0.88, green: 0.53, blue: 0.21))
+
+                    Spacer(minLength: 0)
                 }
             }
             .padding(18)
         }
         .frame(width: 396, height: 560)
         .background(CellCapPanelBackground())
+        .onAppear {
+            isAdvancedExpanded = viewModel.shouldAutoExpandAdvancedSection
+        }
+        .onChange(of: viewModel.shouldAutoExpandAdvancedSection) { _, shouldExpand in
+            if shouldExpand {
+                isAdvancedExpanded = true
+            }
+        }
     }
 }
 
