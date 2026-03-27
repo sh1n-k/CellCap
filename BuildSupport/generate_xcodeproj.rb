@@ -117,6 +117,7 @@ add_swift_sources(target: tests_target, parent_group: tests_group, relative_fold
 add_dependency(target: core_target, dependency: shared_target)
 add_dependency(target: app_target, dependency: shared_target)
 add_dependency(target: app_target, dependency: core_target)
+add_dependency(target: helper_target, dependency: core_target)
 add_dependency(target: helper_target, dependency: shared_target)
 add_dependency(target: tests_target, dependency: shared_target)
 add_dependency(target: tests_target, dependency: core_target)

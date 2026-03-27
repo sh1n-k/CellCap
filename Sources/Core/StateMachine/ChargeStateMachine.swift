@@ -3,20 +3,35 @@ import Shared
 
 public struct ChargeStateContext: Sendable, Equatable {
     public var battery: BatterySnapshot?
+    public var batterySnapshots: [BatterySnapshot]
     public var policy: ChargePolicy
     public var controllerStatus: ControllerStatus
     public var now: Date
 
     public init(
         battery: BatterySnapshot?,
+        batterySnapshots: [BatterySnapshot] = [],
         policy: ChargePolicy,
         controllerStatus: ControllerStatus,
         now: Date = .now
     ) {
         self.battery = battery
+        self.batterySnapshots = batterySnapshots
         self.policy = policy
         self.controllerStatus = controllerStatus
         self.now = now
+    }
+
+    public var snapshotCandidates: [BatterySnapshot] {
+        if batterySnapshots.isEmpty {
+            return battery.map { [$0] } ?? []
+        }
+
+        if let battery {
+            return [battery] + batterySnapshots
+        }
+
+        return batterySnapshots
     }
 }
 
@@ -43,42 +58,21 @@ public struct ChargeTransition: Sendable, Equatable {
 }
 
 public struct ChargeStateMachine: Sendable {
-    public init() {}
+    private let policyEngine: PolicyEngine
+
+    public init(policyEngine: PolicyEngine = PolicyEngine()) {
+        self.policyEngine = policyEngine
+    }
 
     public func transition(
         from previous: ChargeState,
         context: ChargeStateContext
     ) -> ChargeTransition {
-        let result = resolve(context: context)
-        return ChargeTransition(previous: previous, current: result.state, reason: result.reason)
+        policyEngine.evaluate(context: context, from: previous).transition
     }
 
     public func resolve(context: ChargeStateContext) -> (state: ChargeState, reason: ChargeTransitionReason) {
-        guard let battery = context.battery, battery.isBatteryPresent else {
-            return (.suspended, .missingBattery)
-        }
-
-        if context.controllerStatus.helperConnection != .connected || context.controllerStatus.lastErrorDescription != nil {
-            return (.errorReadOnly, .helperFailure)
-        }
-
-        if context.controllerStatus.mode != .fullControl || !context.policy.isControlEnabled {
-            return (.suspended, .controlSuspended)
-        }
-
-        if context.policy.isTemporaryOverrideActive(at: context.now)
-            || (context.controllerStatus.temporaryOverrideUntil.map { $0 > context.now } ?? false) {
-            return (.temporaryOverride, .temporaryOverride)
-        }
-
-        if battery.chargePercent >= context.policy.upperLimit {
-            return (.holdingAtLimit, .atUpperLimit)
-        }
-
-        if battery.chargePercent <= context.policy.rechargeThreshold {
-            return (.charging, .belowRechargeThreshold)
-        }
-
-        return (.waitingForRecharge, .waitingWithinPolicyBand)
+        let evaluation = policyEngine.evaluate(context: context, from: .waitingForRecharge)
+        return (evaluation.resolution.state, evaluation.resolution.reason)
     }
 }

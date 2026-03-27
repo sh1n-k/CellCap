@@ -1,28 +1,43 @@
-import Core
-import Shared
 import SwiftUI
 
 struct RootView: View {
-    let state: AppState
-    let transitionReason: ChargeTransitionReason
+    @ObservedObject var viewModel: MenuBarViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("CellCap")
-                .font(.largeTitle.weight(.semibold))
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                StatusSummaryView(viewModel: viewModel)
+                PolicySettingsView(viewModel: viewModel, compact: true)
+                CapabilityStatusListView(viewModel: viewModel)
 
-            Group {
-                Text("현재 상태: \(state.chargeState.rawValue)")
-                Text("배터리: \(state.battery?.chargePercent ?? 0)%")
-                Text("제어 모드: \(state.controllerStatus.mode.rawValue)")
-                Text("상태 결정 사유: \(transitionReason.rawValue)")
+                HStack(spacing: 10) {
+                    SettingsLink {
+                        Label("설정 화면", systemImage: "slider.horizontal.3")
+                    }
+                    .buttonStyle(.bordered)
+
+                    Spacer()
+
+                    Button {
+                        viewModel.recomputeState()
+                    } label: {
+                        Label("상태 다시 계산", systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Color(red: 0.88, green: 0.53, blue: 0.21))
+                }
             }
-            .font(.body.monospaced())
-
-            Text("TODO: 메뉴 막대 UI, 설정 화면, helper 연동은 다음 단계에서 연결합니다.")
-                .foregroundStyle(.secondary)
+            .padding(18)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(20)
+        .frame(width: 396, height: 560)
+        .background(CellCapPanelBackground())
     }
+}
+
+#Preview("메뉴 막대 - 제한 유지") {
+    RootView(viewModel: .previewHolding())
+}
+
+#Preview("메뉴 막대 - 오류") {
+    RootView(viewModel: .previewErrorReadOnly())
 }

@@ -26,7 +26,7 @@ let package = Package(
         ),
         .executableTarget(
             name: "Helper",
-            dependencies: ["Shared"]
+            dependencies: ["Core", "Shared"]
         ),
         .testTarget(
             name: "CoreTests",

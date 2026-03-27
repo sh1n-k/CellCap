@@ -97,3 +97,23 @@ func stateMachineSuspendsWhenControlIsDisabled() {
     #expect(result.state == ChargeState.suspended)
     #expect(result.reason == ChargeTransitionReason.controlSuspended)
 }
+
+@Test
+func stateMachineSuspendsWhenControllerIsReadOnlyWithoutFailure() {
+    let machine = ChargeStateMachine()
+    let context = ChargeStateContext(
+        battery: BatterySnapshot(chargePercent: 70, isPowerConnected: true, isCharging: false),
+        policy: ChargePolicy(isControlEnabled: true),
+        controllerStatus: ControllerStatus(
+            mode: .readOnly,
+            helperConnection: .connected,
+            isChargingEnabled: nil,
+            lastErrorDescription: nil
+        ),
+        now: Date(timeIntervalSince1970: 1_000)
+    )
+
+    let result = machine.resolve(context: context)
+    #expect(result.state == ChargeState.suspended)
+    #expect(result.reason == ChargeTransitionReason.controlSuspended)
+}

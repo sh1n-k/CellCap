@@ -1,49 +1,36 @@
 import Core
-import Shared
 import SwiftUI
 
 @main
 struct CellCapApp: App {
-    private let stateMachine = ChargeStateMachine()
+    @StateObject private var viewModel: MenuBarViewModel
+
+    init() {
+        let eventLogger = EventLogger()
+        let controller = XPCChargeController(eventLogger: eventLogger)
+        let batteryMonitor = BatteryMonitor(
+            snapshotProvider: SystemBatterySnapshotProvider(),
+            eventSource: SystemBatteryMonitorEventSource()
+        )
+        let orchestrator = AppRuntimeOrchestrator(
+            batteryMonitor: batteryMonitor,
+            controller: controller,
+            capabilityProber: controller,
+            eventLogger: eventLogger
+        )
+        _viewModel = StateObject(wrappedValue: MenuBarViewModel(service: orchestrator))
+    }
 
     var body: some Scene {
-        WindowGroup("CellCap") {
-            RootView(
-                state: previewState,
-                transitionReason: stateMachine.transition(
-                    from: .waitingForRecharge,
-                    context: ChargeStateContext(
-                        battery: previewBattery,
-                        policy: previewPolicy,
-                        controllerStatus: previewControllerStatus
-                    )
-                ).reason
-            )
+        MenuBarExtra {
+            RootView(viewModel: viewModel)
+        } label: {
+            MenuBarLabelView(viewModel: viewModel)
         }
-        .defaultSize(width: 420, height: 280)
+        .menuBarExtraStyle(.window)
+
+        Settings {
+            SettingsSceneView(viewModel: viewModel)
+        }
     }
 }
-
-private let previewBattery = BatterySnapshot(
-    chargePercent: 78,
-    isPowerConnected: true,
-    isCharging: false
-)
-
-private let previewPolicy = ChargePolicy(
-    upperLimit: 80,
-    rechargeThreshold: 75
-)
-
-private let previewControllerStatus = ControllerStatus(
-    mode: .fullControl,
-    helperConnection: .connected,
-    isChargingEnabled: false
-)
-
-private let previewState = AppState(
-    battery: previewBattery,
-    policy: previewPolicy,
-    controllerStatus: previewControllerStatus,
-    chargeState: .waitingForRecharge
-)
