@@ -2,7 +2,6 @@ import SwiftUI
 
 struct PolicySettingsView: View {
     @ObservedObject var viewModel: MenuBarViewModel
-    let compact: Bool
 
     private let overrideDurations: [Double] = [30, 60, 120, 240]
 
@@ -110,37 +109,6 @@ struct PolicySettingsView: View {
                 }
             }
 
-            if !compact {
-                Divider()
-
-                VStack(alignment: .leading, spacing: 8) {
-                    sectionHeader(
-                        title: "현재 제어 모드",
-                        subtitle: "직접 제어는 helper 권한과 backend 상태에 따라 달라지므로 모드와 사유를 먼저 노출합니다."
-                    )
-
-                    HStack(spacing: 12) {
-                        Text(viewModel.controllerModeLabel)
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(Color.primary.opacity(0.08), in: Capsule())
-
-                        Text(viewModel.helperStatusText)
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Text("설치 상태: \(viewModel.helperInstallStateText)")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-
-                    if let reason = viewModel.helperInstallReasonText {
-                        Text(reason)
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
         }
         .padding(18)
         .background(
@@ -341,39 +309,4 @@ private struct OverrideActionButtonStyle: ButtonStyle {
 
         return Color(red: 0.95, green: 0.89, blue: 0.82)
     }
-}
-
-struct SettingsSceneView: View {
-    @ObservedObject var viewModel: MenuBarViewModel
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("CellCap 설정")
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
-                    Text("상태 확인과 정책 편집을 분리하지 않고 한 화면에서 함께 조정합니다.")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(.secondary)
-                }
-
-                HStack(alignment: .top, spacing: 18) {
-                    VStack(alignment: .leading, spacing: 18) {
-                        StatusSummaryView(viewModel: viewModel)
-                        CapabilityStatusListView(viewModel: viewModel)
-                    }
-
-                    PolicySettingsView(viewModel: viewModel, compact: false)
-                        .frame(maxWidth: 360)
-                }
-            }
-            .padding(22)
-        }
-        .frame(minWidth: 860, minHeight: 560)
-        .background(CellCapPanelBackground())
-    }
-}
-
-#Preview("설정 화면 - 관측 전용") {
-    SettingsSceneView(viewModel: .previewMonitoringOnly())
 }

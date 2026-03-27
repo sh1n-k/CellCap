@@ -7,17 +7,10 @@ struct RootView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 StatusSummaryView(viewModel: viewModel)
-                PolicySettingsView(viewModel: viewModel, compact: true)
+                PolicySettingsView(viewModel: viewModel)
                 CapabilityStatusListView(viewModel: viewModel)
 
-                HStack(spacing: 10) {
-                    SettingsLink {
-                        Label("설정 화면", systemImage: "slider.horizontal.3")
-                    }
-                    .buttonStyle(.bordered)
-
-                    Spacer()
-
+                HStack {
                     Button {
                         viewModel.recomputeState()
                     } label: {
@@ -25,6 +18,8 @@ struct RootView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(Color(red: 0.88, green: 0.53, blue: 0.21))
+
+                    Spacer(minLength: 0)
                 }
             }
             .padding(18)
