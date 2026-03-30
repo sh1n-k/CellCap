@@ -37,6 +37,72 @@ func resolverReturnsWaitingWithinPolicyBand() {
 }
 
 @Test
+func resolverReturnsChargingAtOrBelowRechargeThreshold() {
+    let resolver = ChargeStateResolver()
+    let effectivePolicy = EffectiveChargePolicy(
+        upperLimit: 60,
+        rechargeThreshold: 55,
+        temporaryOverrideUntil: nil,
+        isTemporaryOverrideActive: false,
+        isControlEnabled: true
+    )
+
+    let resolution = resolver.resolve(
+        context: ChargeStateContext(
+            battery: BatterySnapshot(
+                chargePercent: 50,
+                isPowerConnected: true,
+                isCharging: false
+            ),
+            policy: ChargePolicy(),
+            controllerStatus: ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected,
+                isChargingEnabled: false
+            ),
+            now: Date(timeIntervalSince1970: 1_000)
+        ),
+        effectivePolicy: effectivePolicy
+    )
+
+    #expect(resolution.state == .charging)
+    #expect(resolution.reason == .belowRechargeThreshold)
+}
+
+@Test
+func resolverReturnsHoldingAtLimitAtOrAboveUpperLimit() {
+    let resolver = ChargeStateResolver()
+    let effectivePolicy = EffectiveChargePolicy(
+        upperLimit: 60,
+        rechargeThreshold: 55,
+        temporaryOverrideUntil: nil,
+        isTemporaryOverrideActive: false,
+        isControlEnabled: true
+    )
+
+    let resolution = resolver.resolve(
+        context: ChargeStateContext(
+            battery: BatterySnapshot(
+                chargePercent: 60,
+                isPowerConnected: true,
+                isCharging: false
+            ),
+            policy: ChargePolicy(),
+            controllerStatus: ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected,
+                isChargingEnabled: false
+            ),
+            now: Date(timeIntervalSince1970: 1_000)
+        ),
+        effectivePolicy: effectivePolicy
+    )
+
+    #expect(resolution.state == .holdingAtLimit)
+    #expect(resolution.reason == .atUpperLimit)
+}
+
+@Test
 func resolverHonorsControllerOverrideDeadline() {
     let resolver = ChargeStateResolver()
     let effectivePolicy = EffectiveChargePolicy(

@@ -28,7 +28,7 @@ func menuBarPresentationShowsChargingReadyCopyWhenPowerIsDisconnected() {
     )
 
     #expect(viewModel.chargeStateTitle == "다시 충전 준비")
-    #expect(viewModel.summarySentence == "하한 아래입니다. 전원을 연결하면 다시 충전합니다.")
+    #expect(viewModel.summarySentence == "하한 아래입니다. 전원을 연결하면 상한에 도달할 때까지 다시 충전합니다.")
     #expect(viewModel.powerStatusText == "배터리 사용 중")
 }
 
@@ -45,7 +45,7 @@ func menuBarPresentationShowsChargingCopyWhenPowerIsConnectedAndCharging() {
     )
 
     #expect(viewModel.chargeStateTitle == "다시 충전 중")
-    #expect(viewModel.summarySentence == "하한 아래로 내려가 충전을 다시 시작했습니다.")
+    #expect(viewModel.summarySentence == "하한에서 충전을 다시 시작했고 상한에 도달할 때까지 계속 충전합니다.")
     #expect(viewModel.powerStatusText == "전원 연결됨")
 }
 
@@ -63,6 +63,23 @@ func menuBarPresentationShowsHoldingBaselineCopyWhenPowerIsDisconnected() {
 
     #expect(viewModel.chargeStateTitle == "상한 기준 유지")
     #expect(viewModel.summarySentence == "상한 기준이 적용 중입니다. 전원을 연결해도 바로 충전하지 않습니다.")
+}
+
+@MainActor
+@Test
+func menuBarPresentationExplainsWaitingAsPostLimitRechargeWait() {
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 59,
+            isPowerConnected: true,
+            isCharging: false
+        ),
+        policy: ChargePolicy(upperLimit: 60, rechargeThreshold: 55),
+        chargeState: .waitingForRecharge
+    )
+
+    #expect(viewModel.chargeStateTitle == "재충전 대기 중")
+    #expect(viewModel.summarySentence == "상한에 도달해 충전을 멈췄습니다. 다시 하한 아래로 내려갈 때까지 대기합니다.")
 }
 
 @MainActor

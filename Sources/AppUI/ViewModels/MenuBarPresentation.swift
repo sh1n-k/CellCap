@@ -59,12 +59,12 @@ struct MenuBarPresentation: MenuBarPresenting {
         switch appState.chargeState {
         case .charging:
             if isPowerConnected && isCharging {
-                return "하한 아래로 내려가 충전을 다시 시작했습니다."
+                return "하한에서 충전을 다시 시작했고 상한에 도달할 때까지 계속 충전합니다."
             }
             if isPowerConnected {
-                return "하한 아래라 충전을 다시 허용했습니다. 곧 충전 상태가 반영됩니다."
+                return "하한에서 충전을 다시 허용했습니다. 상한에 도달할 때까지 충전을 유지합니다."
             }
-            return "하한 아래입니다. 전원을 연결하면 다시 충전합니다."
+            return "하한 아래입니다. 전원을 연결하면 상한에 도달할 때까지 다시 충전합니다."
         case .holdingAtLimit:
             if isPowerConnected {
                 return "상한에 도달해 충전을 멈추고 유지하고 있습니다."
@@ -72,9 +72,9 @@ struct MenuBarPresentation: MenuBarPresenting {
             return "상한 기준이 적용 중입니다. 전원을 연결해도 바로 충전하지 않습니다."
         case .waitingForRecharge:
             if isPowerConnected {
-                return "하한 아래로 내려갈 때까지 충전을 멈추고 대기합니다."
+                return "상한에 도달해 충전을 멈췄습니다. 다시 하한 아래로 내려갈 때까지 대기합니다."
             }
-            return "아직 재충전 구간이 아닙니다. 더 내려가면 전원 연결 시 다시 충전합니다."
+            return "상한 이후 대기 중입니다. 하한 아래로 내려가면 전원 연결 시 다시 충전합니다."
         case .temporaryOverride:
             if isPowerConnected && isCharging {
                 return "상한을 잠시 해제해 100%까지 충전할 수 있습니다."

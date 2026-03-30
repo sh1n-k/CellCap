@@ -27,7 +27,7 @@ struct PolicySettingsView: View {
                 sliderRow(
                     title: "재충전 하한",
                     valueText: "\(viewModel.appState.policy.rechargeThreshold)%",
-                    explanation: "\(viewModel.appState.policy.rechargeThreshold)% 이하가 되면 전원 연결 시 다시 충전합니다.",
+                    explanation: "\(viewModel.appState.policy.rechargeThreshold)% 이하가 되면 다시 충전을 시작하고, 시작한 충전은 상한까지 유지합니다.",
                     binding: viewModel.rechargeThresholdBinding,
                     range: 0...Double(viewModel.appState.policy.upperLimit),
                     isEnabled: viewModel.controlAvailability.isEnabled,

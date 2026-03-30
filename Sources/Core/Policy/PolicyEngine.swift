@@ -100,7 +100,13 @@ public struct PolicyEngine: Sendable {
         from previous: ChargeState
     ) -> PolicyEvaluation {
         let effectivePolicy = makeEffectivePolicy(from: context.policy, now: context.now)
-        let resolution = resolver.resolve(context: context, effectivePolicy: effectivePolicy)
+        let rawResolution = resolver.resolve(context: context, effectivePolicy: effectivePolicy)
+        let resolution = stabilizedResolution(
+            rawResolution,
+            previous: previous,
+            effectivePolicy: effectivePolicy,
+            controllerStatus: context.controllerStatus
+        )
         let transition = ChargeTransition(
             previous: previous,
             current: resolution.state,
@@ -116,5 +122,37 @@ public struct PolicyEngine: Sendable {
                 controllerStatus: context.controllerStatus
             )
         )
+    }
+
+    private func stabilizedResolution(
+        _ resolution: ChargeStateResolution,
+        previous: ChargeState,
+        effectivePolicy: EffectiveChargePolicy,
+        controllerStatus: ControllerStatus
+    ) -> ChargeStateResolution {
+        guard resolution.reason == .waitingWithinPolicyBand else {
+            return resolution
+        }
+
+        guard controllerStatus.mode == .fullControl, effectivePolicy.isControlEnabled else {
+            return resolution
+        }
+
+        switch previous {
+        case .charging:
+            return ChargeStateResolution(
+                state: .charging,
+                reason: .belowRechargeThreshold,
+                selectedBattery: resolution.selectedBattery
+            )
+        case .holdingAtLimit, .waitingForRecharge, .suspended, .errorReadOnly:
+            return resolution
+        case .temporaryOverride:
+            return ChargeStateResolution(
+                state: .waitingForRecharge,
+                reason: .waitingWithinPolicyBand,
+                selectedBattery: resolution.selectedBattery
+            )
+        }
     }
 }

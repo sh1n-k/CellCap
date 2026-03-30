@@ -72,6 +72,58 @@ func policyEngineRequestsChargingDisableAtLimit() {
 }
 
 @Test
+func policyEngineKeepsChargingWithinBandAfterRechargeStarts() {
+    let engine = PolicyEngine()
+    let evaluation = engine.evaluate(
+        context: ChargeStateContext(
+            battery: BatterySnapshot(
+                chargePercent: 56,
+                isPowerConnected: true,
+                isCharging: true
+            ),
+            policy: ChargePolicy(upperLimit: 60, rechargeThreshold: 55),
+            controllerStatus: ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected,
+                isChargingEnabled: true
+            ),
+            now: Date(timeIntervalSince1970: 1_000)
+        ),
+        from: .charging
+    )
+
+    #expect(evaluation.transition.current == .charging)
+    #expect(evaluation.transition.reason == .belowRechargeThreshold)
+    #expect(evaluation.chargingCommand == .noChange)
+}
+
+@Test
+func policyEngineWaitsWithinBandAfterHoldingAtLimit() {
+    let engine = PolicyEngine()
+    let evaluation = engine.evaluate(
+        context: ChargeStateContext(
+            battery: BatterySnapshot(
+                chargePercent: 59,
+                isPowerConnected: true,
+                isCharging: false
+            ),
+            policy: ChargePolicy(upperLimit: 60, rechargeThreshold: 55),
+            controllerStatus: ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected,
+                isChargingEnabled: false
+            ),
+            now: Date(timeIntervalSince1970: 1_000)
+        ),
+        from: .holdingAtLimit
+    )
+
+    #expect(evaluation.transition.current == .waitingForRecharge)
+    #expect(evaluation.transition.reason == .waitingWithinPolicyBand)
+    #expect(evaluation.chargingCommand == .noChange)
+}
+
+@Test
 func policyEngineUsesSelectedSnapshotFromSourcePriority() {
     let engine = PolicyEngine()
     let cachedSnapshot = BatterySnapshot(

@@ -63,6 +63,44 @@ func stateMachineReturnsChargingBelowRechargeThreshold() {
 }
 
 @Test
+func stateMachineKeepsChargingAfterCrossingRechargeThresholdUntilUpperLimit() {
+    let machine = ChargeStateMachine()
+    let context = ChargeStateContext(
+        battery: BatterySnapshot(chargePercent: 56, isPowerConnected: true, isCharging: true),
+        policy: ChargePolicy(upperLimit: 60, rechargeThreshold: 55),
+        controllerStatus: ControllerStatus(
+            mode: .fullControl,
+            helperConnection: .connected,
+            isChargingEnabled: true
+        ),
+        now: Date(timeIntervalSince1970: 1_000)
+    )
+
+    let transition = machine.transition(from: .charging, context: context)
+    #expect(transition.current == .charging)
+    #expect(transition.reason == .belowRechargeThreshold)
+}
+
+@Test
+func stateMachineWaitsWithinBandAfterHoldingAtLimit() {
+    let machine = ChargeStateMachine()
+    let context = ChargeStateContext(
+        battery: BatterySnapshot(chargePercent: 56, isPowerConnected: true, isCharging: false),
+        policy: ChargePolicy(upperLimit: 60, rechargeThreshold: 55),
+        controllerStatus: ControllerStatus(
+            mode: .fullControl,
+            helperConnection: .connected,
+            isChargingEnabled: false
+        ),
+        now: Date(timeIntervalSince1970: 1_000)
+    )
+
+    let transition = machine.transition(from: .holdingAtLimit, context: context)
+    #expect(transition.current == .waitingForRecharge)
+    #expect(transition.reason == .waitingWithinPolicyBand)
+}
+
+@Test
 func stateMachineReturnsHoldingAtLimitWhenBatteryIsFullEnough() {
     let machine = ChargeStateMachine()
     let context = ChargeStateContext(
