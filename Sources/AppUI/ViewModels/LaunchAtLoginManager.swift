@@ -35,16 +35,19 @@ struct LaunchAtLoginManager: LaunchAtLoginManaging {
 
     private let userDefaults: UserDefaults
     private let service: any LaunchAtLoginServiceControlling
+    private let environment: any LaunchAtLoginEnvironmentInspecting
     private let preferenceKey: String
 
     init(
         userDefaults: UserDefaults = .standard,
         preferenceKey: String = LaunchAtLoginManager.preferenceKey,
-        service: any LaunchAtLoginServiceControlling = MainAppLaunchAtLoginService()
+        service: any LaunchAtLoginServiceControlling = MainAppLaunchAtLoginService(),
+        environment: any LaunchAtLoginEnvironmentInspecting = SystemLaunchAtLoginEnvironment()
     ) {
         self.userDefaults = userDefaults
         self.preferenceKey = preferenceKey
         self.service = service
+        self.environment = environment
     }
 
     func configureDefaultIfNeeded() -> LaunchAtLoginState {
@@ -70,17 +73,21 @@ struct LaunchAtLoginManager: LaunchAtLoginManaging {
         var operationError: String?
         let status = service.status
 
-        do {
-            switch (desiredEnabled, status) {
-            case (true, .enabled), (false, .notFound), (false, .notRegistered):
-                break
-            case (true, .notFound), (true, .notRegistered), (true, .requiresApproval):
-                try service.register()
-            case (false, .enabled), (false, .requiresApproval):
-                try service.unregister()
+        if desiredEnabled, let unsupportedReason = environment.unsupportedReason {
+            operationError = unsupportedReason
+        } else {
+            do {
+                switch (desiredEnabled, status) {
+                case (true, .enabled), (false, .notFound), (false, .notRegistered):
+                    break
+                case (true, .notFound), (true, .notRegistered), (true, .requiresApproval):
+                    try service.register()
+                case (false, .enabled), (false, .requiresApproval):
+                    try service.unregister()
+                }
+            } catch {
+                operationError = error.localizedDescription
             }
-        } catch {
-            operationError = error.localizedDescription
         }
 
         return buildState(
@@ -101,9 +108,9 @@ struct LaunchAtLoginManager: LaunchAtLoginManaging {
         case (true, .enabled):
             statusText = "로그인 후 앱을 자동으로 열고 저장된 정책을 복구합니다."
         case (true, .requiresApproval):
-            statusText = "자동 실행 등록은 요청했지만 시스템 승인이 더 필요합니다."
+            statusText = "자동 실행을 요청했습니다. 시스템 승인까지 완료되면 다음 로그인부터 자동 복구합니다."
         case (true, .notFound):
-            statusText = "현재 번들 상태로는 자동 실행 항목을 찾지 못했습니다."
+            statusText = "자동 실행을 요청했지만 현재 실행 환경에서는 로그인 항목이 활성화되지 않았습니다."
         case (true, .notRegistered):
             statusText = "자동 실행을 켰지만 아직 시스템 등록이 확인되지 않았습니다."
         case (false, _):
@@ -129,6 +136,27 @@ protocol LaunchAtLoginServiceControlling {
     var status: LaunchAtLoginServiceStatus { get }
     func register() throws
     func unregister() throws
+}
+
+protocol LaunchAtLoginEnvironmentInspecting {
+    var unsupportedReason: String? { get }
+}
+
+struct SystemLaunchAtLoginEnvironment: LaunchAtLoginEnvironmentInspecting {
+    var unsupportedReason: String? {
+        let bundleURL = Bundle.main.bundleURL
+
+        guard bundleURL.pathExtension == "app" else {
+            return "앱 번들로 실행 중이 아니어서 로그인 자동 실행을 등록할 수 없습니다."
+        }
+
+        let codeSignatureURL = bundleURL.appendingPathComponent("Contents/_CodeSignature/CodeResources")
+        guard FileManager.default.fileExists(atPath: codeSignatureURL.path) else {
+            return "현재 빌드는 코드 서명이 없어 로그인 자동 실행을 등록할 수 없습니다."
+        }
+
+        return nil
+    }
 }
 
 struct MainAppLaunchAtLoginService: LaunchAtLoginServiceControlling {

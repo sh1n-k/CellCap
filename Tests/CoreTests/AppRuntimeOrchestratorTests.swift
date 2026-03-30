@@ -781,6 +781,74 @@ func orchestratorRestoresPersistedPolicyOnStart() async {
 }
 
 @Test
+func orchestratorKeepsChargingWithinBandAfterAppRestartWhenControllerIsAlreadyCharging() async {
+    let now = Date(timeIntervalSince1970: 1_200)
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: BatterySnapshot(
+            chargePercent: 56,
+            isPowerConnected: true,
+            isCharging: true,
+            observedAt: now,
+            source: .system
+        )
+    )
+    let controller = SequencedChargeController(
+        statuses: [
+            ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected,
+                isChargingEnabled: true,
+                checkedAt: now
+            )
+        ],
+        selfTestResult: ControllerSelfTestResult(
+            outcome: .passed,
+            message: "ok",
+            checkedAt: now
+        )
+    )
+    let store = MockChargePolicyStore(
+        loadedPolicy: ChargePolicy(
+            upperLimit: 60,
+            rechargeThreshold: 55
+        )
+    )
+    let orchestrator = AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: controller,
+        capabilityChecker: CapabilityChecker(
+            environment: MockRuntimeEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: now,
+                isChargingEnabled: true
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: now)
+        ),
+        policyStore: store,
+        dateProvider: FixedRuntimeDateProvider(now: now)
+    )
+
+    let stream = await orchestrator.makeUpdateStream()
+    let task = Task {
+        var iterator = stream.makeAsyncIterator()
+        return await iterator.next()
+    }
+
+    await orchestrator.start()
+    let update = await task.value
+
+    #expect(update?.appState.chargeState == .charging)
+    #expect(update?.chargingCommand == .noChange)
+}
+
+@Test
 func orchestratorPersistsNormalizedPolicyWhenExpiredOverrideIsRestored() async {
     let now = Date(timeIntervalSince1970: 1_500)
     let monitor = MockRuntimeBatteryMonitor(

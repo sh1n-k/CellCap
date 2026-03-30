@@ -138,6 +138,14 @@ public struct PolicyEngine: Sendable {
             return resolution
         }
 
+        if controllerStatus.isChargingEnabled == true {
+            return ChargeStateResolution(
+                state: .charging,
+                reason: .belowRechargeThreshold,
+                selectedBattery: resolution.selectedBattery
+            )
+        }
+
         switch previous {
         case .charging:
             return ChargeStateResolution(

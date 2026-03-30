@@ -124,6 +124,31 @@ func policyEngineWaitsWithinBandAfterHoldingAtLimit() {
 }
 
 @Test
+func policyEngineKeepsChargingWithinBandWhenControllerAlreadyAllowsCharging() {
+    let engine = PolicyEngine()
+    let evaluation = engine.evaluate(
+        context: ChargeStateContext(
+            battery: BatterySnapshot(
+                chargePercent: 56,
+                isPowerConnected: true,
+                isCharging: true
+            ),
+            policy: ChargePolicy(upperLimit: 60, rechargeThreshold: 55),
+            controllerStatus: ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected,
+                isChargingEnabled: true
+            ),
+            now: Date(timeIntervalSince1970: 1_000)
+        ),
+        from: .suspended
+    )
+
+    #expect(evaluation.transition.current == .charging)
+    #expect(evaluation.transition.reason == .belowRechargeThreshold)
+}
+
+@Test
 func policyEngineUsesSelectedSnapshotFromSourcePriority() {
     let engine = PolicyEngine()
     let cachedSnapshot = BatterySnapshot(
