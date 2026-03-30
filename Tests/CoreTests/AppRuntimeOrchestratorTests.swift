@@ -711,6 +711,200 @@ func orchestratorDoesNotApplyCommandsWhenCapabilityProbeReportsVersionMismatch()
     #expect(update?.capabilityReport.helperInstallStatus?.state == .versionMismatch)
 }
 
+@Test
+func orchestratorRestoresPersistedPolicyOnStart() async {
+    let now = Date(timeIntervalSince1970: 1_100)
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: BatterySnapshot(
+            chargePercent: 74,
+            isPowerConnected: true,
+            isCharging: true,
+            observedAt: now,
+            source: .system
+        )
+    )
+    let controller = SequencedChargeController(
+        statuses: [
+            ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected,
+                isChargingEnabled: true,
+                checkedAt: now
+            )
+        ],
+        selfTestResult: ControllerSelfTestResult(
+            outcome: .passed,
+            message: "ok",
+            checkedAt: now
+        )
+    )
+    let persistedPolicy = ChargePolicy(
+        upperLimit: 88,
+        rechargeThreshold: 70,
+        temporaryOverrideUntil: Date(timeIntervalSince1970: 1_400)
+    )
+    let store = MockChargePolicyStore(loadedPolicy: persistedPolicy)
+    let orchestrator = AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: controller,
+        capabilityChecker: CapabilityChecker(
+            environment: MockRuntimeEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: now,
+                isChargingEnabled: true
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: now)
+        ),
+        policyStore: store,
+        dateProvider: FixedRuntimeDateProvider(now: now)
+    )
+
+    let stream = await orchestrator.makeUpdateStream()
+    let task = Task {
+        var iterator = stream.makeAsyncIterator()
+        return await iterator.next()
+    }
+
+    await orchestrator.start()
+    let update = await task.value
+
+    #expect(update?.appState.policy.upperLimit == 88)
+    #expect(update?.appState.policy.rechargeThreshold == 70)
+    #expect(store.savedPolicies().isEmpty)
+}
+
+@Test
+func orchestratorPersistsNormalizedPolicyWhenExpiredOverrideIsRestored() async {
+    let now = Date(timeIntervalSince1970: 1_500)
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: BatterySnapshot(
+            chargePercent: 79,
+            isPowerConnected: true,
+            isCharging: false,
+            observedAt: now,
+            source: .system
+        )
+    )
+    let controller = SequencedChargeController(
+        statuses: [
+            ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected,
+                isChargingEnabled: false,
+                checkedAt: now
+            )
+        ],
+        selfTestResult: ControllerSelfTestResult(
+            outcome: .passed,
+            message: "ok",
+            checkedAt: now
+        )
+    )
+    let store = MockChargePolicyStore(
+        loadedPolicy: ChargePolicy(
+            upperLimit: 80,
+            rechargeThreshold: 75,
+            temporaryOverrideUntil: Date(timeIntervalSince1970: 1_400)
+        )
+    )
+    let orchestrator = AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: controller,
+        capabilityChecker: CapabilityChecker(
+            environment: MockRuntimeEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: now,
+                isChargingEnabled: false
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: now)
+        ),
+        policyStore: store,
+        dateProvider: FixedRuntimeDateProvider(now: now)
+    )
+
+    await orchestrator.start()
+
+    let savedPolicies = store.savedPolicies()
+    #expect(savedPolicies.count == 1)
+    #expect(savedPolicies.first?.temporaryOverrideUntil == nil)
+}
+
+@Test
+func orchestratorFallsBackToDefaultPolicyWhenStoredPolicyLoadFails() async {
+    let now = Date(timeIntervalSince1970: 1_600)
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: BatterySnapshot(
+            chargePercent: 82,
+            isPowerConnected: true,
+            isCharging: false,
+            observedAt: now,
+            source: .system
+        )
+    )
+    let controller = SequencedChargeController(
+        statuses: [
+            ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected,
+                isChargingEnabled: false,
+                checkedAt: now
+            )
+        ],
+        selfTestResult: ControllerSelfTestResult(
+            outcome: .passed,
+            message: "ok",
+            checkedAt: now
+        )
+    )
+    let store = MockChargePolicyStore(loadError: MockChargePolicyStoreError.failedToLoad)
+    let orchestrator = AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: controller,
+        capabilityChecker: CapabilityChecker(
+            environment: MockRuntimeEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: now,
+                isChargingEnabled: false
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: now)
+        ),
+        policyStore: store,
+        dateProvider: FixedRuntimeDateProvider(now: now)
+    )
+
+    let stream = await orchestrator.makeUpdateStream()
+    let task = Task {
+        var iterator = stream.makeAsyncIterator()
+        return await iterator.next()
+    }
+
+    await orchestrator.start()
+    let update = await task.value
+
+    #expect(update?.appState.policy == ChargePolicy())
+}
+
 private actor SequencedChargeController: ChargeController {
     enum Command: Sendable, Equatable {
         case setChargingEnabled(Bool)
@@ -932,5 +1126,58 @@ private final class SequenceRuntimeDateProvider: @unchecked Sendable, DateProvid
         lock.lock()
         defer { lock.unlock() }
         return dates.isEmpty ? .distantPast : dates.removeFirst()
+    }
+}
+
+private enum MockChargePolicyStoreError: Error {
+    case failedToLoad
+    case failedToSave
+}
+
+private final class MockChargePolicyStore: @unchecked Sendable, ChargePolicyStoring {
+    private let lock = NSLock()
+    private let loadedPolicy: ChargePolicy?
+    private let loadError: MockChargePolicyStoreError?
+    private let saveError: MockChargePolicyStoreError?
+    private var recordedPolicies: [ChargePolicy] = []
+
+    init(
+        loadedPolicy: ChargePolicy? = nil,
+        loadError: MockChargePolicyStoreError? = nil,
+        saveError: MockChargePolicyStoreError? = nil
+    ) {
+        self.loadedPolicy = loadedPolicy
+        self.loadError = loadError
+        self.saveError = saveError
+    }
+
+    func load() throws -> ChargePolicy? {
+        if let loadError {
+            throw loadError
+        }
+
+        return loadedPolicy
+    }
+
+    func save(_ policy: ChargePolicy) throws {
+        if let saveError {
+            throw saveError
+        }
+
+        lock.lock()
+        recordedPolicies.append(policy)
+        lock.unlock()
+    }
+
+    func clear() throws {
+        lock.lock()
+        recordedPolicies.removeAll()
+        lock.unlock()
+    }
+
+    func savedPolicies() -> [ChargePolicy] {
+        lock.lock()
+        defer { lock.unlock() }
+        return recordedPolicies
     }
 }

@@ -20,11 +20,15 @@ final class MenuBarViewModel: ObservableObject {
     @Published private(set) var capabilityReport: CapabilityReport
     @Published private(set) var diagnosticsSummary: DiagnosticsSummary?
     @Published private(set) var diagnosticsExportPreview: String?
+    @Published private(set) var launchAtLoginEnabled: Bool
+    @Published private(set) var launchAtLoginStatusText: String
+    @Published private(set) var launchAtLoginErrorText: String?
     @Published var overrideDurationMinutes: Double
 
     private let policyEngine: PolicyEngine
     private let capabilityChecker: any CapabilityChecking
     private let controlAvailabilityResolver: any ControlAvailabilityResolving
+    private let launchAtLoginManager: any LaunchAtLoginManaging
     private let runtimeService: (any AppRuntimeServicing)?
     private let now: @Sendable () -> Date
     private var updatesTask: Task<Void, Never>?
@@ -37,6 +41,7 @@ final class MenuBarViewModel: ObservableObject {
         policyEngine: PolicyEngine = PolicyEngine(),
         capabilityChecker: any CapabilityChecking = CapabilityChecker(),
         controlAvailabilityResolver: any ControlAvailabilityResolving = ControlAvailabilityResolver(),
+        launchAtLoginManager: any LaunchAtLoginManaging = DisabledLaunchAtLoginManager(),
         runtimeService: (any AppRuntimeServicing)? = nil,
         now: @escaping @Sendable () -> Date = Date.init
     ) {
@@ -45,6 +50,7 @@ final class MenuBarViewModel: ObservableObject {
         self.policyEngine = policyEngine
         self.capabilityChecker = capabilityChecker
         self.controlAvailabilityResolver = controlAvailabilityResolver
+        self.launchAtLoginManager = launchAtLoginManager
         self.runtimeService = runtimeService
         self.now = now
 
@@ -59,10 +65,17 @@ final class MenuBarViewModel: ObservableObject {
         ).transition.reason
         self.transitionReason = seededReason
         self.capabilityReport = capabilityReport ?? capabilityChecker.evaluate(snapshot: appState.battery)
+        let launchAtLoginState = launchAtLoginManager.configureDefaultIfNeeded()
+        self.launchAtLoginEnabled = launchAtLoginState.isEnabled
+        self.launchAtLoginStatusText = launchAtLoginState.statusText
+        self.launchAtLoginErrorText = launchAtLoginState.errorText
         startRuntimeIfNeeded()
     }
 
-    convenience init(service: any AppRuntimeServicing) {
+    convenience init(
+        service: any AppRuntimeServicing,
+        launchAtLoginManager: any LaunchAtLoginManaging = DisabledLaunchAtLoginManager()
+    ) {
         self.init(
             appState: AppState(
                 battery: nil,
@@ -78,6 +91,7 @@ final class MenuBarViewModel: ObservableObject {
             ),
             transitionReason: .missingBattery,
             capabilityReport: CapabilityChecker().evaluate(snapshot: nil),
+            launchAtLoginManager: launchAtLoginManager,
             runtimeService: service
         )
     }
@@ -208,6 +222,13 @@ final class MenuBarViewModel: ObservableObject {
         presentation.diagnosticsSummaryText
     }
 
+    var launchAtLoginBinding: Binding<Bool> {
+        Binding(
+            get: { self.launchAtLoginEnabled },
+            set: { self.setLaunchAtLoginEnabled($0) }
+        )
+    }
+
     func recomputeState() {
         guard let runtimeService else {
             apply(policy: appState.policy)
@@ -258,6 +279,10 @@ final class MenuBarViewModel: ObservableObject {
                 self.diagnosticsSummary = summary
             }
         }
+    }
+
+    func setLaunchAtLoginEnabled(_ enabled: Bool) {
+        apply(launchAtLoginState: launchAtLoginManager.setEnabled(enabled))
     }
 
     func prepareDiagnosticsExport() {
@@ -317,6 +342,12 @@ final class MenuBarViewModel: ObservableObject {
         )
         transitionReason = evaluation.transition.reason
         capabilityReport = capabilityChecker.evaluate(snapshot: appState.battery)
+    }
+
+    private func apply(launchAtLoginState: LaunchAtLoginState) {
+        launchAtLoginEnabled = launchAtLoginState.isEnabled
+        launchAtLoginStatusText = launchAtLoginState.statusText
+        launchAtLoginErrorText = launchAtLoginState.errorText
     }
 
     private func startRuntimeIfNeeded() {

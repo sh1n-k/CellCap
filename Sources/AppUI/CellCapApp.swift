@@ -16,9 +16,15 @@ struct CellCapApp: App {
             batteryMonitor: batteryMonitor,
             controller: controller,
             capabilityProber: controller,
+            policyStore: UserDefaultsChargePolicyStore(),
             eventLogger: eventLogger
         )
-        _viewModel = StateObject(wrappedValue: MenuBarViewModel(service: orchestrator))
+        _viewModel = StateObject(
+            wrappedValue: MenuBarViewModel(
+                service: orchestrator,
+                launchAtLoginManager: LaunchAtLoginManager()
+            )
+        )
     }
 
     var body: some Scene {

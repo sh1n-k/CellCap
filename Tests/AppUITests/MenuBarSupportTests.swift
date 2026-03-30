@@ -172,6 +172,64 @@ func previewFactoryExposesExpectedFallbackStates() {
 }
 
 @MainActor
+@Test
+func viewModelExposesLaunchAtLoginStateFromManager() {
+    let manager = MockLaunchAtLoginManager(
+        configuredState: LaunchAtLoginState(
+            isEnabled: true,
+            statusText: "로그인 후 앱을 자동으로 열고 저장된 정책을 복구합니다.",
+            errorText: nil
+        )
+    )
+
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 80,
+            isPowerConnected: true,
+            isCharging: false
+        ),
+        chargeState: .holdingAtLimit,
+        launchAtLoginManager: manager
+    )
+
+    #expect(viewModel.launchAtLoginEnabled)
+    #expect(viewModel.launchAtLoginStatusText == "로그인 후 앱을 자동으로 열고 저장된 정책을 복구합니다.")
+}
+
+@MainActor
+@Test
+func viewModelUpdatesLaunchAtLoginStateWhenToggleChanges() {
+    let manager = MockLaunchAtLoginManager(
+        configuredState: LaunchAtLoginState(
+            isEnabled: true,
+            statusText: "자동 실행이 켜져 있습니다.",
+            errorText: nil
+        ),
+        updatedState: LaunchAtLoginState(
+            isEnabled: false,
+            statusText: "로그인 자동 실행이 꺼져 있어 다음 로그인 때는 자동 복구하지 않습니다.",
+            errorText: nil
+        )
+    )
+
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 80,
+            isPowerConnected: true,
+            isCharging: false
+        ),
+        chargeState: .holdingAtLimit,
+        launchAtLoginManager: manager
+    )
+
+    viewModel.setLaunchAtLoginEnabled(false)
+
+    #expect(viewModel.launchAtLoginEnabled == false)
+    #expect(viewModel.launchAtLoginStatusText == "로그인 자동 실행이 꺼져 있어 다음 로그인 때는 자동 복구하지 않습니다.")
+    #expect(manager.lastRequestedValue == false)
+}
+
+@MainActor
 private func makeViewModel(
     battery: BatterySnapshot,
     policy: ChargePolicy = ChargePolicy(upperLimit: 80, rechargeThreshold: 75),
@@ -181,6 +239,7 @@ private func makeViewModel(
         isChargingEnabled: false
     ),
     chargeState: ChargeState,
+    launchAtLoginManager: any LaunchAtLoginManaging = DisabledLaunchAtLoginManager(),
     now: Date = Date(timeIntervalSince1970: 1_000)
 ) -> MenuBarViewModel {
     MenuBarViewModel(
@@ -191,6 +250,30 @@ private func makeViewModel(
             chargeState: chargeState
         ),
         capabilityReport: CapabilityChecker().evaluate(snapshot: battery),
+        launchAtLoginManager: launchAtLoginManager,
         now: { now }
     )
+}
+
+private final class MockLaunchAtLoginManager: LaunchAtLoginManaging {
+    private let configuredState: LaunchAtLoginState
+    private let updatedState: LaunchAtLoginState
+    private(set) var lastRequestedValue: Bool?
+
+    init(
+        configuredState: LaunchAtLoginState,
+        updatedState: LaunchAtLoginState? = nil
+    ) {
+        self.configuredState = configuredState
+        self.updatedState = updatedState ?? configuredState
+    }
+
+    func configureDefaultIfNeeded() -> LaunchAtLoginState {
+        configuredState
+    }
+
+    func setEnabled(_ enabled: Bool) -> LaunchAtLoginState {
+        lastRequestedValue = enabled
+        return updatedState
+    }
 }

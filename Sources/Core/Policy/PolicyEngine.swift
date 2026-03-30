@@ -67,8 +67,10 @@ public struct PolicyEngine: Sendable {
             ? max(0, upperLimit - 5)
             : policy.rechargeThreshold
         let rechargeThreshold = min(upperLimit, max(0, computedThreshold))
-        let temporaryOverrideUntil = policy.temporaryOverrideUntil
-        let isTemporaryOverrideActive = temporaryOverrideUntil.map { $0 > now } ?? false
+        let temporaryOverrideUntil = policy.temporaryOverrideUntil.flatMap { overrideUntil in
+            overrideUntil > now ? overrideUntil : nil
+        }
+        let isTemporaryOverrideActive = temporaryOverrideUntil != nil
 
         return EffectiveChargePolicy(
             upperLimit: upperLimit,

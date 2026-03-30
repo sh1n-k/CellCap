@@ -56,6 +56,21 @@ struct PolicySettingsView: View {
                     disabledCallout(title: viewModel.temporaryOverrideNoticeTitle, reason: reason)
                 }
             }
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 14) {
+                sectionHeader(
+                    title: "자동 실행 및 복구",
+                    subtitle: "로그인 후 앱을 자동으로 열고 저장된 정책을 다시 적용합니다."
+                )
+
+                launchAtLoginCard
+
+                if let reason = viewModel.launchAtLoginErrorText {
+                    disabledCallout(title: "자동 실행 등록 확인 필요", reason: reason)
+                }
+            }
         }
         .padding(18)
         .background(
@@ -156,6 +171,44 @@ struct PolicySettingsView: View {
 
             Spacer(minLength: 0)
         }
+    }
+
+    private var launchAtLoginCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("로그인 시 자동 실행")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.82))
+
+                    Text(viewModel.launchAtLoginStatusText)
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.58))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                Toggle("", isOn: viewModel.launchAtLoginBinding)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .tint(Color(red: 0.88, green: 0.53, blue: 0.21))
+            }
+
+            Text("자동 실행이 켜져 있으면 앱 시작 직후 helper와 상태를 다시 맞추고 남아 있는 임시 해제 시간도 복구합니다.")
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(Color.black.opacity(0.56))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color(red: 0.98, green: 0.98, blue: 0.98).opacity(0.98))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+        )
     }
 
     private func sectionHeader(title: String, subtitle: String) -> some View {

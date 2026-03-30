@@ -45,6 +45,7 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
     private let batteryMonitor: any BatteryMonitoring
     private let controller: any ChargeController
     private let helperInstallChecker: any HelperInstallChecking
+    private let policyStore: any ChargePolicyStoring
     private let policyEngine: PolicyEngine
     private let dateProvider: any DateProviding
     private let eventLogger: any EventLogging
@@ -66,6 +67,7 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
         capabilityChecker: any CapabilityChecking = CapabilityChecker(),
         capabilityProber: (any HelperCapabilityProbing)? = nil,
         helperInstallChecker: any HelperInstallChecking = SystemHelperInstallChecker(),
+        policyStore: any ChargePolicyStoring = DiscardingChargePolicyStore(),
         policyEngine: PolicyEngine = PolicyEngine(),
         dateProvider: any DateProviding = SystemDateProvider(),
         eventLogger: any EventLogging = EventLogger()
@@ -73,6 +75,7 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
         self.batteryMonitor = batteryMonitor
         self.controller = controller
         self.helperInstallChecker = helperInstallChecker
+        self.policyStore = policyStore
         self.policyEngine = policyEngine
         self.dateProvider = dateProvider
         self.eventLogger = eventLogger
@@ -139,6 +142,8 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
         guard !started else { return }
         started = true
 
+        await restorePersistedPolicyIfNeeded()
+
         await eventLogger.record(
             level: .notice,
             category: .runtime,
@@ -188,6 +193,11 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             ],
             userFacingSummary: "충전 정책을 다시 계산합니다."
         )
+        await persistPolicy(
+            policy,
+            reason: "user-update",
+            userFacingSummary: "변경한 충전 정책을 저장하지 못했습니다."
+        )
         currentUpdate.appState.policy = policy
         await synchronize(
             trigger: .policyChanged,
@@ -234,6 +244,7 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
         preferredSnapshot: BatterySnapshot?,
         allowResynchronization: Bool
     ) async {
+        let previousPolicy = currentUpdate.appState.policy
         let now = dateProvider.now
         let systemSnapshot = preferredSnapshot ?? latestSystemSnapshot ?? (try? batteryMonitor.currentSnapshot(now: now))
         latestSystemSnapshot = systemSnapshot ?? latestSystemSnapshot
@@ -339,6 +350,14 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
         currentUpdate = nextUpdate
         broadcast(nextUpdate)
 
+        if nextUpdate.appState.policy != previousPolicy {
+            await persistPolicy(
+                nextUpdate.appState.policy,
+                reason: "normalized-\(trigger.debugName)",
+                userFacingSummary: "정규화된 충전 정책을 저장하지 못했습니다."
+            )
+        }
+
         if allowResynchronization && needsResynchronization(update: nextUpdate) {
             await eventLogger.record(
                 level: .warning,
@@ -428,6 +447,57 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             }
         default:
             return nil
+        }
+    }
+
+    private func restorePersistedPolicyIfNeeded() async {
+        do {
+            guard let persistedPolicy = try policyStore.load() else { return }
+            currentUpdate.appState.policy = persistedPolicy
+
+            await eventLogger.record(
+                level: .notice,
+                category: .runtime,
+                message: "저장된 충전 정책을 복구했습니다.",
+                details: [
+                    "upperLimit": String(persistedPolicy.upperLimit),
+                    "rechargeThreshold": String(persistedPolicy.rechargeThreshold),
+                    "overrideUntil": persistedPolicy.temporaryOverrideUntil?.ISO8601Format() ?? "nil",
+                    "isControlEnabled": String(persistedPolicy.isControlEnabled)
+                ],
+                userFacingSummary: "저장된 충전 정책을 불러왔습니다."
+            )
+        } catch {
+            await eventLogger.record(
+                level: .error,
+                category: .runtime,
+                message: "저장된 충전 정책을 읽지 못했습니다.",
+                details: [
+                    "error": error.localizedDescription
+                ],
+                userFacingSummary: "저장된 정책을 읽지 못해 기본 정책으로 시작합니다."
+            )
+        }
+    }
+
+    private func persistPolicy(
+        _ policy: ChargePolicy,
+        reason: String,
+        userFacingSummary: String
+    ) async {
+        do {
+            try policyStore.save(policy)
+        } catch {
+            await eventLogger.record(
+                level: .error,
+                category: .runtime,
+                message: "충전 정책을 저장하지 못했습니다.",
+                details: [
+                    "reason": reason,
+                    "error": error.localizedDescription
+                ],
+                userFacingSummary: userFacingSummary
+            )
         }
     }
 }
