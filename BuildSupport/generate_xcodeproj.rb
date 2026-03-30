@@ -7,6 +7,8 @@ require "xcodeproj"
 
 ROOT = Pathname(__dir__).parent.expand_path
 PROJECT_PATH = ROOT / "CellCap.xcodeproj"
+MARKETING_VERSION = "1.0.0"
+CURRENT_PROJECT_VERSION = "1"
 
 FileUtils.rm_rf(PROJECT_PATH)
 
@@ -36,6 +38,10 @@ def configure_build_settings(target, bundle_id: nil, generate_info_plist: true)
 
     if generate_info_plist
       settings["GENERATE_INFOPLIST_FILE"] = "YES"
+      settings["MARKETING_VERSION"] = MARKETING_VERSION
+      settings["CURRENT_PROJECT_VERSION"] = CURRENT_PROJECT_VERSION
+      settings["INFOPLIST_KEY_CFBundleShortVersionString"] = MARKETING_VERSION
+      settings["INFOPLIST_KEY_CFBundleVersion"] = CURRENT_PROJECT_VERSION
     else
       settings.delete("GENERATE_INFOPLIST_FILE")
     end
