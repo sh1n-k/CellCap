@@ -59,6 +59,10 @@ BuildSupport/dev/helper_status.sh
 ruby BuildSupport/generate_xcodeproj.rb
 ```
 
+로그인 자동 실행을 실험하려면 앱 번들이 코드 서명된 상태여야 합니다.
+현재 생성 스크립트는 `AppUI` 타깃에 macOS 로컬 개발 서명(`Sign to Run Locally`)이 가능하도록 설정합니다.
+설치된 앱이 ad hoc 무서명 상태로 배포되면 로그인 자동 실행 등록이 실패할 수 있습니다.
+
 ### 4. 앱에서 확인할 것
 - `Helper 설치`
 - `Helper 권한`

@@ -25,16 +25,22 @@ docs_group.new_file("../01_기획서.md")
 docs_group.new_file("../02_Prompts.md")
 docs_group.new_file("../03_공개API_충전제어_검토.md")
 
-def configure_build_settings(target, bundle_id: nil, generate_info_plist: true)
+def configure_build_settings(target, bundle_id: nil, generate_info_plist: true, enable_code_signing: false)
   target.build_configurations.each do |configuration|
     settings = configuration.build_settings
     settings["MACOSX_DEPLOYMENT_TARGET"] = "26.0"
     settings["SDKROOT"] = "macosx"
     settings["SWIFT_VERSION"] = "6.0"
     settings["SWIFT_STRICT_CONCURRENCY"] = "complete"
-    settings["CODE_SIGNING_ALLOWED"] = "NO"
+    settings["CODE_SIGNING_ALLOWED"] = enable_code_signing ? "YES" : "NO"
     settings["ENABLE_HARDENED_RUNTIME"] = "NO"
     settings["CLANG_ENABLE_MODULES"] = "YES"
+
+    if enable_code_signing
+      settings["CODE_SIGN_STYLE"] = "Automatic"
+    else
+      settings.delete("CODE_SIGN_STYLE")
+    end
 
     if generate_info_plist
       settings["GENERATE_INFOPLIST_FILE"] = "YES"
@@ -96,7 +102,7 @@ tests_target = project.new_target(:unit_test_bundle, "CoreTests", :osx, "26.0")
 configure_build_settings(smc_bridge_target, generate_info_plist: false)
 configure_build_settings(shared_target, bundle_id: "com.shin.cellcap.shared")
 configure_build_settings(core_target, bundle_id: "com.shin.cellcap.core")
-configure_build_settings(app_target, bundle_id: "com.shin.cellcap.app")
+configure_build_settings(app_target, bundle_id: "com.shin.cellcap.app", enable_code_signing: true)
 configure_build_settings(helper_target, generate_info_plist: false)
 configure_build_settings(tests_target, bundle_id: "com.shin.cellcap.tests")
 
