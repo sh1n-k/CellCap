@@ -1,6 +1,9 @@
 .DS_Store
 .build/
+build/
 dist/
 DerivedData/
 xcuserdata/
 *.xcuserstate
+AppIcon.preview-backup.png
+CellCap-snapshot.txt
