@@ -102,18 +102,6 @@ struct CapabilityStatusListView: View {
     }
 }
 
-struct MenuBarLabelView: View {
-    @ObservedObject var viewModel: MenuBarViewModel
-
-    var body: some View {
-        Label {
-            Text(viewModel.batteryPercentText)
-        } icon: {
-            Image(systemName: viewModel.menuBarSymbolName)
-        }
-    }
-}
-
 struct CellCapPanelBackground: View {
     var body: some View {
         LinearGradient(
