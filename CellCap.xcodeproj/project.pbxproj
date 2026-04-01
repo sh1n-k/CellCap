@@ -7,162 +7,163 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		037D4F94D457711FADEF0598 /* CapabilityReportResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E2E22B9ED60DCC50167EFC /* CapabilityReportResolver.swift */; };
-		03D2436B9621555ADFFCCA7C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F999235D7FA755AA4BE688D6 /* Cocoa.framework */; };
-		072468A0F7CB89A53060F9F1 /* ChargePolicyStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A03979A4E2C382F8D14FE487 /* ChargePolicyStoreTests.swift */; };
-		096CA61BA715B7102584EA42 /* HelperInstallCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03FD0067B4B529B5F3207FC0 /* HelperInstallCheckerTests.swift */; };
-		0C1D1D74CC35127DBB7524F7 /* DiagnosticsSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8430B92D4387A9462F1C964 /* DiagnosticsSummary.swift */; };
-		0F469139377CE06D191BAAF9 /* BatteryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 890296873AF6B0A5EC2B17FC /* BatteryMonitor.swift */; };
-		100CBFAE836973EE744935E7 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F1CB1AB72804CEB4E2A35C87 /* Shared.framework */; };
-		10C99F2A9746DABC59636AA5 /* ChargeStateResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91B382E3B8B9C2D221CE304 /* ChargeStateResolver.swift */; };
-		10DCBC035FA29B6440F46F6F /* ControllerCommandApplier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3149D37AE17C89C1B0A550CB /* ControllerCommandApplier.swift */; };
-		120EF981B6BA930E0D622353 /* PolicyEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484798A124634F847BE60BBE /* PolicyEngineTests.swift */; };
-		178EF843253E0D4CEBD80532 /* CellCapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D2CE1101C825489AD5947F /* CellCapApp.swift */; };
-		17991D64DAE89C9D65016743 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F999235D7FA755AA4BE688D6 /* Cocoa.framework */; };
-		17EC95DA879E3C3E302A5AF2 /* ChargeControlBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8CC2EF42E0F3CDEBF06A0A6 /* ChargeControlBackend.swift */; };
-		196626A597F38BCED57A79A2 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B6416EAB71EDCEB9C05A53B /* main.swift */; };
-		1997E70F3464CDDE9690E637 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F1CB1AB72804CEB4E2A35C87 /* Shared.framework */; };
-		1C85643BACAFE11B9E53DE1A /* CapabilityReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4835843A3C6A52FF54E5E4F /* CapabilityReport.swift */; };
-		2B4678D12BBE26095BFEAF14 /* HelperInstallChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BD09B97DF9602A702C8F094 /* HelperInstallChecker.swift */; };
-		2C8CC8840805674E9911D27C /* ChargeStateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148DDEF96936CDFDC2703166 /* ChargeStateMachineTests.swift */; };
-		2EAFB7DDA3712B75003CBBDE /* ChargePolicyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66E59D4DF7EE67176DD1A413 /* ChargePolicyStore.swift */; };
-		352E07CA2B41B58172CF7895 /* HelperXPCDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32B8AC4A68775D84C752BAC /* HelperXPCDTOs.swift */; };
-		363299E7A963C996B6B2A9E7 /* SystemBatterySnapshotProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 990E5B68E94789AF38C7F7C1 /* SystemBatterySnapshotProvider.swift */; };
-		3C0EB5D040EF2DBF8190AF6E /* ControlAvailabilityResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5993E525AC1B69034B7C102A /* ControlAvailabilityResolver.swift */; };
-		3DA784136B7F04E65028D41E /* AppRuntimeOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7649C5E56396D6AEA17FC4 /* AppRuntimeOrchestrator.swift */; };
-		4612D24F87A7D4F44A3244EB /* HelperXPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCE1BAEDA722390F60A35372 /* HelperXPCClient.swift */; };
-		46EF29216401E4DA703CA821 /* HelperXPCDTOsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25E43679D1FDF76B172FAECF /* HelperXPCDTOsTests.swift */; };
-		47252055A2AA6D196C992F8B /* AppRuntimeOrchestratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CC40527E2005ED1D6EAD45 /* AppRuntimeOrchestratorTests.swift */; };
-		4801C07D8A840C57AC183661 /* LaunchAtLoginManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0792E97079547EC96809AEF /* LaunchAtLoginManager.swift */; };
-		484D4D785843C985F0400F6E /* ChargeStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98D937CC71C6A6B0DD720FFB /* ChargeStateMachine.swift */; };
-		495ACBCC7E3ACF7062D3092F /* ChargePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63E7425641AFB45C72AA8D7 /* ChargePolicy.swift */; };
-		4D93636EDFCD9D38A7AD12D5 /* CellCapHelperListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6AE41BC3F07D04D29586DF /* CellCapHelperListener.swift */; };
-		50D4FEEBDADDF26EF4F68ADC /* MenuBarPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFFB3E0AE891841B2F6D009 /* MenuBarPresentation.swift */; };
-		50DEABF60EAA0CC8255453CA /* MockChargeControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39AA128E469537E08B5BFE31 /* MockChargeControllerTests.swift */; };
-		53CFA60D4C5B8AE28E2F241E /* Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A5B1443365F9C56E7F86B13C /* Core.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		55F7E00BFBC426AED243950D /* AppRuntimeSupportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69753EB8980DB346C97ECAD8 /* AppRuntimeSupportTests.swift */; };
-		58AD792B9E43F2EF68587DD4 /* XPCChargeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B07BD6A94FF02B4535240D89 /* XPCChargeController.swift */; };
-		643F74070F9DB60E0434A8A0 /* CapabilityChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF97BB52C74EB7687E27573 /* CapabilityChecker.swift */; };
-		677517BF40DC29BCFA6F0B06 /* DiagnosticEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4884AADBF292DAB216078B5 /* DiagnosticEvent.swift */; };
-		68247D9BA728354656F8587F /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5B1443365F9C56E7F86B13C /* Core.framework */; };
-		6AC38299931EBD250EA6EE74 /* PolicySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B36F02D54ADC5FE5FC9D1C9 /* PolicySettingsView.swift */; };
-		78B701CFE9D4F424F3681EEA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F999235D7FA755AA4BE688D6 /* Cocoa.framework */; };
-		792A74805AB1DE9871FFD75E /* AppRuntimeTrigger+Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC583B67841376F441050E41 /* AppRuntimeTrigger+Debug.swift */; };
-		82055B7F15E78125DFBF8EC9 /* MockChargeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E2C65D0192556FA25B5483E /* MockChargeController.swift */; };
-		831B990B7507BB267E5FCC39 /* BatteryMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2D520948D4C99396106094 /* BatteryMonitorTests.swift */; };
-		8582A8E44C27CBDCFD681C98 /* libCellCapSMCBridge.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A1173CCE9D7C0E896E4572F8 /* libCellCapSMCBridge.a */; };
-		893D5A677923E46B968127A3 /* ChargeState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC7C77F06BDD751850EC810E /* ChargeState.swift */; };
-		8A6D58AA62A49EB127F87744 /* RuntimeSafetyGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063616D96A19CB128D6C8591 /* RuntimeSafetyGate.swift */; };
-		8D7B66068AC794A1615B94FB /* XPCChargeControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 541585C7B88D6C44CE4A5DE0 /* XPCChargeControllerTests.swift */; };
-		8DD3070B69314C65DDE8423B /* CapabilityCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F1659C7668C0749BFDBECC /* CapabilityCheckerTests.swift */; };
-		8EBA3C9D277506DEC42D7DE2 /* SelfTestPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445687AF6E33155FA33C2EA8 /* SelfTestPolicy.swift */; };
-		975B5A74AAC887D9235C3A26 /* CellCapSMCBridge.c in Sources */ = {isa = PBXBuildFile; fileRef = F0BD2A6DF8BEB5F63859A69C /* CellCapSMCBridge.c */; };
-		9CE33466E693CA7F90658E77 /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5B1443365F9C56E7F86B13C /* Core.framework */; };
-		9EEE113ABD9E2CE83C25F17C /* Helper in Frameworks */ = {isa = PBXBuildFile; fileRef = 779E77F9F2869E48F5860DDD /* Helper */; };
-		9F0B33144CBFE6AAFD1BA63B /* PolicyEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBE002CC97D94BFDEE2DC6F4 /* PolicyEngine.swift */; };
-		A0DAE0016A9AE2D13630FAF9 /* EventLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FBEB5ADBEE93378098820F /* EventLoggerTests.swift */; };
-		A7DDF3A18BD47E2F71F6C786 /* CapabilityStatusListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B66AE15B60FD7DE1FE52702 /* CapabilityStatusListView.swift */; };
-		A9EE250363D9AD1F45CD0392 /* StatusSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DC1FB2B0AB3275D4CA109F4 /* StatusSummaryView.swift */; };
-		ABC58744F606A60F05139765 /* ChargePolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A33E59F0ABAF9EB400B91A /* ChargePolicyTests.swift */; };
-		ACA78533D55BB56C71703366 /* DirectSMCChargeControlBackendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1E3C9F7DC7A94FA2E4CECE /* DirectSMCChargeControlBackendTests.swift */; };
-		ACC844A116126D97E36FFAB3 /* DirectSMCChargeControlBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82B27236EE0CCF2B939E0061 /* DirectSMCChargeControlBackend.swift */; };
-		AE26D8B0398B636C54FEBB40 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F999235D7FA755AA4BE688D6 /* Cocoa.framework */; };
-		B03EEB64F003546F3AB714D5 /* MenuBarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C144AA54598107C6EC9C2912 /* MenuBarViewModel.swift */; };
-		B38516403B8FC944C944E711 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD907A4238F1ADB34527AC6 /* AppState.swift */; };
-		BEC766DA87772B2ABD5B14FC /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F1CB1AB72804CEB4E2A35C87 /* Shared.framework */; };
-		C991EB5C3575938BD60CDFE7 /* EventLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12742E5BA9B2A610ECF85CCE /* EventLogger.swift */; };
-		C9A60F8650D60B40A2639B69 /* CellCapSMCBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AA7164CC86BD6462B037BEC /* CellCapSMCBridge.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CB6A55D952386FD1447AD995 /* CellCapHelperXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B9099AA8A869BA1FE14EA82 /* CellCapHelperXPCProtocol.swift */; };
-		CF6FDD085BF6E94D46654C04 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BB71C84624042A6AC5C96B /* RootView.swift */; };
-		D2EDB4F2700FBF4DFA7BD4CD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F999235D7FA755AA4BE688D6 /* Cocoa.framework */; };
-		D3B60ABD49F676873F8BB94E /* CellCapHelperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409E46AC2AF62375FA41F142 /* CellCapHelperService.swift */; };
-		D8A703AC3488588FBC8548CB /* BatterySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9DDA72A720C694E0FFEA64A /* BatterySnapshot.swift */; };
-		DBE84668C0AA24B83EE07A96 /* Shared.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F1CB1AB72804CEB4E2A35C87 /* Shared.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EBA4592BB9050966F2CAA7BD /* ChargeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44A27A7CDD72BAE369ACE94 /* ChargeController.swift */; };
-		EC12AC75751DED10B89C2FF0 /* MenuBarPreviewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BF9192EA9AB2307B839D1C /* MenuBarPreviewFactory.swift */; };
-		EF9D38D9BA64B2D3F03E529F /* ControllerStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDAA603CACE83B15163C774 /* ControllerStatus.swift */; };
-		F62F44C68297ECC714CD3756 /* CellCapHelperServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C583C9E344188C0500F86B88 /* CellCapHelperServiceTests.swift */; };
-		F750820C56CA4E115D1C50F7 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F1CB1AB72804CEB4E2A35C87 /* Shared.framework */; };
-		F86D9C132521D0756A49C1AA /* HelperInstallStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACEC395BD5019E65D093E8F /* HelperInstallStatus.swift */; };
-		FA519FE957BB1ABC5FA0B57B /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5B1443365F9C56E7F86B13C /* Core.framework */; };
-		FA595E98855BA72FBAC933F0 /* ChargeStateResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A778B64D0B4DF44D59C0FB3 /* ChargeStateResolverTests.swift */; };
+		017166200B04807B3D9F30DD /* CellCapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90977B6B5CE5DAD9B6DBE0FA /* CellCapApp.swift */; };
+		040BE29BD6D1DB970BE07332 /* PolicyEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B82FF2B755F62DE7E261A63 /* PolicyEngine.swift */; };
+		0AF1A16A671F09E5E6503472 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E26ED66EC4159E9C6EF3919A /* Cocoa.framework */; };
+		0B22371B86080D384D889AA1 /* HelperInstallChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2ED7A22911E5ECA0052BBE /* HelperInstallChecker.swift */; };
+		0D31EBD1A4922438E411E0EC /* MenuBarPreviewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CBACBC65C70F1CAB701DBD6 /* MenuBarPreviewFactory.swift */; };
+		0E190CA89DCF1F4DAC028875 /* ChargeStateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E3B201F801FE3BA8C6194 /* ChargeStateMachineTests.swift */; };
+		0F4287446215670E81D9C53E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F2D71EF75F00D3868F88A3AB /* Assets.xcassets */; };
+		116577B5532C7EC0658AD420 /* AppRuntimeOrchestratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8CEDE604A7B35500248974D /* AppRuntimeOrchestratorTests.swift */; };
+		17C20D8CACECD5F9531A1542 /* ControllerCommandApplier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6071A0F8A3600132041DF94E /* ControllerCommandApplier.swift */; };
+		1B1CEA558D8B3F6E5BD7A5D9 /* ChargePolicyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82E6A3B7098FEDE70749E463 /* ChargePolicyStore.swift */; };
+		1BC28B069B875AEA7A01E869 /* CellCapSMCBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = E3448CD48B5D7620D8E229B5 /* CellCapSMCBridge.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		200911529656928CB22032E1 /* EventLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63F393BE1C1BF1634D283AC0 /* EventLoggerTests.swift */; };
+		20C9E657A37173946B80D166 /* libCellCapSMCBridge.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FAC1A16D176351EEDC5636D /* libCellCapSMCBridge.a */; };
+		21E367A24272E5B80C050C5F /* AppRuntimeSupportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D474E94DDCBD167A3C3C4C /* AppRuntimeSupportTests.swift */; };
+		28320D918DEE6280DCD16C59 /* BatteryMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B70A25F31A0228594D3A595 /* BatteryMonitorTests.swift */; };
+		2BF907AD69F511290A685B5E /* EventLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CACAAAD8147D13CBA0DDE3 /* EventLogger.swift */; };
+		2C5F2319147DFB54109BB90A /* CellCapHelperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1544B2E53C5FA5D4184645AA /* CellCapHelperService.swift */; };
+		2CEF48CCE177FF8E549B5831 /* CapabilityChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26DA362F7505B5B801F07E8C /* CapabilityChecker.swift */; };
+		2D832000950255DA2AD921C3 /* CellCapSMCBridge.c in Sources */ = {isa = PBXBuildFile; fileRef = B71F5F71BD31633810986396 /* CellCapSMCBridge.c */; };
+		35FFD4E3C4CA193A8875E768 /* HelperXPCDTOsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA1219A6A970B82CECE39EB /* HelperXPCDTOsTests.swift */; };
+		37E4B2DD31609B2CCC1BDA41 /* DiagnosticEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD29BAD4D09197472B7CDD4E /* DiagnosticEvent.swift */; };
+		38F9C08AE7200DC4CE64F1DB /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D1772F434DECBEE5079E09 /* main.swift */; };
+		3AB10171C843B4E623F65925 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 230FA75AF582FC195490E1BA /* Shared.framework */; };
+		3D4E8E5DD09D019C82C7523D /* MockChargeControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42EA461F2736BF3BF6DE0471 /* MockChargeControllerTests.swift */; };
+		3D8860EB6AC40534FFCA4382 /* DiagnosticsSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0785657003C49F7F6DC43EF /* DiagnosticsSummary.swift */; };
+		3E8ECE72BD6F1348DDE7BD1C /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 230FA75AF582FC195490E1BA /* Shared.framework */; };
+		42FF55D77B66E3A815BA3807 /* ChargeStateResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C67DDF4C4E23B66F215A7EEE /* ChargeStateResolverTests.swift */; };
+		4672A4A637043B49EAB89502 /* Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0F96715D99013F8A6E5257B9 /* Core.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		4745AADAAB5568AF12765E0F /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70B4939CE3E2D2E30018003E /* RootView.swift */; };
+		48AB32AFE3545EA92E149A63 /* CellCapHelperServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FE21E976F9472D4CC7227A /* CellCapHelperServiceTests.swift */; };
+		4E4F401A64C91F15A0D45773 /* HelperInstallStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D6BF540FC0A1E492068E22A /* HelperInstallStatus.swift */; };
+		50F40D095F6D238685F8D0C2 /* CapabilityReportResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A16F7E15EB39452C087653 /* CapabilityReportResolver.swift */; };
+		51712FAF333663508565B087 /* MenuBarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B972619AAC89AAD617FDED57 /* MenuBarViewModel.swift */; };
+		51A1FEBEB15AF9F3B84F8759 /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F96715D99013F8A6E5257B9 /* Core.framework */; };
+		5318F818164CE23226384F07 /* LaunchAtLoginManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18EC5104CFC1B3E7E4338258 /* LaunchAtLoginManager.swift */; };
+		57751EE411242F06C717D4F8 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA7C317560D220FA2D74DF3D /* AppState.swift */; };
+		58937B3B9530FEBF6C18CA3D /* RuntimeSafetyGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1438AED8A5F614A60898AA10 /* RuntimeSafetyGate.swift */; };
+		5D3D2EFC05178314E5E17FD6 /* CellCapHelperXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44820475E16247ED693D7F /* CellCapHelperXPCProtocol.swift */; };
+		654C8B5DCC7FF0E8E67EA93B /* XPCChargeControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 723B0EC8D058011B9D5C0A6C /* XPCChargeControllerTests.swift */; };
+		694DFEF65CF7E246BBEC2692 /* ChargePolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D48AFB38EF375078A342DDF7 /* ChargePolicyTests.swift */; };
+		6FFA371EDB544DAA64FFEA3E /* HelperInstallCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1F01062C0223908D28E464 /* HelperInstallCheckerTests.swift */; };
+		70429E64E32EF961F59A93F3 /* PolicySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCE5B3FC36F3EDD49C13AAA /* PolicySettingsView.swift */; };
+		727DEE274BBBA80762CAB23B /* DirectSMCChargeControlBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D32F90B70A9E1FDAE0FCBD /* DirectSMCChargeControlBackend.swift */; };
+		7AF9972E43ED3880A139EAFB /* SelfTestPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 358D84936C23C88652A01EA0 /* SelfTestPolicy.swift */; };
+		7B11D55473FAAAE929F0D005 /* CapabilityStatusListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE88C6861C20A56D0510F13 /* CapabilityStatusListView.swift */; };
+		840A32A823FF5E9CFD316290 /* BatterySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C466BE7A369C1C91D62743B /* BatterySnapshot.swift */; };
+		8DCA18A838161758D81F90D0 /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F96715D99013F8A6E5257B9 /* Core.framework */; };
+		8F1FD1DDF0A8EBADBB036014 /* ChargePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81E5C10B74D958E9AD2DCB90 /* ChargePolicy.swift */; };
+		997AEDB7101F9116F1274B55 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 230FA75AF582FC195490E1BA /* Shared.framework */; };
+		9FB1CE32AC9F639C7BB08715 /* ChargeStateResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 283D0F647F553E3A093EFFF4 /* ChargeStateResolver.swift */; };
+		A2F86BE19A057FD15B0DB146 /* XPCChargeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97CF0AC4D6E6BC79CBBBB820 /* XPCChargeController.swift */; };
+		A55CA4AD017C166A5906A098 /* PolicyEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E87D57E9E40A8B34C353CC /* PolicyEngineTests.swift */; };
+		A8E5564697A780214ABE3B66 /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F96715D99013F8A6E5257B9 /* Core.framework */; };
+		AAC3B7BAE3CC4D529FE62160 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E26ED66EC4159E9C6EF3919A /* Cocoa.framework */; };
+		AF1653B7CBC88F0EF7F72D98 /* DirectSMCChargeControlBackendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D14EE719A26C4C640F51527 /* DirectSMCChargeControlBackendTests.swift */; };
+		B572DAD050EB332ED7A8320F /* CellCapHelperListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 662FEA965A3B56D4245E94FB /* CellCapHelperListener.swift */; };
+		B85CC911B48DAD72A7A69569 /* Helper in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F70646DFFEE86B3A6771FC6 /* Helper */; };
+		BE2C226BFB2113ADBF0035DC /* ControlAvailabilityResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C0749302C247899E35074 /* ControlAvailabilityResolver.swift */; };
+		C02ECC493020B7F263E09FED /* MockChargeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 022DD9C2969B79580D69C54B /* MockChargeController.swift */; };
+		C359CFBC16B82178E7CF02BF /* BatteryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485FDC7453A1EA0B985338FC /* BatteryMonitor.swift */; };
+		CBE96071384DF30098E9B7A5 /* ChargeControlBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9399F59CF995CFD1161F674 /* ChargeControlBackend.swift */; };
+		CDE858FCC18FCD5978A7FFE0 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E26ED66EC4159E9C6EF3919A /* Cocoa.framework */; };
+		D0BC564FE7489559D891F0CF /* CapabilityCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB05C31321C377D725E72B /* CapabilityCheckerTests.swift */; };
+		D571053FEBE6672FB0B1D9C6 /* AppRuntimeTrigger+Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB6E73ABC16F594824147073 /* AppRuntimeTrigger+Debug.swift */; };
+		D72F0F73F27B5A0513DDE4D6 /* SystemBatterySnapshotProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FD0A79F5511AAE4D129B2A4 /* SystemBatterySnapshotProvider.swift */; };
+		DA663A16BE5C0279816C6A26 /* HelperXPCDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A18B45BF4F4163A1D14C678 /* HelperXPCDTOs.swift */; };
+		DC94AAF24A77618B54373F96 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 230FA75AF582FC195490E1BA /* Shared.framework */; };
+		DE32336A1A4A6877D53050F7 /* HelperXPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B1DF817163219DC757DF41 /* HelperXPCClient.swift */; };
+		DEB9182B42ABE19B7A002FFB /* ChargeStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29D43848610C43255C7E66F /* ChargeStateMachine.swift */; };
+		E0C385F853F9A2B37BB07B50 /* MenuBarPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7ED7555D1006B97BD004164 /* MenuBarPresentation.swift */; };
+		E3F0378237D8C922E2451DB6 /* ChargeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA5E5097BD2E744845737E05 /* ChargeController.swift */; };
+		E42BE82E4435BA522CFD5112 /* StatusSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461558F0CF833985BC07B137 /* StatusSummaryView.swift */; };
+		E4654D57C6FEB836D904B5DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E26ED66EC4159E9C6EF3919A /* Cocoa.framework */; };
+		EA74504A734E635163460619 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E26ED66EC4159E9C6EF3919A /* Cocoa.framework */; };
+		EABA03DAC636846EBA48B04D /* ChargePolicyStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8421DDEFCA01BE5F1BC4A0 /* ChargePolicyStoreTests.swift */; };
+		EDA7E20BB57CF6E9F924FDBC /* ControllerStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E19C49376360204EB21B350 /* ControllerStatus.swift */; };
+		EEDEF67CA4F8B826E2D36DF2 /* Shared.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 230FA75AF582FC195490E1BA /* Shared.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EEF551477E98B8D930EFC354 /* CapabilityReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECFE5228715052B5CAE295AC /* CapabilityReport.swift */; };
+		F839A029B95914AC988A52BF /* ChargeState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C177EC3DAED0297B5C350604 /* ChargeState.swift */; };
+		FDE330622982D22F93ABDB01 /* AppRuntimeOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2477406D5CC6DA4AFE78324 /* AppRuntimeOrchestrator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		3D877C7B7B1F58AF58E8E319 /* PBXContainerItemProxy */ = {
+		31A4FFAE29D911B8AD1A7842 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 9582B8F0FAF1E26782875012 /* Project object */;
+			containerPortal = C4F5A597D9781D976684479C /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = EAC2FC8547E2D1033F7AA64B;
-			remoteInfo = Core;
-		};
-		3F35131815F9639B351743FC /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9582B8F0FAF1E26782875012 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = EAC2FC8547E2D1033F7AA64B;
-			remoteInfo = Core;
-		};
-		51298124A3E2B670CA4E4965 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9582B8F0FAF1E26782875012 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = EAC2FC8547E2D1033F7AA64B;
-			remoteInfo = Core;
-		};
-		7A91968A66405F65BD3D179F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9582B8F0FAF1E26782875012 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7596B6D3B09F0334CF6562E3;
+			remoteGlobalIDString = 6DA4572B7B2D117A0FA382CB;
 			remoteInfo = Shared;
 		};
-		851F47F165187A222CF6CE0D /* PBXContainerItemProxy */ = {
+		442A9F98D71A84EAEB4C6851 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 9582B8F0FAF1E26782875012 /* Project object */;
+			containerPortal = C4F5A597D9781D976684479C /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 7596B6D3B09F0334CF6562E3;
+			remoteGlobalIDString = 6DA4572B7B2D117A0FA382CB;
 			remoteInfo = Shared;
 		};
-		8EC64FFE4A00B1BD7F84ACE3 /* PBXContainerItemProxy */ = {
+		4AD8238EBF7FB9129BF2A383 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 9582B8F0FAF1E26782875012 /* Project object */;
+			containerPortal = C4F5A597D9781D976684479C /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 7596B6D3B09F0334CF6562E3;
-			remoteInfo = Shared;
+			remoteGlobalIDString = 4613F591C593AF147176E8E1;
+			remoteInfo = Core;
 		};
-		AA4B1E4A17DCF05E31FCAC3B /* PBXContainerItemProxy */ = {
+		87F3D68AD67569242598F08E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 9582B8F0FAF1E26782875012 /* Project object */;
+			containerPortal = C4F5A597D9781D976684479C /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 0BBAB9A35234DBF17E132529;
+			remoteGlobalIDString = 4613F591C593AF147176E8E1;
+			remoteInfo = Core;
+		};
+		BA3F52138B80DD228D330905 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C4F5A597D9781D976684479C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4613F591C593AF147176E8E1;
+			remoteInfo = Core;
+		};
+		CD33186CDB6031678CDC570D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C4F5A597D9781D976684479C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6F63F9233821DC0D493E61F6;
 			remoteInfo = CellCapSMCBridge;
 		};
-		CA1242D88D0716FB3F8D70CF /* PBXContainerItemProxy */ = {
+		EC30CA0A80DA0120BC0E8188 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 9582B8F0FAF1E26782875012 /* Project object */;
+			containerPortal = C4F5A597D9781D976684479C /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 7596B6D3B09F0334CF6562E3;
+			remoteGlobalIDString = 6DA4572B7B2D117A0FA382CB;
 			remoteInfo = Shared;
 		};
-		D0F1CD1E8CC4FF7026A5E489 /* PBXContainerItemProxy */ = {
+		ED759C2597E6B146B4B83111 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 9582B8F0FAF1E26782875012 /* Project object */;
+			containerPortal = C4F5A597D9781D976684479C /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 51163A5045FF93BCF290A18B;
+			remoteGlobalIDString = B620B73710DC6E3E6AF7A8FA;
 			remoteInfo = Helper;
+		};
+		EED28EC556D971D3F6D1DCED /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C4F5A597D9781D976684479C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6DA4572B7B2D117A0FA382CB;
+			remoteInfo = Shared;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		567D1C25638AC1FEDF2DC7D7 /* Embed Frameworks */ = {
+		E364B1A888841807ED0C7E12 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				53CFA60D4C5B8AE28E2F241E /* Core.framework in Embed Frameworks */,
-				DBE84668C0AA24B83EE07A96 /* Shared.framework in Embed Frameworks */,
+				4672A4A637043B49EAB89502 /* Core.framework in Embed Frameworks */,
+				EEDEF67CA4F8B826E2D36DF2 /* Shared.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -170,398 +171,383 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		03FD0067B4B529B5F3207FC0 /* HelperInstallCheckerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelperInstallCheckerTests.swift; sourceTree = "<group>"; };
-		063616D96A19CB128D6C8591 /* RuntimeSafetyGate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RuntimeSafetyGate.swift; path = Runtime/RuntimeSafetyGate.swift; sourceTree = "<group>"; };
-		06BF9192EA9AB2307B839D1C /* MenuBarPreviewFactory.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MenuBarPreviewFactory.swift; path = ViewModels/MenuBarPreviewFactory.swift; sourceTree = "<group>"; };
-		0B6416EAB71EDCEB9C05A53B /* main.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		0DC1FB2B0AB3275D4CA109F4 /* StatusSummaryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StatusSummaryView.swift; path = Views/StatusSummaryView.swift; sourceTree = "<group>"; };
-		0E410A00C4433063A330F3B5 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; name = README.md; path = ../README.md; sourceTree = "<group>"; };
-		12742E5BA9B2A610ECF85CCE /* EventLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EventLogger.swift; path = Diagnostics/EventLogger.swift; sourceTree = "<group>"; };
-		12C3B40BB7A8F8370A86776B /* CoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		148DDEF96936CDFDC2703166 /* ChargeStateMachineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargeStateMachineTests.swift; sourceTree = "<group>"; };
-		16F1659C7668C0749BFDBECC /* CapabilityCheckerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CapabilityCheckerTests.swift; sourceTree = "<group>"; };
-		1ACEC395BD5019E65D093E8F /* HelperInstallStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HelperInstallStatus.swift; path = Models/HelperInstallStatus.swift; sourceTree = "<group>"; };
-		1F425F23F1465AEFBEA0D68B /* 03_공개API_충전제어_검토.md */ = {isa = PBXFileReference; includeInIndex = 1; name = "03_공개API_충전제어_검토.md"; path = "../03_공개API_충전제어_검토.md"; sourceTree = "<group>"; };
-		25E43679D1FDF76B172FAECF /* HelperXPCDTOsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelperXPCDTOsTests.swift; sourceTree = "<group>"; };
-		3149D37AE17C89C1B0A550CB /* ControllerCommandApplier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ControllerCommandApplier.swift; path = Runtime/ControllerCommandApplier.swift; sourceTree = "<group>"; };
-		39AA128E469537E08B5BFE31 /* MockChargeControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MockChargeControllerTests.swift; sourceTree = "<group>"; };
-		3A7649C5E56396D6AEA17FC4 /* AppRuntimeOrchestrator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppRuntimeOrchestrator.swift; path = Runtime/AppRuntimeOrchestrator.swift; sourceTree = "<group>"; };
-		409E46AC2AF62375FA41F142 /* CellCapHelperService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CellCapHelperService.swift; sourceTree = "<group>"; };
-		40E9C9583BC71E5F14C98210 /* 02_Prompts.md */ = {isa = PBXFileReference; includeInIndex = 1; name = 02_Prompts.md; path = ../02_Prompts.md; sourceTree = "<group>"; };
-		445687AF6E33155FA33C2EA8 /* SelfTestPolicy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SelfTestPolicy.swift; path = Runtime/SelfTestPolicy.swift; sourceTree = "<group>"; };
-		45FBEB5ADBEE93378098820F /* EventLoggerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EventLoggerTests.swift; sourceTree = "<group>"; };
-		484798A124634F847BE60BBE /* PolicyEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PolicyEngineTests.swift; sourceTree = "<group>"; };
-		4C6AE41BC3F07D04D29586DF /* CellCapHelperListener.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CellCapHelperListener.swift; sourceTree = "<group>"; };
-		4FFFB3E0AE891841B2F6D009 /* MenuBarPresentation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MenuBarPresentation.swift; path = ViewModels/MenuBarPresentation.swift; sourceTree = "<group>"; };
-		541585C7B88D6C44CE4A5DE0 /* XPCChargeControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = XPCChargeControllerTests.swift; sourceTree = "<group>"; };
-		5993E525AC1B69034B7C102A /* ControlAvailabilityResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ControlAvailabilityResolver.swift; path = ViewModels/ControlAvailabilityResolver.swift; sourceTree = "<group>"; };
-		5BD907A4238F1ADB34527AC6 /* AppState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppState.swift; path = Models/AppState.swift; sourceTree = "<group>"; };
-		64CC40527E2005ED1D6EAD45 /* AppRuntimeOrchestratorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRuntimeOrchestratorTests.swift; sourceTree = "<group>"; };
-		66E59D4DF7EE67176DD1A413 /* ChargePolicyStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargePolicyStore.swift; path = Runtime/ChargePolicyStore.swift; sourceTree = "<group>"; };
-		68A33E59F0ABAF9EB400B91A /* ChargePolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargePolicyTests.swift; sourceTree = "<group>"; };
-		69753EB8980DB346C97ECAD8 /* AppRuntimeSupportTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRuntimeSupportTests.swift; sourceTree = "<group>"; };
-		6BD09B97DF9602A702C8F094 /* HelperInstallChecker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HelperInstallChecker.swift; path = XPC/HelperInstallChecker.swift; sourceTree = "<group>"; };
-		6E2C65D0192556FA25B5483E /* MockChargeController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MockChargeController.swift; path = Controllers/MockChargeController.swift; sourceTree = "<group>"; };
-		779E77F9F2869E48F5860DDD /* Helper */ = {isa = PBXFileReference; includeInIndex = 0; path = Helper; sourceTree = BUILT_PRODUCTS_DIR; };
-		7B9099AA8A869BA1FE14EA82 /* CellCapHelperXPCProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CellCapHelperXPCProtocol.swift; path = XPC/CellCapHelperXPCProtocol.swift; sourceTree = "<group>"; };
-		7D1E3C9F7DC7A94FA2E4CECE /* DirectSMCChargeControlBackendTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DirectSMCChargeControlBackendTests.swift; sourceTree = "<group>"; };
-		82B27236EE0CCF2B939E0061 /* DirectSMCChargeControlBackend.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DirectSMCChargeControlBackend.swift; sourceTree = "<group>"; };
-		88D2CE1101C825489AD5947F /* CellCapApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CellCapApp.swift; sourceTree = "<group>"; };
-		890296873AF6B0A5EC2B17FC /* BatteryMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BatteryMonitor.swift; path = Monitoring/BatteryMonitor.swift; sourceTree = "<group>"; };
-		8B66AE15B60FD7DE1FE52702 /* CapabilityStatusListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CapabilityStatusListView.swift; path = Views/CapabilityStatusListView.swift; sourceTree = "<group>"; };
-		8F2D520948D4C99396106094 /* BatteryMonitorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BatteryMonitorTests.swift; sourceTree = "<group>"; };
-		98D937CC71C6A6B0DD720FFB /* ChargeStateMachine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargeStateMachine.swift; path = StateMachine/ChargeStateMachine.swift; sourceTree = "<group>"; };
-		990E5B68E94789AF38C7F7C1 /* SystemBatterySnapshotProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SystemBatterySnapshotProvider.swift; path = Monitoring/SystemBatterySnapshotProvider.swift; sourceTree = "<group>"; };
-		9A778B64D0B4DF44D59C0FB3 /* ChargeStateResolverTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargeStateResolverTests.swift; sourceTree = "<group>"; };
-		9AA7164CC86BD6462B037BEC /* CellCapSMCBridge.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = CellCapSMCBridge.h; path = include/CellCapSMCBridge.h; sourceTree = "<group>"; };
-		9B36F02D54ADC5FE5FC9D1C9 /* PolicySettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PolicySettingsView.swift; path = Views/PolicySettingsView.swift; sourceTree = "<group>"; };
-		A03979A4E2C382F8D14FE487 /* ChargePolicyStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargePolicyStoreTests.swift; sourceTree = "<group>"; };
-		A1173CCE9D7C0E896E4572F8 /* libCellCapSMCBridge.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCellCapSMCBridge.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		A4884AADBF292DAB216078B5 /* DiagnosticEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DiagnosticEvent.swift; path = Diagnostics/DiagnosticEvent.swift; sourceTree = "<group>"; };
-		A5B1443365F9C56E7F86B13C /* Core.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Core.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		B07BD6A94FF02B4535240D89 /* XPCChargeController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = XPCChargeController.swift; path = Controllers/XPCChargeController.swift; sourceTree = "<group>"; };
-		B4E2E22B9ED60DCC50167EFC /* CapabilityReportResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CapabilityReportResolver.swift; path = Runtime/CapabilityReportResolver.swift; sourceTree = "<group>"; };
-		B91B382E3B8B9C2D221CE304 /* ChargeStateResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargeStateResolver.swift; path = StateMachine/ChargeStateResolver.swift; sourceTree = "<group>"; };
-		C144AA54598107C6EC9C2912 /* MenuBarViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MenuBarViewModel.swift; path = ViewModels/MenuBarViewModel.swift; sourceTree = "<group>"; };
-		C4694F3858511A839A587C02 /* AppUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		C4835843A3C6A52FF54E5E4F /* CapabilityReport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CapabilityReport.swift; path = Models/CapabilityReport.swift; sourceTree = "<group>"; };
-		C583C9E344188C0500F86B88 /* CellCapHelperServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CellCapHelperServiceTests.swift; sourceTree = "<group>"; };
-		C9DDA72A720C694E0FFEA64A /* BatterySnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BatterySnapshot.swift; path = Models/BatterySnapshot.swift; sourceTree = "<group>"; };
-		CBE002CC97D94BFDEE2DC6F4 /* PolicyEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PolicyEngine.swift; path = Policy/PolicyEngine.swift; sourceTree = "<group>"; };
-		CC583B67841376F441050E41 /* AppRuntimeTrigger+Debug.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "AppRuntimeTrigger+Debug.swift"; path = "Runtime/AppRuntimeTrigger+Debug.swift"; sourceTree = "<group>"; };
-		CC7C77F06BDD751850EC810E /* ChargeState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargeState.swift; path = Models/ChargeState.swift; sourceTree = "<group>"; };
-		CCDAA603CACE83B15163C774 /* ControllerStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ControllerStatus.swift; path = Models/ControllerStatus.swift; sourceTree = "<group>"; };
-		D44A27A7CDD72BAE369ACE94 /* ChargeController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargeController.swift; path = Controllers/ChargeController.swift; sourceTree = "<group>"; };
-		D77B7121EC57331113925091 /* 01_기획서.md */ = {isa = PBXFileReference; includeInIndex = 1; name = "01_기획서.md"; path = "../01_기획서.md"; sourceTree = "<group>"; };
-		E32B8AC4A68775D84C752BAC /* HelperXPCDTOs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HelperXPCDTOs.swift; path = XPC/HelperXPCDTOs.swift; sourceTree = "<group>"; };
-		F0792E97079547EC96809AEF /* LaunchAtLoginManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LaunchAtLoginManager.swift; path = ViewModels/LaunchAtLoginManager.swift; sourceTree = "<group>"; };
-		F0BD2A6DF8BEB5F63859A69C /* CellCapSMCBridge.c */ = {isa = PBXFileReference; includeInIndex = 1; path = CellCapSMCBridge.c; sourceTree = "<group>"; };
-		F1CB1AB72804CEB4E2A35C87 /* Shared.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Shared.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		F63E7425641AFB45C72AA8D7 /* ChargePolicy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargePolicy.swift; path = Models/ChargePolicy.swift; sourceTree = "<group>"; };
-		F6BB71C84624042A6AC5C96B /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		F8430B92D4387A9462F1C964 /* DiagnosticsSummary.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DiagnosticsSummary.swift; path = Diagnostics/DiagnosticsSummary.swift; sourceTree = "<group>"; };
-		F8CC2EF42E0F3CDEBF06A0A6 /* ChargeControlBackend.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargeControlBackend.swift; sourceTree = "<group>"; };
-		F999235D7FA755AA4BE688D6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
-		FAF97BB52C74EB7687E27573 /* CapabilityChecker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CapabilityChecker.swift; path = Monitoring/CapabilityChecker.swift; sourceTree = "<group>"; };
-		FCE1BAEDA722390F60A35372 /* HelperXPCClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HelperXPCClient.swift; path = XPC/HelperXPCClient.swift; sourceTree = "<group>"; };
+		022DD9C2969B79580D69C54B /* MockChargeController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MockChargeController.swift; path = Controllers/MockChargeController.swift; sourceTree = "<group>"; };
+		0D6BF540FC0A1E492068E22A /* HelperInstallStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HelperInstallStatus.swift; path = Models/HelperInstallStatus.swift; sourceTree = "<group>"; };
+		0F96715D99013F8A6E5257B9 /* Core.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Core.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1438AED8A5F614A60898AA10 /* RuntimeSafetyGate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RuntimeSafetyGate.swift; path = Runtime/RuntimeSafetyGate.swift; sourceTree = "<group>"; };
+		1544B2E53C5FA5D4184645AA /* CellCapHelperService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CellCapHelperService.swift; sourceTree = "<group>"; };
+		18EC5104CFC1B3E7E4338258 /* LaunchAtLoginManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LaunchAtLoginManager.swift; path = ViewModels/LaunchAtLoginManager.swift; sourceTree = "<group>"; };
+		1C34A25458343789037C84DF /* 01_기획서.md */ = {isa = PBXFileReference; includeInIndex = 1; name = "01_기획서.md"; path = "../01_기획서.md"; sourceTree = "<group>"; };
+		21A16F7E15EB39452C087653 /* CapabilityReportResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CapabilityReportResolver.swift; path = Runtime/CapabilityReportResolver.swift; sourceTree = "<group>"; };
+		230FA75AF582FC195490E1BA /* Shared.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Shared.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		26DA362F7505B5B801F07E8C /* CapabilityChecker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CapabilityChecker.swift; path = Monitoring/CapabilityChecker.swift; sourceTree = "<group>"; };
+		283D0F647F553E3A093EFFF4 /* ChargeStateResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargeStateResolver.swift; path = StateMachine/ChargeStateResolver.swift; sourceTree = "<group>"; };
+		2DE88C6861C20A56D0510F13 /* CapabilityStatusListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CapabilityStatusListView.swift; path = Views/CapabilityStatusListView.swift; sourceTree = "<group>"; };
+		31D32F90B70A9E1FDAE0FCBD /* DirectSMCChargeControlBackend.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DirectSMCChargeControlBackend.swift; sourceTree = "<group>"; };
+		358D84936C23C88652A01EA0 /* SelfTestPolicy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SelfTestPolicy.swift; path = Runtime/SelfTestPolicy.swift; sourceTree = "<group>"; };
+		3D14EE719A26C4C640F51527 /* DirectSMCChargeControlBackendTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DirectSMCChargeControlBackendTests.swift; sourceTree = "<group>"; };
+		42EA461F2736BF3BF6DE0471 /* MockChargeControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MockChargeControllerTests.swift; sourceTree = "<group>"; };
+		461558F0CF833985BC07B137 /* StatusSummaryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StatusSummaryView.swift; path = Views/StatusSummaryView.swift; sourceTree = "<group>"; };
+		485FDC7453A1EA0B985338FC /* BatteryMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BatteryMonitor.swift; path = Monitoring/BatteryMonitor.swift; sourceTree = "<group>"; };
+		4B82FF2B755F62DE7E261A63 /* PolicyEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PolicyEngine.swift; path = Policy/PolicyEngine.swift; sourceTree = "<group>"; };
+		4C466BE7A369C1C91D62743B /* BatterySnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BatterySnapshot.swift; path = Models/BatterySnapshot.swift; sourceTree = "<group>"; };
+		51B1DA40E2EE90740DD73E4C /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		5CBACBC65C70F1CAB701DBD6 /* MenuBarPreviewFactory.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MenuBarPreviewFactory.swift; path = ViewModels/MenuBarPreviewFactory.swift; sourceTree = "<group>"; };
+		5FD0A79F5511AAE4D129B2A4 /* SystemBatterySnapshotProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SystemBatterySnapshotProvider.swift; path = Monitoring/SystemBatterySnapshotProvider.swift; sourceTree = "<group>"; };
+		6071A0F8A3600132041DF94E /* ControllerCommandApplier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ControllerCommandApplier.swift; path = Runtime/ControllerCommandApplier.swift; sourceTree = "<group>"; };
+		613C0749302C247899E35074 /* ControlAvailabilityResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ControlAvailabilityResolver.swift; path = ViewModels/ControlAvailabilityResolver.swift; sourceTree = "<group>"; };
+		63F393BE1C1BF1634D283AC0 /* EventLoggerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EventLoggerTests.swift; sourceTree = "<group>"; };
+		662FEA965A3B56D4245E94FB /* CellCapHelperListener.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CellCapHelperListener.swift; sourceTree = "<group>"; };
+		6F70646DFFEE86B3A6771FC6 /* Helper */ = {isa = PBXFileReference; includeInIndex = 0; path = Helper; sourceTree = BUILT_PRODUCTS_DIR; };
+		70B4939CE3E2D2E30018003E /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		723B0EC8D058011B9D5C0A6C /* XPCChargeControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = XPCChargeControllerTests.swift; sourceTree = "<group>"; };
+		77D474E94DDCBD167A3C3C4C /* AppRuntimeSupportTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRuntimeSupportTests.swift; sourceTree = "<group>"; };
+		79B1DF817163219DC757DF41 /* HelperXPCClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HelperXPCClient.swift; path = XPC/HelperXPCClient.swift; sourceTree = "<group>"; };
+		7A18B45BF4F4163A1D14C678 /* HelperXPCDTOs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HelperXPCDTOs.swift; path = XPC/HelperXPCDTOs.swift; sourceTree = "<group>"; };
+		81E5C10B74D958E9AD2DCB90 /* ChargePolicy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargePolicy.swift; path = Models/ChargePolicy.swift; sourceTree = "<group>"; };
+		82E6A3B7098FEDE70749E463 /* ChargePolicyStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargePolicyStore.swift; path = Runtime/ChargePolicyStore.swift; sourceTree = "<group>"; };
+		8CA1219A6A970B82CECE39EB /* HelperXPCDTOsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelperXPCDTOsTests.swift; sourceTree = "<group>"; };
+		8D1F01062C0223908D28E464 /* HelperInstallCheckerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelperInstallCheckerTests.swift; sourceTree = "<group>"; };
+		8E19C49376360204EB21B350 /* ControllerStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ControllerStatus.swift; path = Models/ControllerStatus.swift; sourceTree = "<group>"; };
+		90977B6B5CE5DAD9B6DBE0FA /* CellCapApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CellCapApp.swift; sourceTree = "<group>"; };
+		97CF0AC4D6E6BC79CBBBB820 /* XPCChargeController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = XPCChargeController.swift; path = Controllers/XPCChargeController.swift; sourceTree = "<group>"; };
+		9B70A25F31A0228594D3A595 /* BatteryMonitorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BatteryMonitorTests.swift; sourceTree = "<group>"; };
+		9D8421DDEFCA01BE5F1BC4A0 /* ChargePolicyStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargePolicyStoreTests.swift; sourceTree = "<group>"; };
+		9FAC1A16D176351EEDC5636D /* libCellCapSMCBridge.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCellCapSMCBridge.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		A2477406D5CC6DA4AFE78324 /* AppRuntimeOrchestrator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppRuntimeOrchestrator.swift; path = Runtime/AppRuntimeOrchestrator.swift; sourceTree = "<group>"; };
+		A9E87D57E9E40A8B34C353CC /* PolicyEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PolicyEngineTests.swift; sourceTree = "<group>"; };
+		AA8E3B201F801FE3BA8C6194 /* ChargeStateMachineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargeStateMachineTests.swift; sourceTree = "<group>"; };
+		B29D43848610C43255C7E66F /* ChargeStateMachine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargeStateMachine.swift; path = StateMachine/ChargeStateMachine.swift; sourceTree = "<group>"; };
+		B6FE21E976F9472D4CC7227A /* CellCapHelperServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CellCapHelperServiceTests.swift; sourceTree = "<group>"; };
+		B71F5F71BD31633810986396 /* CellCapSMCBridge.c */ = {isa = PBXFileReference; includeInIndex = 1; path = CellCapSMCBridge.c; sourceTree = "<group>"; };
+		B972619AAC89AAD617FDED57 /* MenuBarViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MenuBarViewModel.swift; path = ViewModels/MenuBarViewModel.swift; sourceTree = "<group>"; };
+		B9D1772F434DECBEE5079E09 /* main.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		B9F45CDD401FEF330A05B7B9 /* AppUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BA7C317560D220FA2D74DF3D /* AppState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppState.swift; path = Models/AppState.swift; sourceTree = "<group>"; };
+		BB6E73ABC16F594824147073 /* AppRuntimeTrigger+Debug.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "AppRuntimeTrigger+Debug.swift"; path = "Runtime/AppRuntimeTrigger+Debug.swift"; sourceTree = "<group>"; };
+		BCCE5B3FC36F3EDD49C13AAA /* PolicySettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PolicySettingsView.swift; path = Views/PolicySettingsView.swift; sourceTree = "<group>"; };
+		C0785657003C49F7F6DC43EF /* DiagnosticsSummary.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DiagnosticsSummary.swift; path = Diagnostics/DiagnosticsSummary.swift; sourceTree = "<group>"; };
+		C177EC3DAED0297B5C350604 /* ChargeState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargeState.swift; path = Models/ChargeState.swift; sourceTree = "<group>"; };
+		C67DDF4C4E23B66F215A7EEE /* ChargeStateResolverTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargeStateResolverTests.swift; sourceTree = "<group>"; };
+		C7ED7555D1006B97BD004164 /* MenuBarPresentation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MenuBarPresentation.swift; path = ViewModels/MenuBarPresentation.swift; sourceTree = "<group>"; };
+		CFDB05C31321C377D725E72B /* CapabilityCheckerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CapabilityCheckerTests.swift; sourceTree = "<group>"; };
+		D205B67E005E72CF79FEF55E /* 03_공개API_충전제어_검토.md */ = {isa = PBXFileReference; includeInIndex = 1; name = "03_공개API_충전제어_검토.md"; path = "../03_공개API_충전제어_검토.md"; sourceTree = "<group>"; };
+		D48AFB38EF375078A342DDF7 /* ChargePolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargePolicyTests.swift; sourceTree = "<group>"; };
+		DE44820475E16247ED693D7F /* CellCapHelperXPCProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CellCapHelperXPCProtocol.swift; path = XPC/CellCapHelperXPCProtocol.swift; sourceTree = "<group>"; };
+		DF15B09622F00286C6B26762 /* CoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DF41497A94AFAC6931617C64 /* 02_Prompts.md */ = {isa = PBXFileReference; includeInIndex = 1; name = 02_Prompts.md; path = ../02_Prompts.md; sourceTree = "<group>"; };
+		E26ED66EC4159E9C6EF3919A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+		E3448CD48B5D7620D8E229B5 /* CellCapSMCBridge.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = CellCapSMCBridge.h; path = include/CellCapSMCBridge.h; sourceTree = "<group>"; };
+		E8CEDE604A7B35500248974D /* AppRuntimeOrchestratorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRuntimeOrchestratorTests.swift; sourceTree = "<group>"; };
+		E9399F59CF995CFD1161F674 /* ChargeControlBackend.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargeControlBackend.swift; sourceTree = "<group>"; };
+		EA5E5097BD2E744845737E05 /* ChargeController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChargeController.swift; path = Controllers/ChargeController.swift; sourceTree = "<group>"; };
+		ECFE5228715052B5CAE295AC /* CapabilityReport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CapabilityReport.swift; path = Models/CapabilityReport.swift; sourceTree = "<group>"; };
+		F0CACAAAD8147D13CBA0DDE3 /* EventLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EventLogger.swift; path = Diagnostics/EventLogger.swift; sourceTree = "<group>"; };
+		F2D71EF75F00D3868F88A3AB /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FD29BAD4D09197472B7CDD4E /* DiagnosticEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DiagnosticEvent.swift; path = Diagnostics/DiagnosticEvent.swift; sourceTree = "<group>"; };
+		FF2ED7A22911E5ECA0052BBE /* HelperInstallChecker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HelperInstallChecker.swift; path = XPC/HelperInstallChecker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		09F4BC773FBDF8C53440E494 /* Frameworks */ = {
+		1A8DB08FE0988DFB056730F6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				78B701CFE9D4F424F3681EEA /* Cocoa.framework in Frameworks */,
-				68247D9BA728354656F8587F /* Core.framework in Frameworks */,
-				100CBFAE836973EE744935E7 /* Shared.framework in Frameworks */,
+				AAC3B7BAE3CC4D529FE62160 /* Cocoa.framework in Frameworks */,
+				DC94AAF24A77618B54373F96 /* Shared.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		1D58B9F555C43EF1A63711C4 /* Frameworks */ = {
+		34E973ABB1237282FE2E19A4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AE26D8B0398B636C54FEBB40 /* Cocoa.framework in Frameworks */,
-				BEC766DA87772B2ABD5B14FC /* Shared.framework in Frameworks */,
+				0AF1A16A671F09E5E6503472 /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		3472A0FE26E1F9D1D983D021 /* Frameworks */ = {
+		5DA40A5DF669AA2C30B8CA2F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E4654D57C6FEB836D904B5DA /* Cocoa.framework in Frameworks */,
+				51A1FEBEB15AF9F3B84F8759 /* Core.framework in Frameworks */,
+				20C9E657A37173946B80D166 /* libCellCapSMCBridge.a in Frameworks */,
+				997AEDB7101F9116F1274B55 /* Shared.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		86CD6380141E55A986445437 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AAD3D9AC0F83CEBDC6AF70B1 /* Frameworks */ = {
+		BD7E8EFFFD272D5870C9971D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D2EDB4F2700FBF4DFA7BD4CD /* Cocoa.framework in Frameworks */,
-				9CE33466E693CA7F90658E77 /* Core.framework in Frameworks */,
-				9EEE113ABD9E2CE83C25F17C /* Helper in Frameworks */,
-				F750820C56CA4E115D1C50F7 /* Shared.framework in Frameworks */,
+				EA74504A734E635163460619 /* Cocoa.framework in Frameworks */,
+				A8E5564697A780214ABE3B66 /* Core.framework in Frameworks */,
+				3E8ECE72BD6F1348DDE7BD1C /* Shared.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AF9B83B23F5BB0DF766B858C /* Frameworks */ = {
+		D9A5B52CA4A6EFCD86A0BD3E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				17991D64DAE89C9D65016743 /* Cocoa.framework in Frameworks */,
-				FA519FE957BB1ABC5FA0B57B /* Core.framework in Frameworks */,
-				8582A8E44C27CBDCFD681C98 /* libCellCapSMCBridge.a in Frameworks */,
-				1997E70F3464CDDE9690E637 /* Shared.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D2CCAECA365340EB063C3B62 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				03D2436B9621555ADFFCCA7C /* Cocoa.framework in Frameworks */,
+				CDE858FCC18FCD5978A7FFE0 /* Cocoa.framework in Frameworks */,
+				8DCA18A838161758D81F90D0 /* Core.framework in Frameworks */,
+				B85CC911B48DAD72A7A69569 /* Helper in Frameworks */,
+				3AB10171C843B4E623F65925 /* Shared.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0139F4FD07E8B7995127562F /* Products */ = {
+		3BF7BC334F2F2C49B6124F29 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				C4694F3858511A839A587C02 /* AppUI.app */,
-				A5B1443365F9C56E7F86B13C /* Core.framework */,
-				12C3B40BB7A8F8370A86776B /* CoreTests.xctest */,
-				779E77F9F2869E48F5860DDD /* Helper */,
-				A1173CCE9D7C0E896E4572F8 /* libCellCapSMCBridge.a */,
-				F1CB1AB72804CEB4E2A35C87 /* Shared.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		07AB7AE1BA0CD31E05EFB425 /* Docs */ = {
-			isa = PBXGroup;
-			children = (
-				D77B7121EC57331113925091 /* 01_기획서.md */,
-				40E9C9583BC71E5F14C98210 /* 02_Prompts.md */,
-				1F425F23F1465AEFBEA0D68B /* 03_공개API_충전제어_검토.md */,
-				0E410A00C4433063A330F3B5 /* README.md */,
-			);
-			name = Docs;
-			sourceTree = "<group>";
-		};
-		143D14CEAF3AC8A6F29D27DF /* OS X */ = {
-			isa = PBXGroup;
-			children = (
-				F999235D7FA755AA4BE688D6 /* Cocoa.framework */,
-			);
-			name = "OS X";
-			sourceTree = "<group>";
-		};
-		480273E123641BF9D964895F = {
-			isa = PBXGroup;
-			children = (
-				07AB7AE1BA0CD31E05EFB425 /* Docs */,
-				CF5C09D7E4AD3FC4FC1F6524 /* Frameworks */,
-				0139F4FD07E8B7995127562F /* Products */,
-				F3428153415E66899165AFDB /* Sources */,
-				B8DCE89131763F560E8160DA /* Tests */,
-			);
-			sourceTree = "<group>";
-		};
-		49DED308900DDDB2C10396DA /* AppUI */ = {
-			isa = PBXGroup;
-			children = (
-				8B66AE15B60FD7DE1FE52702 /* CapabilityStatusListView.swift */,
-				88D2CE1101C825489AD5947F /* CellCapApp.swift */,
-				5993E525AC1B69034B7C102A /* ControlAvailabilityResolver.swift */,
-				F0792E97079547EC96809AEF /* LaunchAtLoginManager.swift */,
-				4FFFB3E0AE891841B2F6D009 /* MenuBarPresentation.swift */,
-				06BF9192EA9AB2307B839D1C /* MenuBarPreviewFactory.swift */,
-				C144AA54598107C6EC9C2912 /* MenuBarViewModel.swift */,
-				9B36F02D54ADC5FE5FC9D1C9 /* PolicySettingsView.swift */,
-				F6BB71C84624042A6AC5C96B /* RootView.swift */,
-				0DC1FB2B0AB3275D4CA109F4 /* StatusSummaryView.swift */,
-			);
-			name = AppUI;
-			path = AppUI;
-			sourceTree = "<group>";
-		};
-		8CA5C20BF25C80D37FAA5CA0 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				5BD907A4238F1ADB34527AC6 /* AppState.swift */,
-				C9DDA72A720C694E0FFEA64A /* BatterySnapshot.swift */,
-				C4835843A3C6A52FF54E5E4F /* CapabilityReport.swift */,
-				7B9099AA8A869BA1FE14EA82 /* CellCapHelperXPCProtocol.swift */,
-				F63E7425641AFB45C72AA8D7 /* ChargePolicy.swift */,
-				CC7C77F06BDD751850EC810E /* ChargeState.swift */,
-				CCDAA603CACE83B15163C774 /* ControllerStatus.swift */,
-				A4884AADBF292DAB216078B5 /* DiagnosticEvent.swift */,
-				F8430B92D4387A9462F1C964 /* DiagnosticsSummary.swift */,
-				1ACEC395BD5019E65D093E8F /* HelperInstallStatus.swift */,
-				E32B8AC4A68775D84C752BAC /* HelperXPCDTOs.swift */,
-			);
-			name = Shared;
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		B15B746F758FB79F32FB6AFD /* Helper */ = {
-			isa = PBXGroup;
-			children = (
-				4C6AE41BC3F07D04D29586DF /* CellCapHelperListener.swift */,
-				409E46AC2AF62375FA41F142 /* CellCapHelperService.swift */,
-				F8CC2EF42E0F3CDEBF06A0A6 /* ChargeControlBackend.swift */,
-				82B27236EE0CCF2B939E0061 /* DirectSMCChargeControlBackend.swift */,
-				0B6416EAB71EDCEB9C05A53B /* main.swift */,
-			);
-			name = Helper;
-			path = Helper;
-			sourceTree = "<group>";
-		};
-		B8DCE89131763F560E8160DA /* Tests */ = {
-			isa = PBXGroup;
-			children = (
-				BC5B9910F5880EEA085A6EF7 /* CoreTests */,
-			);
-			name = Tests;
-			path = Tests;
-			sourceTree = "<group>";
-		};
-		BC5B9910F5880EEA085A6EF7 /* CoreTests */ = {
-			isa = PBXGroup;
-			children = (
-				64CC40527E2005ED1D6EAD45 /* AppRuntimeOrchestratorTests.swift */,
-				69753EB8980DB346C97ECAD8 /* AppRuntimeSupportTests.swift */,
-				8F2D520948D4C99396106094 /* BatteryMonitorTests.swift */,
-				16F1659C7668C0749BFDBECC /* CapabilityCheckerTests.swift */,
-				C583C9E344188C0500F86B88 /* CellCapHelperServiceTests.swift */,
-				A03979A4E2C382F8D14FE487 /* ChargePolicyStoreTests.swift */,
-				68A33E59F0ABAF9EB400B91A /* ChargePolicyTests.swift */,
-				148DDEF96936CDFDC2703166 /* ChargeStateMachineTests.swift */,
-				9A778B64D0B4DF44D59C0FB3 /* ChargeStateResolverTests.swift */,
-				7D1E3C9F7DC7A94FA2E4CECE /* DirectSMCChargeControlBackendTests.swift */,
-				45FBEB5ADBEE93378098820F /* EventLoggerTests.swift */,
-				03FD0067B4B529B5F3207FC0 /* HelperInstallCheckerTests.swift */,
-				25E43679D1FDF76B172FAECF /* HelperXPCDTOsTests.swift */,
-				39AA128E469537E08B5BFE31 /* MockChargeControllerTests.swift */,
-				484798A124634F847BE60BBE /* PolicyEngineTests.swift */,
-				541585C7B88D6C44CE4A5DE0 /* XPCChargeControllerTests.swift */,
-			);
-			name = CoreTests;
-			path = CoreTests;
-			sourceTree = "<group>";
-		};
-		CB6E89541AB28F1797B1206F /* CellCapSMCBridge */ = {
-			isa = PBXGroup;
-			children = (
-				F0BD2A6DF8BEB5F63859A69C /* CellCapSMCBridge.c */,
-				9AA7164CC86BD6462B037BEC /* CellCapSMCBridge.h */,
-			);
-			name = CellCapSMCBridge;
-			path = CellCapSMCBridge;
-			sourceTree = "<group>";
-		};
-		CF5C09D7E4AD3FC4FC1F6524 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				143D14CEAF3AC8A6F29D27DF /* OS X */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		F3428153415E66899165AFDB /* Sources */ = {
-			isa = PBXGroup;
-			children = (
-				49DED308900DDDB2C10396DA /* AppUI */,
-				CB6E89541AB28F1797B1206F /* CellCapSMCBridge */,
-				FBE0078FF26DF1A1B24D416E /* Core */,
-				B15B746F758FB79F32FB6AFD /* Helper */,
-				8CA5C20BF25C80D37FAA5CA0 /* Shared */,
-			);
-			name = Sources;
-			path = Sources;
-			sourceTree = "<group>";
-		};
-		FBE0078FF26DF1A1B24D416E /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				3A7649C5E56396D6AEA17FC4 /* AppRuntimeOrchestrator.swift */,
-				CC583B67841376F441050E41 /* AppRuntimeTrigger+Debug.swift */,
-				890296873AF6B0A5EC2B17FC /* BatteryMonitor.swift */,
-				FAF97BB52C74EB7687E27573 /* CapabilityChecker.swift */,
-				B4E2E22B9ED60DCC50167EFC /* CapabilityReportResolver.swift */,
-				D44A27A7CDD72BAE369ACE94 /* ChargeController.swift */,
-				66E59D4DF7EE67176DD1A413 /* ChargePolicyStore.swift */,
-				98D937CC71C6A6B0DD720FFB /* ChargeStateMachine.swift */,
-				B91B382E3B8B9C2D221CE304 /* ChargeStateResolver.swift */,
-				3149D37AE17C89C1B0A550CB /* ControllerCommandApplier.swift */,
-				12742E5BA9B2A610ECF85CCE /* EventLogger.swift */,
-				6BD09B97DF9602A702C8F094 /* HelperInstallChecker.swift */,
-				FCE1BAEDA722390F60A35372 /* HelperXPCClient.swift */,
-				6E2C65D0192556FA25B5483E /* MockChargeController.swift */,
-				CBE002CC97D94BFDEE2DC6F4 /* PolicyEngine.swift */,
-				063616D96A19CB128D6C8591 /* RuntimeSafetyGate.swift */,
-				445687AF6E33155FA33C2EA8 /* SelfTestPolicy.swift */,
-				990E5B68E94789AF38C7F7C1 /* SystemBatterySnapshotProvider.swift */,
-				B07BD6A94FF02B4535240D89 /* XPCChargeController.swift */,
+				A2477406D5CC6DA4AFE78324 /* AppRuntimeOrchestrator.swift */,
+				BB6E73ABC16F594824147073 /* AppRuntimeTrigger+Debug.swift */,
+				485FDC7453A1EA0B985338FC /* BatteryMonitor.swift */,
+				26DA362F7505B5B801F07E8C /* CapabilityChecker.swift */,
+				21A16F7E15EB39452C087653 /* CapabilityReportResolver.swift */,
+				EA5E5097BD2E744845737E05 /* ChargeController.swift */,
+				82E6A3B7098FEDE70749E463 /* ChargePolicyStore.swift */,
+				B29D43848610C43255C7E66F /* ChargeStateMachine.swift */,
+				283D0F647F553E3A093EFFF4 /* ChargeStateResolver.swift */,
+				6071A0F8A3600132041DF94E /* ControllerCommandApplier.swift */,
+				F0CACAAAD8147D13CBA0DDE3 /* EventLogger.swift */,
+				FF2ED7A22911E5ECA0052BBE /* HelperInstallChecker.swift */,
+				79B1DF817163219DC757DF41 /* HelperXPCClient.swift */,
+				022DD9C2969B79580D69C54B /* MockChargeController.swift */,
+				4B82FF2B755F62DE7E261A63 /* PolicyEngine.swift */,
+				1438AED8A5F614A60898AA10 /* RuntimeSafetyGate.swift */,
+				358D84936C23C88652A01EA0 /* SelfTestPolicy.swift */,
+				5FD0A79F5511AAE4D129B2A4 /* SystemBatterySnapshotProvider.swift */,
+				97CF0AC4D6E6BC79CBBBB820 /* XPCChargeController.swift */,
 			);
 			name = Core;
 			path = Core;
 			sourceTree = "<group>";
 		};
+		45363C8E38E96FFA271944A2 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				BA7C317560D220FA2D74DF3D /* AppState.swift */,
+				4C466BE7A369C1C91D62743B /* BatterySnapshot.swift */,
+				ECFE5228715052B5CAE295AC /* CapabilityReport.swift */,
+				DE44820475E16247ED693D7F /* CellCapHelperXPCProtocol.swift */,
+				81E5C10B74D958E9AD2DCB90 /* ChargePolicy.swift */,
+				C177EC3DAED0297B5C350604 /* ChargeState.swift */,
+				8E19C49376360204EB21B350 /* ControllerStatus.swift */,
+				FD29BAD4D09197472B7CDD4E /* DiagnosticEvent.swift */,
+				C0785657003C49F7F6DC43EF /* DiagnosticsSummary.swift */,
+				0D6BF540FC0A1E492068E22A /* HelperInstallStatus.swift */,
+				7A18B45BF4F4163A1D14C678 /* HelperXPCDTOs.swift */,
+			);
+			name = Shared;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		6910DFD01CB40915A5CBCCB6 /* CoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				E8CEDE604A7B35500248974D /* AppRuntimeOrchestratorTests.swift */,
+				77D474E94DDCBD167A3C3C4C /* AppRuntimeSupportTests.swift */,
+				9B70A25F31A0228594D3A595 /* BatteryMonitorTests.swift */,
+				CFDB05C31321C377D725E72B /* CapabilityCheckerTests.swift */,
+				B6FE21E976F9472D4CC7227A /* CellCapHelperServiceTests.swift */,
+				9D8421DDEFCA01BE5F1BC4A0 /* ChargePolicyStoreTests.swift */,
+				D48AFB38EF375078A342DDF7 /* ChargePolicyTests.swift */,
+				AA8E3B201F801FE3BA8C6194 /* ChargeStateMachineTests.swift */,
+				C67DDF4C4E23B66F215A7EEE /* ChargeStateResolverTests.swift */,
+				3D14EE719A26C4C640F51527 /* DirectSMCChargeControlBackendTests.swift */,
+				63F393BE1C1BF1634D283AC0 /* EventLoggerTests.swift */,
+				8D1F01062C0223908D28E464 /* HelperInstallCheckerTests.swift */,
+				8CA1219A6A970B82CECE39EB /* HelperXPCDTOsTests.swift */,
+				42EA461F2736BF3BF6DE0471 /* MockChargeControllerTests.swift */,
+				A9E87D57E9E40A8B34C353CC /* PolicyEngineTests.swift */,
+				723B0EC8D058011B9D5C0A6C /* XPCChargeControllerTests.swift */,
+			);
+			name = CoreTests;
+			path = CoreTests;
+			sourceTree = "<group>";
+		};
+		818A71D2A6BCAD57CB7C5373 /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				E26ED66EC4159E9C6EF3919A /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
+		8827455B608764E30AC00782 /* CellCapSMCBridge */ = {
+			isa = PBXGroup;
+			children = (
+				B71F5F71BD31633810986396 /* CellCapSMCBridge.c */,
+				E3448CD48B5D7620D8E229B5 /* CellCapSMCBridge.h */,
+			);
+			name = CellCapSMCBridge;
+			path = CellCapSMCBridge;
+			sourceTree = "<group>";
+		};
+		89F759286C38225523376EC9 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				6910DFD01CB40915A5CBCCB6 /* CoreTests */,
+			);
+			name = Tests;
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		A8E3519CD431FDF8C5FF439A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				818A71D2A6BCAD57CB7C5373 /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B6BA927A7E822B69B50AB515 = {
+			isa = PBXGroup;
+			children = (
+				F51B8E0C95A6F73B151BC654 /* Docs */,
+				A8E3519CD431FDF8C5FF439A /* Frameworks */,
+				E69FF020444052FEAC3FF058 /* Products */,
+				F4AF7F727E2A97B21B56FABC /* Sources */,
+				89F759286C38225523376EC9 /* Tests */,
+			);
+			sourceTree = "<group>";
+		};
+		C53E84D8740B50BEC6527892 /* Helper */ = {
+			isa = PBXGroup;
+			children = (
+				662FEA965A3B56D4245E94FB /* CellCapHelperListener.swift */,
+				1544B2E53C5FA5D4184645AA /* CellCapHelperService.swift */,
+				E9399F59CF995CFD1161F674 /* ChargeControlBackend.swift */,
+				31D32F90B70A9E1FDAE0FCBD /* DirectSMCChargeControlBackend.swift */,
+				B9D1772F434DECBEE5079E09 /* main.swift */,
+			);
+			name = Helper;
+			path = Helper;
+			sourceTree = "<group>";
+		};
+		E69FF020444052FEAC3FF058 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B9F45CDD401FEF330A05B7B9 /* AppUI.app */,
+				0F96715D99013F8A6E5257B9 /* Core.framework */,
+				DF15B09622F00286C6B26762 /* CoreTests.xctest */,
+				6F70646DFFEE86B3A6771FC6 /* Helper */,
+				9FAC1A16D176351EEDC5636D /* libCellCapSMCBridge.a */,
+				230FA75AF582FC195490E1BA /* Shared.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F0E80269F5DAD59BE5ED19C3 /* AppUI */ = {
+			isa = PBXGroup;
+			children = (
+				F2D71EF75F00D3868F88A3AB /* Assets.xcassets */,
+				2DE88C6861C20A56D0510F13 /* CapabilityStatusListView.swift */,
+				90977B6B5CE5DAD9B6DBE0FA /* CellCapApp.swift */,
+				613C0749302C247899E35074 /* ControlAvailabilityResolver.swift */,
+				18EC5104CFC1B3E7E4338258 /* LaunchAtLoginManager.swift */,
+				C7ED7555D1006B97BD004164 /* MenuBarPresentation.swift */,
+				5CBACBC65C70F1CAB701DBD6 /* MenuBarPreviewFactory.swift */,
+				B972619AAC89AAD617FDED57 /* MenuBarViewModel.swift */,
+				BCCE5B3FC36F3EDD49C13AAA /* PolicySettingsView.swift */,
+				70B4939CE3E2D2E30018003E /* RootView.swift */,
+				461558F0CF833985BC07B137 /* StatusSummaryView.swift */,
+			);
+			name = AppUI;
+			path = AppUI;
+			sourceTree = "<group>";
+		};
+		F4AF7F727E2A97B21B56FABC /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				F0E80269F5DAD59BE5ED19C3 /* AppUI */,
+				8827455B608764E30AC00782 /* CellCapSMCBridge */,
+				3BF7BC334F2F2C49B6124F29 /* Core */,
+				C53E84D8740B50BEC6527892 /* Helper */,
+				45363C8E38E96FFA271944A2 /* Shared */,
+			);
+			name = Sources;
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		F51B8E0C95A6F73B151BC654 /* Docs */ = {
+			isa = PBXGroup;
+			children = (
+				1C34A25458343789037C84DF /* 01_기획서.md */,
+				DF41497A94AFAC6931617C64 /* 02_Prompts.md */,
+				D205B67E005E72CF79FEF55E /* 03_공개API_충전제어_검토.md */,
+				51B1DA40E2EE90740DD73E4C /* README.md */,
+			);
+			name = Docs;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		69115D0624C0261303B65720 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C9A60F8650D60B40A2639B69 /* CellCapSMCBridge.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		8823A2F42341ABB35A4BEC2B /* Headers */ = {
+		BBE614FA816911751C68681A /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		98D26856A3F691835D2AB67E /* Headers */ = {
+		E4E74782A69F5204292BDC39 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FADDB6C03F6CD2741CF089ED /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1BC28B069B875AEA7A01E869 /* CellCapSMCBridge.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		0BBAB9A35234DBF17E132529 /* CellCapSMCBridge */ = {
+		4613F591C593AF147176E8E1 /* Core */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D43F48D5EB7729FB58F89B4D /* Build configuration list for PBXNativeTarget "CellCapSMCBridge" */;
+			buildConfigurationList = 0F7D9E6055D05FAA9A310531 /* Build configuration list for PBXNativeTarget "Core" */;
 			buildPhases = (
-				69115D0624C0261303B65720 /* Headers */,
-				A90064020A796E3C697C46E8 /* Sources */,
-				3472A0FE26E1F9D1D983D021 /* Frameworks */,
+				E4E74782A69F5204292BDC39 /* Headers */,
+				85E7C1FBAD55975901811997 /* Sources */,
+				1A8DB08FE0988DFB056730F6 /* Frameworks */,
+				B6A05D0640AD87FF371D1C56 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A8DEBA339CC9F48511884E43 /* PBXTargetDependency */,
 			);
-			name = CellCapSMCBridge;
-			productName = CellCapSMCBridge;
-			productReference = A1173CCE9D7C0E896E4572F8 /* libCellCapSMCBridge.a */;
-			productType = "com.apple.product-type.library.static";
+			name = Core;
+			productName = Core;
+			productReference = 0F96715D99013F8A6E5257B9 /* Core.framework */;
+			productType = "com.apple.product-type.framework";
 		};
-		51163A5045FF93BCF290A18B /* Helper */ = {
+		6DA4572B7B2D117A0FA382CB /* Shared */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DC4390EADF9069090A2DA4BE /* Build configuration list for PBXNativeTarget "Helper" */;
+			buildConfigurationList = 7ACE56A69044D72E14CD28D9 /* Build configuration list for PBXNativeTarget "Shared" */;
 			buildPhases = (
-				1CE4420699F4A681923AD804 /* Sources */,
-				AF9B83B23F5BB0DF766B858C /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				EFFB0FB6515AA40B624931D7 /* PBXTargetDependency */,
-				643A12E2940D30627C94364B /* PBXTargetDependency */,
-				3A0DAC4D7D99CF9549D3219D /* PBXTargetDependency */,
-			);
-			name = Helper;
-			productName = Helper;
-			productReference = 779E77F9F2869E48F5860DDD /* Helper */;
-			productType = "com.apple.product-type.tool";
-		};
-		7596B6D3B09F0334CF6562E3 /* Shared */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7BAA12598BE782A3BF9826AA /* Build configuration list for PBXNativeTarget "Shared" */;
-			buildPhases = (
-				8823A2F42341ABB35A4BEC2B /* Headers */,
-				2DF9858AFD7A5B0AE17DBC0A /* Sources */,
-				D2CCAECA365340EB063C3B62 /* Frameworks */,
-				BFCC205944521F6E1115A795 /* Resources */,
+				BBE614FA816911751C68681A /* Headers */,
+				CB905D0CAD014F77C528F9F2 /* Sources */,
+				34E973ABB1237282FE2E19A4 /* Frameworks */,
+				E8C802E7052967A8DDC94E86 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -569,78 +555,95 @@
 			);
 			name = Shared;
 			productName = Shared;
-			productReference = F1CB1AB72804CEB4E2A35C87 /* Shared.framework */;
+			productReference = 230FA75AF582FC195490E1BA /* Shared.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		9BE2AC391B3490277187C493 /* AppUI */ = {
+		6F63F9233821DC0D493E61F6 /* CellCapSMCBridge */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E507B73C1D0FAAB147782506 /* Build configuration list for PBXNativeTarget "AppUI" */;
+			buildConfigurationList = B1D7E013E6548535D5A5E568 /* Build configuration list for PBXNativeTarget "CellCapSMCBridge" */;
 			buildPhases = (
-				B1C98D301912C7ABC061D79F /* Sources */,
-				09F4BC773FBDF8C53440E494 /* Frameworks */,
-				EC365B6965B67DD9B9225A49 /* Resources */,
-				567D1C25638AC1FEDF2DC7D7 /* Embed Frameworks */,
+				FADDB6C03F6CD2741CF089ED /* Headers */,
+				B7C74FA48C7BCA2A37172E2E /* Sources */,
+				86CD6380141E55A986445437 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				71F77609ADBB97252AF88BB8 /* PBXTargetDependency */,
-				40C67EF2510D069ED88E33E7 /* PBXTargetDependency */,
 			);
-			name = AppUI;
-			productName = AppUI;
-			productReference = C4694F3858511A839A587C02 /* AppUI.app */;
-			productType = "com.apple.product-type.application";
+			name = CellCapSMCBridge;
+			productName = CellCapSMCBridge;
+			productReference = 9FAC1A16D176351EEDC5636D /* libCellCapSMCBridge.a */;
+			productType = "com.apple.product-type.library.static";
 		};
-		BC5A2300DE10574A0BE3BC40 /* CoreTests */ = {
+		933CD0988B019C0B51C07676 /* CoreTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8F206C8702EB2E06A0D6B726 /* Build configuration list for PBXNativeTarget "CoreTests" */;
+			buildConfigurationList = 4E00255931A485CD4A4A1E94 /* Build configuration list for PBXNativeTarget "CoreTests" */;
 			buildPhases = (
-				CC6501BEA7EE189701B86D69 /* Sources */,
-				AAD3D9AC0F83CEBDC6AF70B1 /* Frameworks */,
-				F4CE89F6547CD4F8D9B1322E /* Resources */,
+				0137C565CD4445941D152832 /* Sources */,
+				D9A5B52CA4A6EFCD86A0BD3E /* Frameworks */,
+				3EE295C6CD8429C271C49AFA /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B9E1059EED1B17E316BAFCA4 /* PBXTargetDependency */,
-				9129B964CE63204AE8A26D71 /* PBXTargetDependency */,
-				CC951D9AD6FB821E75DE7F93 /* PBXTargetDependency */,
+				67F0341C7EBD276D0AC2BE23 /* PBXTargetDependency */,
+				C1D480EF0CE325FB0839BA20 /* PBXTargetDependency */,
+				D409721B84B986C032939FB5 /* PBXTargetDependency */,
 			);
 			name = CoreTests;
 			productName = CoreTests;
-			productReference = 12C3B40BB7A8F8370A86776B /* CoreTests.xctest */;
+			productReference = DF15B09622F00286C6B26762 /* CoreTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		EAC2FC8547E2D1033F7AA64B /* Core */ = {
+		B620B73710DC6E3E6AF7A8FA /* Helper */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7CE5E0E0A9387AC79F69673D /* Build configuration list for PBXNativeTarget "Core" */;
+			buildConfigurationList = 0742A4D4C9A65E18914217A8 /* Build configuration list for PBXNativeTarget "Helper" */;
 			buildPhases = (
-				98D26856A3F691835D2AB67E /* Headers */,
-				96C1ECB4FE4404E534E0271F /* Sources */,
-				1D58B9F555C43EF1A63711C4 /* Frameworks */,
-				ACD53A6F6B668805FA1F9708 /* Resources */,
+				0B1F3D764A91D77263135FED /* Sources */,
+				5DA40A5DF669AA2C30B8CA2F /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				080FEA3EDB1DC97C6AFB0A60 /* PBXTargetDependency */,
+				62912979CCA978A59A7F009C /* PBXTargetDependency */,
+				220AFA859792A929FDA5964E /* PBXTargetDependency */,
+				E9C742627E7BF7C6AD716FAE /* PBXTargetDependency */,
 			);
-			name = Core;
-			productName = Core;
-			productReference = A5B1443365F9C56E7F86B13C /* Core.framework */;
-			productType = "com.apple.product-type.framework";
+			name = Helper;
+			productName = Helper;
+			productReference = 6F70646DFFEE86B3A6771FC6 /* Helper */;
+			productType = "com.apple.product-type.tool";
+		};
+		E37C6ABAB16D1D66E8410236 /* AppUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 16FF047FA0140CFA45A1BEA8 /* Build configuration list for PBXNativeTarget "AppUI" */;
+			buildPhases = (
+				E55BC308B8CEADBB35ED8F72 /* Sources */,
+				BD7E8EFFFD272D5870C9971D /* Frameworks */,
+				F19DD82353E19EDC2EC35A00 /* Resources */,
+				E364B1A888841807ED0C7E12 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				73D79F4BC6B1EBDA24555710 /* PBXTargetDependency */,
+				71DDAE3697D5E256AE72BD23 /* PBXTargetDependency */,
+			);
+			name = AppUI;
+			productName = AppUI;
+			productReference = B9F45CDD401FEF330A05B7B9 /* AppUI.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		9582B8F0FAF1E26782875012 /* Project object */ = {
+		C4F5A597D9781D976684479C /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 2600;
 			};
-			buildConfigurationList = FE84E8A20B822BA49EC92854 /* Build configuration list for PBXProject "CellCap" */;
+			buildConfigurationList = ADC8D9577E64E59C1ACFB698 /* Build configuration list for PBXProject "CellCap" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = ko;
 			hasScannedForEncodings = 0;
@@ -648,220 +651,296 @@
 				en,
 				Base,
 			);
-			mainGroup = 480273E123641BF9D964895F;
+			mainGroup = B6BA927A7E822B69B50AB515;
 			minimizedProjectReferenceProxies = 0;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 0139F4FD07E8B7995127562F /* Products */;
+			productRefGroup = E69FF020444052FEAC3FF058 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				9BE2AC391B3490277187C493 /* AppUI */,
-				0BBAB9A35234DBF17E132529 /* CellCapSMCBridge */,
-				EAC2FC8547E2D1033F7AA64B /* Core */,
-				BC5A2300DE10574A0BE3BC40 /* CoreTests */,
-				51163A5045FF93BCF290A18B /* Helper */,
-				7596B6D3B09F0334CF6562E3 /* Shared */,
+				E37C6ABAB16D1D66E8410236 /* AppUI */,
+				6F63F9233821DC0D493E61F6 /* CellCapSMCBridge */,
+				4613F591C593AF147176E8E1 /* Core */,
+				933CD0988B019C0B51C07676 /* CoreTests */,
+				B620B73710DC6E3E6AF7A8FA /* Helper */,
+				6DA4572B7B2D117A0FA382CB /* Shared */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		ACD53A6F6B668805FA1F9708 /* Resources */ = {
+		3EE295C6CD8429C271C49AFA /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BFCC205944521F6E1115A795 /* Resources */ = {
+		B6A05D0640AD87FF371D1C56 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		EC365B6965B67DD9B9225A49 /* Resources */ = {
+		E8C802E7052967A8DDC94E86 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F4CE89F6547CD4F8D9B1322E /* Resources */ = {
+		F19DD82353E19EDC2EC35A00 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0F4287446215670E81D9C53E /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		1CE4420699F4A681923AD804 /* Sources */ = {
+		0137C565CD4445941D152832 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4D93636EDFCD9D38A7AD12D5 /* CellCapHelperListener.swift in Sources */,
-				D3B60ABD49F676873F8BB94E /* CellCapHelperService.swift in Sources */,
-				17EC95DA879E3C3E302A5AF2 /* ChargeControlBackend.swift in Sources */,
-				ACC844A116126D97E36FFAB3 /* DirectSMCChargeControlBackend.swift in Sources */,
-				196626A597F38BCED57A79A2 /* main.swift in Sources */,
+				116577B5532C7EC0658AD420 /* AppRuntimeOrchestratorTests.swift in Sources */,
+				21E367A24272E5B80C050C5F /* AppRuntimeSupportTests.swift in Sources */,
+				28320D918DEE6280DCD16C59 /* BatteryMonitorTests.swift in Sources */,
+				D0BC564FE7489559D891F0CF /* CapabilityCheckerTests.swift in Sources */,
+				48AB32AFE3545EA92E149A63 /* CellCapHelperServiceTests.swift in Sources */,
+				EABA03DAC636846EBA48B04D /* ChargePolicyStoreTests.swift in Sources */,
+				694DFEF65CF7E246BBEC2692 /* ChargePolicyTests.swift in Sources */,
+				0E190CA89DCF1F4DAC028875 /* ChargeStateMachineTests.swift in Sources */,
+				42FF55D77B66E3A815BA3807 /* ChargeStateResolverTests.swift in Sources */,
+				AF1653B7CBC88F0EF7F72D98 /* DirectSMCChargeControlBackendTests.swift in Sources */,
+				200911529656928CB22032E1 /* EventLoggerTests.swift in Sources */,
+				6FFA371EDB544DAA64FFEA3E /* HelperInstallCheckerTests.swift in Sources */,
+				35FFD4E3C4CA193A8875E768 /* HelperXPCDTOsTests.swift in Sources */,
+				3D4E8E5DD09D019C82C7523D /* MockChargeControllerTests.swift in Sources */,
+				A55CA4AD017C166A5906A098 /* PolicyEngineTests.swift in Sources */,
+				654C8B5DCC7FF0E8E67EA93B /* XPCChargeControllerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2DF9858AFD7A5B0AE17DBC0A /* Sources */ = {
+		0B1F3D764A91D77263135FED /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B38516403B8FC944C944E711 /* AppState.swift in Sources */,
-				D8A703AC3488588FBC8548CB /* BatterySnapshot.swift in Sources */,
-				1C85643BACAFE11B9E53DE1A /* CapabilityReport.swift in Sources */,
-				CB6A55D952386FD1447AD995 /* CellCapHelperXPCProtocol.swift in Sources */,
-				495ACBCC7E3ACF7062D3092F /* ChargePolicy.swift in Sources */,
-				893D5A677923E46B968127A3 /* ChargeState.swift in Sources */,
-				EF9D38D9BA64B2D3F03E529F /* ControllerStatus.swift in Sources */,
-				677517BF40DC29BCFA6F0B06 /* DiagnosticEvent.swift in Sources */,
-				0C1D1D74CC35127DBB7524F7 /* DiagnosticsSummary.swift in Sources */,
-				F86D9C132521D0756A49C1AA /* HelperInstallStatus.swift in Sources */,
-				352E07CA2B41B58172CF7895 /* HelperXPCDTOs.swift in Sources */,
+				B572DAD050EB332ED7A8320F /* CellCapHelperListener.swift in Sources */,
+				2C5F2319147DFB54109BB90A /* CellCapHelperService.swift in Sources */,
+				CBE96071384DF30098E9B7A5 /* ChargeControlBackend.swift in Sources */,
+				727DEE274BBBA80762CAB23B /* DirectSMCChargeControlBackend.swift in Sources */,
+				38F9C08AE7200DC4CE64F1DB /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		96C1ECB4FE4404E534E0271F /* Sources */ = {
+		85E7C1FBAD55975901811997 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3DA784136B7F04E65028D41E /* AppRuntimeOrchestrator.swift in Sources */,
-				792A74805AB1DE9871FFD75E /* AppRuntimeTrigger+Debug.swift in Sources */,
-				0F469139377CE06D191BAAF9 /* BatteryMonitor.swift in Sources */,
-				643F74070F9DB60E0434A8A0 /* CapabilityChecker.swift in Sources */,
-				037D4F94D457711FADEF0598 /* CapabilityReportResolver.swift in Sources */,
-				EBA4592BB9050966F2CAA7BD /* ChargeController.swift in Sources */,
-				2EAFB7DDA3712B75003CBBDE /* ChargePolicyStore.swift in Sources */,
-				484D4D785843C985F0400F6E /* ChargeStateMachine.swift in Sources */,
-				10C99F2A9746DABC59636AA5 /* ChargeStateResolver.swift in Sources */,
-				10DCBC035FA29B6440F46F6F /* ControllerCommandApplier.swift in Sources */,
-				C991EB5C3575938BD60CDFE7 /* EventLogger.swift in Sources */,
-				2B4678D12BBE26095BFEAF14 /* HelperInstallChecker.swift in Sources */,
-				4612D24F87A7D4F44A3244EB /* HelperXPCClient.swift in Sources */,
-				82055B7F15E78125DFBF8EC9 /* MockChargeController.swift in Sources */,
-				9F0B33144CBFE6AAFD1BA63B /* PolicyEngine.swift in Sources */,
-				8A6D58AA62A49EB127F87744 /* RuntimeSafetyGate.swift in Sources */,
-				8EBA3C9D277506DEC42D7DE2 /* SelfTestPolicy.swift in Sources */,
-				363299E7A963C996B6B2A9E7 /* SystemBatterySnapshotProvider.swift in Sources */,
-				58AD792B9E43F2EF68587DD4 /* XPCChargeController.swift in Sources */,
+				FDE330622982D22F93ABDB01 /* AppRuntimeOrchestrator.swift in Sources */,
+				D571053FEBE6672FB0B1D9C6 /* AppRuntimeTrigger+Debug.swift in Sources */,
+				C359CFBC16B82178E7CF02BF /* BatteryMonitor.swift in Sources */,
+				2CEF48CCE177FF8E549B5831 /* CapabilityChecker.swift in Sources */,
+				50F40D095F6D238685F8D0C2 /* CapabilityReportResolver.swift in Sources */,
+				E3F0378237D8C922E2451DB6 /* ChargeController.swift in Sources */,
+				1B1CEA558D8B3F6E5BD7A5D9 /* ChargePolicyStore.swift in Sources */,
+				DEB9182B42ABE19B7A002FFB /* ChargeStateMachine.swift in Sources */,
+				9FB1CE32AC9F639C7BB08715 /* ChargeStateResolver.swift in Sources */,
+				17C20D8CACECD5F9531A1542 /* ControllerCommandApplier.swift in Sources */,
+				2BF907AD69F511290A685B5E /* EventLogger.swift in Sources */,
+				0B22371B86080D384D889AA1 /* HelperInstallChecker.swift in Sources */,
+				DE32336A1A4A6877D53050F7 /* HelperXPCClient.swift in Sources */,
+				C02ECC493020B7F263E09FED /* MockChargeController.swift in Sources */,
+				040BE29BD6D1DB970BE07332 /* PolicyEngine.swift in Sources */,
+				58937B3B9530FEBF6C18CA3D /* RuntimeSafetyGate.swift in Sources */,
+				7AF9972E43ED3880A139EAFB /* SelfTestPolicy.swift in Sources */,
+				D72F0F73F27B5A0513DDE4D6 /* SystemBatterySnapshotProvider.swift in Sources */,
+				A2F86BE19A057FD15B0DB146 /* XPCChargeController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A90064020A796E3C697C46E8 /* Sources */ = {
+		B7C74FA48C7BCA2A37172E2E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				975B5A74AAC887D9235C3A26 /* CellCapSMCBridge.c in Sources */,
+				2D832000950255DA2AD921C3 /* CellCapSMCBridge.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B1C98D301912C7ABC061D79F /* Sources */ = {
+		CB905D0CAD014F77C528F9F2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A7DDF3A18BD47E2F71F6C786 /* CapabilityStatusListView.swift in Sources */,
-				178EF843253E0D4CEBD80532 /* CellCapApp.swift in Sources */,
-				3C0EB5D040EF2DBF8190AF6E /* ControlAvailabilityResolver.swift in Sources */,
-				4801C07D8A840C57AC183661 /* LaunchAtLoginManager.swift in Sources */,
-				50D4FEEBDADDF26EF4F68ADC /* MenuBarPresentation.swift in Sources */,
-				EC12AC75751DED10B89C2FF0 /* MenuBarPreviewFactory.swift in Sources */,
-				B03EEB64F003546F3AB714D5 /* MenuBarViewModel.swift in Sources */,
-				6AC38299931EBD250EA6EE74 /* PolicySettingsView.swift in Sources */,
-				CF6FDD085BF6E94D46654C04 /* RootView.swift in Sources */,
-				A9EE250363D9AD1F45CD0392 /* StatusSummaryView.swift in Sources */,
+				57751EE411242F06C717D4F8 /* AppState.swift in Sources */,
+				840A32A823FF5E9CFD316290 /* BatterySnapshot.swift in Sources */,
+				EEF551477E98B8D930EFC354 /* CapabilityReport.swift in Sources */,
+				5D3D2EFC05178314E5E17FD6 /* CellCapHelperXPCProtocol.swift in Sources */,
+				8F1FD1DDF0A8EBADBB036014 /* ChargePolicy.swift in Sources */,
+				F839A029B95914AC988A52BF /* ChargeState.swift in Sources */,
+				EDA7E20BB57CF6E9F924FDBC /* ControllerStatus.swift in Sources */,
+				37E4B2DD31609B2CCC1BDA41 /* DiagnosticEvent.swift in Sources */,
+				3D8860EB6AC40534FFCA4382 /* DiagnosticsSummary.swift in Sources */,
+				4E4F401A64C91F15A0D45773 /* HelperInstallStatus.swift in Sources */,
+				DA663A16BE5C0279816C6A26 /* HelperXPCDTOs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CC6501BEA7EE189701B86D69 /* Sources */ = {
+		E55BC308B8CEADBB35ED8F72 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				47252055A2AA6D196C992F8B /* AppRuntimeOrchestratorTests.swift in Sources */,
-				55F7E00BFBC426AED243950D /* AppRuntimeSupportTests.swift in Sources */,
-				831B990B7507BB267E5FCC39 /* BatteryMonitorTests.swift in Sources */,
-				8DD3070B69314C65DDE8423B /* CapabilityCheckerTests.swift in Sources */,
-				F62F44C68297ECC714CD3756 /* CellCapHelperServiceTests.swift in Sources */,
-				072468A0F7CB89A53060F9F1 /* ChargePolicyStoreTests.swift in Sources */,
-				ABC58744F606A60F05139765 /* ChargePolicyTests.swift in Sources */,
-				2C8CC8840805674E9911D27C /* ChargeStateMachineTests.swift in Sources */,
-				FA595E98855BA72FBAC933F0 /* ChargeStateResolverTests.swift in Sources */,
-				ACA78533D55BB56C71703366 /* DirectSMCChargeControlBackendTests.swift in Sources */,
-				A0DAE0016A9AE2D13630FAF9 /* EventLoggerTests.swift in Sources */,
-				096CA61BA715B7102584EA42 /* HelperInstallCheckerTests.swift in Sources */,
-				46EF29216401E4DA703CA821 /* HelperXPCDTOsTests.swift in Sources */,
-				50DEABF60EAA0CC8255453CA /* MockChargeControllerTests.swift in Sources */,
-				120EF981B6BA930E0D622353 /* PolicyEngineTests.swift in Sources */,
-				8D7B66068AC794A1615B94FB /* XPCChargeControllerTests.swift in Sources */,
+				7B11D55473FAAAE929F0D005 /* CapabilityStatusListView.swift in Sources */,
+				017166200B04807B3D9F30DD /* CellCapApp.swift in Sources */,
+				BE2C226BFB2113ADBF0035DC /* ControlAvailabilityResolver.swift in Sources */,
+				5318F818164CE23226384F07 /* LaunchAtLoginManager.swift in Sources */,
+				E0C385F853F9A2B37BB07B50 /* MenuBarPresentation.swift in Sources */,
+				0D31EBD1A4922438E411E0EC /* MenuBarPreviewFactory.swift in Sources */,
+				51712FAF333663508565B087 /* MenuBarViewModel.swift in Sources */,
+				70429E64E32EF961F59A93F3 /* PolicySettingsView.swift in Sources */,
+				4745AADAAB5568AF12765E0F /* RootView.swift in Sources */,
+				E42BE82E4435BA522CFD5112 /* StatusSummaryView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		080FEA3EDB1DC97C6AFB0A60 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Shared;
-			target = 7596B6D3B09F0334CF6562E3 /* Shared */;
-			targetProxy = 8EC64FFE4A00B1BD7F84ACE3 /* PBXContainerItemProxy */;
-		};
-		3A0DAC4D7D99CF9549D3219D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Shared;
-			target = 7596B6D3B09F0334CF6562E3 /* Shared */;
-			targetProxy = CA1242D88D0716FB3F8D70CF /* PBXContainerItemProxy */;
-		};
-		40C67EF2510D069ED88E33E7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Shared;
-			target = 7596B6D3B09F0334CF6562E3 /* Shared */;
-			targetProxy = 7A91968A66405F65BD3D179F /* PBXContainerItemProxy */;
-		};
-		643A12E2940D30627C94364B /* PBXTargetDependency */ = {
+		220AFA859792A929FDA5964E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = Core;
-			target = EAC2FC8547E2D1033F7AA64B /* Core */;
-			targetProxy = 51298124A3E2B670CA4E4965 /* PBXContainerItemProxy */;
+			target = 4613F591C593AF147176E8E1 /* Core */;
+			targetProxy = 87F3D68AD67569242598F08E /* PBXContainerItemProxy */;
 		};
-		71F77609ADBB97252AF88BB8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Core;
-			target = EAC2FC8547E2D1033F7AA64B /* Core */;
-			targetProxy = 3D877C7B7B1F58AF58E8E319 /* PBXContainerItemProxy */;
-		};
-		9129B964CE63204AE8A26D71 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Helper;
-			target = 51163A5045FF93BCF290A18B /* Helper */;
-			targetProxy = D0F1CD1E8CC4FF7026A5E489 /* PBXContainerItemProxy */;
-		};
-		B9E1059EED1B17E316BAFCA4 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Core;
-			target = EAC2FC8547E2D1033F7AA64B /* Core */;
-			targetProxy = 3F35131815F9639B351743FC /* PBXContainerItemProxy */;
-		};
-		CC951D9AD6FB821E75DE7F93 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Shared;
-			target = 7596B6D3B09F0334CF6562E3 /* Shared */;
-			targetProxy = 851F47F165187A222CF6CE0D /* PBXContainerItemProxy */;
-		};
-		EFFB0FB6515AA40B624931D7 /* PBXTargetDependency */ = {
+		62912979CCA978A59A7F009C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = CellCapSMCBridge;
-			target = 0BBAB9A35234DBF17E132529 /* CellCapSMCBridge */;
-			targetProxy = AA4B1E4A17DCF05E31FCAC3B /* PBXContainerItemProxy */;
+			target = 6F63F9233821DC0D493E61F6 /* CellCapSMCBridge */;
+			targetProxy = CD33186CDB6031678CDC570D /* PBXContainerItemProxy */;
+		};
+		67F0341C7EBD276D0AC2BE23 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Core;
+			target = 4613F591C593AF147176E8E1 /* Core */;
+			targetProxy = BA3F52138B80DD228D330905 /* PBXContainerItemProxy */;
+		};
+		71DDAE3697D5E256AE72BD23 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Shared;
+			target = 6DA4572B7B2D117A0FA382CB /* Shared */;
+			targetProxy = 442A9F98D71A84EAEB4C6851 /* PBXContainerItemProxy */;
+		};
+		73D79F4BC6B1EBDA24555710 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Core;
+			target = 4613F591C593AF147176E8E1 /* Core */;
+			targetProxy = 4AD8238EBF7FB9129BF2A383 /* PBXContainerItemProxy */;
+		};
+		A8DEBA339CC9F48511884E43 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Shared;
+			target = 6DA4572B7B2D117A0FA382CB /* Shared */;
+			targetProxy = EC30CA0A80DA0120BC0E8188 /* PBXContainerItemProxy */;
+		};
+		C1D480EF0CE325FB0839BA20 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Helper;
+			target = B620B73710DC6E3E6AF7A8FA /* Helper */;
+			targetProxy = ED759C2597E6B146B4B83111 /* PBXContainerItemProxy */;
+		};
+		D409721B84B986C032939FB5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Shared;
+			target = 6DA4572B7B2D117A0FA382CB /* Shared */;
+			targetProxy = 31A4FFAE29D911B8AD1A7842 /* PBXContainerItemProxy */;
+		};
+		E9C742627E7BF7C6AD716FAE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Shared;
+			target = 6DA4572B7B2D117A0FA382CB /* Shared */;
+			targetProxy = EED28EC556D971D3F6D1DCED /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		0086B7FAA794E050AC350773 /* Debug */ = {
+		02F944763CD1C50A8A0334CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_NAME = CellCapHelper;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		4392BCC538B8BD883418EC9D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleShortVersionString = 1.0.0;
+				INFOPLIST_KEY_CFBundleVersion = 1;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.shared;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		4F1BBB0020EB9E84D792BA1B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleShortVersionString = 1.0.0;
+				INFOPLIST_KEY_CFBundleVersion = 1;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.core;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		6C87D565FEAF9685F6CC321B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -922,7 +1001,7 @@
 			};
 			name = Debug;
 		};
-		01EE4B182D1F48991C765FA6 /* Release */ = {
+		8971B82ECF8BE250EC1AB439 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -948,7 +1027,76 @@
 			};
 			name = Release;
 		};
-		08C7D29FEC17CB991B89F5E7 /* Release */ = {
+		9A3CBD0CC25882E550FBFE25 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				DEFINES_MODULE = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Sources/CellCapSMCBridge/include",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					CoreFoundation,
+					"-framework",
+					IOKit,
+				);
+				PRODUCT_NAME = CellCapSMCBridge;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		A9B3295EB4B1BAB05F13582D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_NAME = CellCapHelper;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		AADA42AB6A909F9BAA599730 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleShortVersionString = 1.0.0;
+				INFOPLIST_KEY_CFBundleVersion = 1;
+				INFOPLIST_KEY_LSUIElement = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.app;
+				PRODUCT_NAME = CellCap;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		CB47E56D880C79F3AFEDF271 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
@@ -967,7 +1115,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.core;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.shared;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -978,7 +1126,29 @@
 			};
 			name = Release;
 		};
-		0FB81C998702DE9567756978 /* Debug */ = {
+		D0DD127FB5318FFFEDAFDD90 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleShortVersionString = 1.0.0;
+				INFOPLIST_KEY_CFBundleVersion = 1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.tests;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "";
+			};
+			name = Release;
+		};
+		DE5C214A8D659C33A3B5F71C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
@@ -1006,7 +1176,7 @@
 			};
 			name = Debug;
 		};
-		270C9E5F4C17D87CBAC4AFED /* Release */ = {
+		E7D168C247AA62B6F2892E65 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -1060,7 +1230,29 @@
 			};
 			name = Release;
 		};
-		3E758E810ACD7DC045A66BE1 /* Debug */ = {
+		F422DDE14033D048557688EF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleShortVersionString = 1.0.0;
+				INFOPLIST_KEY_CFBundleVersion = 1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.tests;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "";
+			};
+			name = Debug;
+		};
+		F82729A13188CFE6270E55B0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
@@ -1088,263 +1280,75 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
-			name = Debug;
-		};
-		5DA1EE191C2CAA29065E5206 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGNING_ALLOWED = YES;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_HARDENED_RUNTIME = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleShortVersionString = 1.0.0;
-				INFOPLIST_KEY_CFBundleVersion = 1;
-				INFOPLIST_KEY_LSUIElement = YES;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.app;
-				PRODUCT_NAME = CellCap;
-				SDKROOT = macosx;
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
-			};
-			name = Debug;
-		};
-		65659105B850EA2F653B22C1 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				ENABLE_HARDENED_RUNTIME = NO;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				PRODUCT_NAME = CellCapHelper;
-				SDKROOT = macosx;
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
-			};
-			name = Debug;
-		};
-		658D726A4BDEA6C66B8927FA /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				ENABLE_HARDENED_RUNTIME = NO;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				PRODUCT_NAME = CellCapHelper;
-				SDKROOT = macosx;
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
-			};
 			name = Release;
-		};
-		7B20198ECEE222E1FDEAF6C7 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				ENABLE_HARDENED_RUNTIME = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleShortVersionString = 1.0.0;
-				INFOPLIST_KEY_CFBundleVersion = 1;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.shared;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Debug;
-		};
-		8CE0EEDE1B2E68220D4B192C /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				DEFINES_MODULE = YES;
-				ENABLE_HARDENED_RUNTIME = NO;
-				EXECUTABLE_PREFIX = lib;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/Sources/CellCapSMCBridge/include",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-framework",
-					CoreFoundation,
-					"-framework",
-					IOKit,
-				);
-				PRODUCT_NAME = CellCapSMCBridge;
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
-			};
-			name = Release;
-		};
-		9CF61D05E2C49830419FB0FC /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "";
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_HARDENED_RUNTIME = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleShortVersionString = 1.0.0;
-				INFOPLIST_KEY_CFBundleVersion = 1;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.tests;
-				SDKROOT = macosx;
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
-				TEST_HOST = "";
-			};
-			name = Release;
-		};
-		A22C2506FEFC220E9F330F8D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				ENABLE_HARDENED_RUNTIME = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleShortVersionString = 1.0.0;
-				INFOPLIST_KEY_CFBundleVersion = 1;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.shared;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
-		D4C7B6C3F4D8856AFAB32453 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "";
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_HARDENED_RUNTIME = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleShortVersionString = 1.0.0;
-				INFOPLIST_KEY_CFBundleVersion = 1;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.shin.cellcap.tests;
-				SDKROOT = macosx;
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
-				TEST_HOST = "";
-			};
-			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		7BAA12598BE782A3BF9826AA /* Build configuration list for PBXNativeTarget "Shared" */ = {
+		0742A4D4C9A65E18914217A8 /* Build configuration list for PBXNativeTarget "Helper" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				7B20198ECEE222E1FDEAF6C7 /* Debug */,
-				A22C2506FEFC220E9F330F8D /* Release */,
+				02F944763CD1C50A8A0334CC /* Debug */,
+				A9B3295EB4B1BAB05F13582D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7CE5E0E0A9387AC79F69673D /* Build configuration list for PBXNativeTarget "Core" */ = {
+		0F7D9E6055D05FAA9A310531 /* Build configuration list for PBXNativeTarget "Core" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				3E758E810ACD7DC045A66BE1 /* Debug */,
-				08C7D29FEC17CB991B89F5E7 /* Release */,
+				4F1BBB0020EB9E84D792BA1B /* Debug */,
+				F82729A13188CFE6270E55B0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8F206C8702EB2E06A0D6B726 /* Build configuration list for PBXNativeTarget "CoreTests" */ = {
+		16FF047FA0140CFA45A1BEA8 /* Build configuration list for PBXNativeTarget "AppUI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D4C7B6C3F4D8856AFAB32453 /* Debug */,
-				9CF61D05E2C49830419FB0FC /* Release */,
+				AADA42AB6A909F9BAA599730 /* Debug */,
+				8971B82ECF8BE250EC1AB439 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D43F48D5EB7729FB58F89B4D /* Build configuration list for PBXNativeTarget "CellCapSMCBridge" */ = {
+		4E00255931A485CD4A4A1E94 /* Build configuration list for PBXNativeTarget "CoreTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0FB81C998702DE9567756978 /* Debug */,
-				8CE0EEDE1B2E68220D4B192C /* Release */,
+				F422DDE14033D048557688EF /* Debug */,
+				D0DD127FB5318FFFEDAFDD90 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DC4390EADF9069090A2DA4BE /* Build configuration list for PBXNativeTarget "Helper" */ = {
+		7ACE56A69044D72E14CD28D9 /* Build configuration list for PBXNativeTarget "Shared" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				65659105B850EA2F653B22C1 /* Debug */,
-				658D726A4BDEA6C66B8927FA /* Release */,
+				4392BCC538B8BD883418EC9D /* Debug */,
+				CB47E56D880C79F3AFEDF271 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E507B73C1D0FAAB147782506 /* Build configuration list for PBXNativeTarget "AppUI" */ = {
+		ADC8D9577E64E59C1ACFB698 /* Build configuration list for PBXProject "CellCap" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				5DA1EE191C2CAA29065E5206 /* Debug */,
-				01EE4B182D1F48991C765FA6 /* Release */,
+				6C87D565FEAF9685F6CC321B /* Debug */,
+				E7D168C247AA62B6F2892E65 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FE84E8A20B822BA49EC92854 /* Build configuration list for PBXProject "CellCap" */ = {
+		B1D7E013E6548535D5A5E568 /* Build configuration list for PBXNativeTarget "CellCapSMCBridge" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0086B7FAA794E050AC350773 /* Debug */,
-				270C9E5F4C17D87CBAC4AFED /* Release */,
+				DE5C214A8D659C33A3B5F71C /* Debug */,
+				9A3CBD0CC25882E550FBFE25 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 9582B8F0FAF1E26782875012 /* Project object */;
+	rootObject = C4F5A597D9781D976684479C /* Project object */;
 }

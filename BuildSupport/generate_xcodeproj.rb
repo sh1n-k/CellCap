@@ -65,6 +65,8 @@ def add_swift_sources(target:, parent_group:, relative_folder:)
     file_ref = folder_group.new_file(relative_path)
     target.add_file_references([file_ref])
   end
+
+  folder_group
 end
 
 def add_c_sources(target:, parent_group:, relative_folder:)
@@ -84,6 +86,17 @@ def add_c_sources(target:, parent_group:, relative_folder:)
       build_file = target.headers_build_phase.add_file_reference(file_ref, true)
       build_file.settings = { "ATTRIBUTES" => ["Public"] }
     end
+  end
+
+  folder_group
+end
+
+def add_resources(target:, parent_group:, relative_paths:)
+  relative_paths.each do |relative_path|
+    next unless (ROOT / relative_path).exist?
+
+    file_ref = parent_group.new_file(File.basename(relative_path))
+    target.resources_build_phase.add_file_reference(file_ref, true)
   end
 end
 
@@ -164,9 +177,15 @@ end
 add_c_sources(target: smc_bridge_target, parent_group: sources_group, relative_folder: "Sources/CellCapSMCBridge")
 add_swift_sources(target: shared_target, parent_group: sources_group, relative_folder: "Sources/Shared")
 add_swift_sources(target: core_target, parent_group: sources_group, relative_folder: "Sources/Core")
-add_swift_sources(target: app_target, parent_group: sources_group, relative_folder: "Sources/AppUI")
+app_group = add_swift_sources(target: app_target, parent_group: sources_group, relative_folder: "Sources/AppUI")
 add_swift_sources(target: helper_target, parent_group: sources_group, relative_folder: "Sources/Helper")
 add_swift_sources(target: tests_target, parent_group: tests_group, relative_folder: "Tests/CoreTests")
+
+add_resources(
+  target: app_target,
+  parent_group: app_group,
+  relative_paths: ["Sources/AppUI/Assets.xcassets"]
+)
 
 add_dependency(target: core_target, dependency: shared_target)
 add_dependency(target: app_target, dependency: shared_target)

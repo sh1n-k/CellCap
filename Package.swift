@@ -31,7 +31,8 @@ let package = Package(
         ),
         .executableTarget(
             name: "AppUI",
-            dependencies: ["Core", "Shared"]
+            dependencies: ["Core", "Shared"],
+            exclude: ["Assets.xcassets"]
         ),
         .executableTarget(
             name: "Helper",
