@@ -2,6 +2,7 @@ import AppKit
 import Foundation
 import IOKit.ps
 import Shared
+import SystemSupport
 
 public enum BatteryMonitorTrigger: String, Sendable, Equatable, CaseIterable {
     case monitorStarted
@@ -35,10 +36,6 @@ public struct SystemDateProvider: DateProviding {
     public init() {}
 
     public var now: Date { .now }
-}
-
-public protocol BatterySnapshotProviding: Sendable {
-    func currentSnapshot(now: Date) throws -> BatterySnapshot?
 }
 
 public protocol BatteryMonitoring: Sendable {

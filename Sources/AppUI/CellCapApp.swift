@@ -1,5 +1,6 @@
 import Core
 import SwiftUI
+import SystemSupport
 
 @main
 struct CellCapApp: App {

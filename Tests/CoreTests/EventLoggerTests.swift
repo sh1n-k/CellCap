@@ -34,6 +34,23 @@ func eventLoggerBuildsDiagnosticsSummaryFromStructuredEvents() async {
                 reason: "launchd에 helper가 등록되어 있습니다."
             )
         ),
+        diagnosticsSummary: DiagnosticsSummary(
+            eventCount: 0,
+            currentChargeState: .suspended,
+            currentControllerMode: .readOnly,
+            currentPolicyUpperLimit: 80,
+            currentRechargeThreshold: 75,
+            lastTransitionReason: ChargeTransitionReason.controlSuspended.rawValue,
+            helperInstallState: .bootstrapped,
+            helperVersion: CellCapHelperXPC.contractVersion,
+            helperInstallReason: "launchd에 helper가 등록되어 있습니다.",
+            lastCapabilityProbeMessage: nil,
+            lastCapabilityProbeAt: nil,
+            lastSelfTestMessage: nil,
+            lastSelfTestAt: nil,
+            lastReadOnlyFallbackReason: nil,
+            recentErrorMessages: []
+        ),
         lastTrigger: .appLaunch,
         chargingCommand: .noChange
     )

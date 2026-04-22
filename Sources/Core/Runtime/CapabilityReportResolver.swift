@@ -1,5 +1,6 @@
 import Foundation
 import Shared
+import SystemSupport
 
 protocol CapabilityReportResolving: Sendable {
     func resolve(

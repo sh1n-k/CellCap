@@ -2,6 +2,7 @@
 import Core
 import Foundation
 import Shared
+import SystemSupport
 import Testing
 
 @MainActor
@@ -247,6 +248,66 @@ func viewModelUpdatesLaunchAtLoginStateWhenToggleChanges() {
 }
 
 @MainActor
+@Test
+func viewModelUsesDiagnosticsSummaryFromRuntimeUpdates() async {
+    let runtime = MockRuntimeService(
+        update: AppRuntimeUpdate(
+            appState: AppState(
+                battery: BatterySnapshot(
+                    chargePercent: 81,
+                    isPowerConnected: true,
+                    isCharging: false
+                ),
+                policy: ChargePolicy(upperLimit: 85, rechargeThreshold: 80),
+                controllerStatus: ControllerStatus(
+                    mode: .readOnly,
+                    helperConnection: .connected,
+                    isChargingEnabled: false
+                ),
+                chargeState: .suspended
+            ),
+            transitionReason: .controlSuspended,
+            capabilityReport: CapabilityChecker().evaluate(
+                snapshot: BatterySnapshot(
+                    chargePercent: 81,
+                    isPowerConnected: true,
+                    isCharging: false
+                )
+            ),
+            diagnosticsSummary: DiagnosticsSummary(
+                eventCount: 3,
+                currentChargeState: .suspended,
+                currentControllerMode: .readOnly,
+                currentPolicyUpperLimit: 85,
+                currentRechargeThreshold: 80,
+                lastTransitionReason: ChargeTransitionReason.controlSuspended.rawValue,
+                helperInstallState: nil,
+                helperVersion: nil,
+                helperInstallReason: nil,
+                lastCapabilityProbeMessage: nil,
+                lastCapabilityProbeAt: nil,
+                lastSelfTestMessage: nil,
+                lastSelfTestAt: nil,
+                lastReadOnlyFallbackReason: "read-only fallback",
+                recentErrorMessages: []
+            ),
+            lastTrigger: .appLaunch,
+            chargingCommand: .noChange
+        )
+    )
+
+    let viewModel = MenuBarViewModel(
+        service: runtime,
+        launchAtLoginManager: DisabledLaunchAtLoginManager()
+    )
+
+    try? await Task.sleep(for: .milliseconds(50))
+
+    #expect(viewModel.diagnosticsSummary?.eventCount == 3)
+    #expect(viewModel.diagnosticsSummaryText.contains("fallback read-only fallback"))
+}
+
+@MainActor
 private func makeViewModel(
     battery: BatterySnapshot,
     policy: ChargePolicy = ChargePolicy(upperLimit: 80, rechargeThreshold: 75),
@@ -292,5 +353,43 @@ private final class MockLaunchAtLoginManager: LaunchAtLoginManaging {
     func setEnabled(_ enabled: Bool) -> LaunchAtLoginState {
         lastRequestedValue = enabled
         return updatedState
+    }
+}
+
+private actor MockRuntimeService: AppRuntimeServicing {
+    let update: AppRuntimeUpdate
+
+    init(update: AppRuntimeUpdate) {
+        self.update = update
+    }
+
+    func makeUpdateStream() async -> AsyncStream<AppRuntimeUpdate> {
+        let update = self.update
+        return AsyncStream { continuation in
+            continuation.yield(update)
+            continuation.finish()
+        }
+    }
+
+    func start() async {}
+
+    func refresh(trigger: AppRuntimeTrigger) async {}
+
+    func setPolicy(_ policy: ChargePolicy) async {}
+
+    func diagnosticsSummary() async -> DiagnosticsSummary {
+        update.diagnosticsSummary
+    }
+
+    func exportDiagnostics() async throws -> DiagnosticsExportArtifact {
+        DiagnosticsExportArtifact(
+            suggestedFilename: "stub.json",
+            contentType: "application/json",
+            utf8Contents: "{}"
+        )
+    }
+
+    func recentDiagnosticEvents(limit: Int?) async -> [DiagnosticEvent] {
+        []
     }
 }

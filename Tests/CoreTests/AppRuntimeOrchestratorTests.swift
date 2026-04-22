@@ -1,6 +1,7 @@
 import Core
 import Foundation
 import Shared
+import SystemSupport
 import Testing
 
 @Test
@@ -283,6 +284,7 @@ func orchestratorReevaluatesOnWakeEvent() async {
     }
 
     await orchestrator.start()
+    await monitor.waitUntilStreamCount(atLeast: 1)
     monitor.emit(
         BatteryMonitorUpdate(
             trigger: .didWake,
@@ -300,6 +302,243 @@ func orchestratorReevaluatesOnWakeEvent() async {
     let update = await task.value
     #expect(update?.lastTrigger == .batteryEvent(.didWake))
     #expect(update?.appState.chargeState == .charging)
+    #expect(update?.diagnosticsSummary.currentChargeState == .charging)
+}
+
+@Test
+func orchestratorResubscribesAfterBatteryMonitorFailure() async {
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: BatterySnapshot(
+            chargePercent: 76,
+            isPowerConnected: false,
+            isCharging: false,
+            observedAt: Date(timeIntervalSince1970: 405),
+            source: .system
+        )
+    )
+    let controller = SequencedChargeController(
+        statuses: [
+            ControllerStatus(mode: .fullControl, helperConnection: .connected, isChargingEnabled: false),
+            ControllerStatus(mode: .fullControl, helperConnection: .connected, isChargingEnabled: false),
+            ControllerStatus(mode: .fullControl, helperConnection: .connected, isChargingEnabled: false)
+        ]
+    )
+    let orchestrator = AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: controller,
+        capabilityChecker: CapabilityChecker(
+            environment: MockRuntimeEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: Date(timeIntervalSince1970: 405),
+                isChargingEnabled: false
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 405))
+        ),
+        dateProvider: SequenceRuntimeDateProvider(
+            dates: [
+                Date(timeIntervalSince1970: 405),
+                Date(timeIntervalSince1970: 406),
+                Date(timeIntervalSince1970: 407),
+                Date(timeIntervalSince1970: 408)
+            ]
+        )
+    )
+
+    await orchestrator.start()
+    await monitor.waitUntilStreamCount(atLeast: 1)
+    monitor.fail(RuntimeMonitorFailure())
+    await monitor.waitUntilStreamCount(atLeast: 2)
+    let stream = await orchestrator.makeUpdateStream()
+    let task = Task {
+        var iterator = stream.makeAsyncIterator()
+        _ = await iterator.next()
+        return await iterator.next()
+    }
+    monitor.emit(
+        BatteryMonitorUpdate(
+            trigger: .didWake,
+            snapshot: BatterySnapshot(
+                chargePercent: 70,
+                isPowerConnected: true,
+                isCharging: false,
+                observedAt: Date(timeIntervalSince1970: 408),
+                source: .system
+            ),
+            observedAt: Date(timeIntervalSince1970: 408)
+        )
+    )
+
+    let update = await task.value
+    #expect(update?.lastTrigger == .batteryEvent(.didWake))
+    #expect(update?.appState.battery?.chargePercent == 70)
+}
+
+@Test
+func orchestratorPreservesQueuedBatteryEventsAcrossMonitorRecovery() async {
+    let now = Date(timeIntervalSince1970: 430)
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: BatterySnapshot(
+            chargePercent: 68,
+            isPowerConnected: true,
+            isCharging: false,
+            observedAt: now,
+            source: .system
+        )
+    )
+    let controller = SequencedChargeController(
+        statuses: [
+            ControllerStatus(mode: .fullControl, helperConnection: .connected, isChargingEnabled: false),
+            ControllerStatus(mode: .fullControl, helperConnection: .connected, isChargingEnabled: false),
+            ControllerStatus(mode: .fullControl, helperConnection: .connected, isChargingEnabled: false)
+        ],
+        selfTestResult: ControllerSelfTestResult(
+            outcome: .passed,
+            message: "ok",
+            checkedAt: now
+        )
+    )
+    let orchestrator = AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: controller,
+        capabilityChecker: CapabilityChecker(
+            environment: MockRuntimeEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: now,
+                isChargingEnabled: false
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: now)
+        ),
+        dateProvider: FixedRuntimeDateProvider(now: now)
+    )
+
+    await orchestrator.start()
+    await monitor.waitUntilStreamCount(atLeast: 1)
+
+    let stream = await orchestrator.makeUpdateStream()
+    let task = Task {
+        var iterator = stream.makeAsyncIterator()
+        _ = await iterator.next()
+        return [
+            await iterator.next(),
+            await iterator.next(),
+            await iterator.next()
+        ]
+    }
+
+    monitor.fail(RuntimeMonitorFailure())
+    monitor.emitOnNextStream(
+        BatteryMonitorUpdate(
+            trigger: .didWake,
+            snapshot: BatterySnapshot(
+                chargePercent: 70,
+                isPowerConnected: true,
+                isCharging: false,
+                observedAt: now,
+                source: .system
+            ),
+            observedAt: now
+        )
+    )
+    monitor.emitOnNextStream(
+        BatteryMonitorUpdate(
+            trigger: .powerSourceChanged,
+            snapshot: BatterySnapshot(
+                chargePercent: 71,
+                isPowerConnected: false,
+                isCharging: false,
+                observedAt: now.addingTimeInterval(1),
+                source: .system
+            ),
+            observedAt: now.addingTimeInterval(1)
+        )
+    )
+
+    let updates = await task.value.compactMap { $0 }
+
+    #expect(updates.count == 3)
+    #expect(updates[0].lastTrigger == .resynchronization)
+    #expect(updates[1].lastTrigger == .batteryEvent(.didWake))
+    #expect(updates[2].lastTrigger == .batteryEvent(.powerSourceChanged))
+    #expect(updates[1].appState.battery?.chargePercent == 70)
+    #expect(updates[2].appState.battery?.chargePercent == 71)
+}
+
+@Test
+func orchestratorKeepsPushAndPullDiagnosticsSummaryAlignedDuringResynchronization() async {
+    let now = Date(timeIntervalSince1970: 1_700)
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: BatterySnapshot(
+            chargePercent: 84,
+            isPowerConnected: true,
+            isCharging: true,
+            observedAt: now,
+            source: .system
+        )
+    )
+    let controller = BlockingResynchronizingChargeController(now: now)
+    let store = MockChargePolicyStore(
+        loadedPolicy: ChargePolicy(
+            upperLimit: 80,
+            rechargeThreshold: 75,
+            temporaryOverrideUntil: Date(timeIntervalSince1970: 1_600)
+        ),
+        saveError: .failedToSave
+    )
+    let orchestrator = AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: controller,
+        capabilityChecker: CapabilityChecker(
+            environment: MockRuntimeEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: now,
+                isChargingEnabled: true
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: now)
+        ),
+        policyStore: store,
+        dateProvider: FixedRuntimeDateProvider(now: now)
+    )
+
+    let stream = await orchestrator.makeUpdateStream()
+    let task = Task {
+        var iterator = stream.makeAsyncIterator()
+        return await iterator.next()
+    }
+
+    let startTask = Task {
+        await orchestrator.start()
+    }
+    let update = await task.value
+    let summary = await orchestrator.diagnosticsSummary()
+    let events = await orchestrator.recentDiagnosticEvents(limit: nil)
+
+    #expect(update?.diagnosticsSummary == summary)
+    #expect(events.contains { $0.message == "충전 정책을 저장하지 못했습니다." })
+    #expect(events.contains { $0.message == "상태 불일치로 재동기화를 수행합니다." })
+
+    await controller.resumeBlockedStatusRequest()
+    await startTask.value
 }
 
 @Test
@@ -421,6 +660,7 @@ func orchestratorReevaluatesOnPowerSourceChange() async {
     }
 
     await orchestrator.start()
+    await monitor.waitUntilStreamCount(atLeast: 1)
     monitor.emit(
         BatteryMonitorUpdate(
             trigger: .powerSourceChanged,
@@ -1130,8 +1370,9 @@ private func bootstrappedHelperInstallStatus(at checkedAt: Date) -> HelperInstal
 
 private final class MockRuntimeBatteryMonitor: @unchecked Sendable, BatteryMonitoring {
     private let lock = NSLock()
-    private var continuation: AsyncThrowingStream<BatteryMonitorUpdate, Error>.Continuation?
+    private var continuations: [AsyncThrowingStream<BatteryMonitorUpdate, Error>.Continuation] = []
     private var currentSnapshotValue: BatterySnapshot?
+    private var pendingUpdates: [BatteryMonitorUpdate] = []
 
     init(currentSnapshotValue: BatterySnapshot?) {
         self.currentSnapshotValue = currentSnapshotValue
@@ -1150,17 +1391,98 @@ private final class MockRuntimeBatteryMonitor: @unchecked Sendable, BatteryMonit
     func makeUpdateStream(emitInitialSnapshot: Bool) -> AsyncThrowingStream<BatteryMonitorUpdate, Error> {
         AsyncThrowingStream { continuation in
             lock.lock()
-            self.continuation = continuation
+            self.continuations.append(continuation)
+            let pendingUpdates = self.pendingUpdates
+            self.pendingUpdates.removeAll()
             lock.unlock()
+
+            for update in pendingUpdates {
+                continuation.yield(update)
+            }
         }
     }
 
     func emit(_ update: BatteryMonitorUpdate) {
         lock.lock()
         currentSnapshotValue = update.snapshot
-        let continuation = self.continuation
+        let continuation = self.continuations.last
         lock.unlock()
         continuation?.yield(update)
+    }
+
+    func fail(_ error: Error) {
+        lock.lock()
+        let continuation = continuations.last
+        lock.unlock()
+        continuation?.finish(throwing: error)
+    }
+
+    func emitOnNextStream(_ update: BatteryMonitorUpdate) {
+        lock.lock()
+        currentSnapshotValue = update.snapshot
+        pendingUpdates.append(update)
+        lock.unlock()
+    }
+
+    func waitUntilStreamCount(atLeast minimum: Int) async {
+        while true {
+            if streamCount() >= minimum {
+                return
+            }
+
+            try? await Task.sleep(for: .milliseconds(20))
+        }
+    }
+
+    private func streamCount() -> Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return continuations.count
+    }
+}
+
+private struct RuntimeMonitorFailure: Error {}
+
+private actor BlockingResynchronizingChargeController: ChargeController {
+    private let now: Date
+    private var statusRequests = 0
+    private var blockedRequestContinuation: CheckedContinuation<Void, Never>?
+
+    init(now: Date) {
+        self.now = now
+    }
+
+    func setChargingEnabled(_ enabled: Bool) async throws {}
+
+    func setTemporaryOverride(until: Date?) async throws {}
+
+    func getControllerStatus() async -> ControllerStatus {
+        statusRequests += 1
+        if statusRequests == 3 {
+            await withCheckedContinuation { continuation in
+                blockedRequestContinuation = continuation
+            }
+        }
+
+        return ControllerStatus(
+            mode: .fullControl,
+            helperConnection: .connected,
+            isChargingEnabled: true,
+            checkedAt: now
+        )
+    }
+
+    func selfTest() async -> ControllerSelfTestResult {
+        ControllerSelfTestResult(
+            outcome: .passed,
+            message: "ok",
+            checkedAt: now
+        )
+    }
+
+    func resumeBlockedStatusRequest() {
+        blockedRequestContinuation?.resume()
+        blockedRequestContinuation = nil
     }
 }
 

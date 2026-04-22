@@ -1,8 +1,8 @@
 import CellCapSMCBridge
-import Core
 import Darwin
 import Foundation
 import Shared
+import SystemSupport
 
 protocol SMCBridgeReading: Sendable {
     func readStatus() throws -> SMCBridgeStatus

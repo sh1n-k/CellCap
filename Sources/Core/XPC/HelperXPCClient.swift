@@ -52,9 +52,14 @@ public protocol HelperServiceTransporting: Sendable {
 
 public actor NSXPCHelperServiceTransport: HelperServiceTransporting {
     private let serviceName: String
+    private let requestTimeout: Duration
 
-    public init(serviceName: String = CellCapHelperXPC.serviceName) {
+    public init(
+        serviceName: String = CellCapHelperXPC.serviceName,
+        requestTimeout: Duration = .seconds(5)
+    ) {
         self.serviceName = serviceName
+        self.requestTimeout = requestTimeout
     }
 
     public func fetchControllerStatus() async throws -> ControllerStatus {
@@ -149,29 +154,142 @@ public actor NSXPCHelperServiceTransport: HelperServiceTransporting {
         ) -> Void
     ) async throws -> T {
         let connection = makeConnection()
+        let cancellationBox = CancellationHandlerBox()
 
-        return try await withCheckedThrowingContinuation { continuation in
-            let proxyObject = connection.remoteObjectProxyWithErrorHandler { error in
-                connection.invalidate()
-                continuation.resume(
-                    throwing: HelperTransportError.connectionFailure(error.localizedDescription)
-                )
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                let completionGate = OneShotResultGate<T>(
+                    continuation: continuation,
+                    timeout: requestTimeout,
+                    timeoutError: HelperTransportError.connectionFailure("XPC request timed out.")
+                ) {
+                    cancellationBox.clear()
+                    connection.interruptionHandler = nil
+                    connection.invalidationHandler = nil
+                    connection.invalidate()
+                }
+                cancellationBox.set {
+                    completionGate.complete(
+                        with: .failure(
+                            HelperTransportError.connectionFailure("XPC request cancelled.")
+                        )
+                    )
+                }
+
+                if Task.isCancelled {
+                    cancellationBox.run()
+                    return
+                }
+
+                connection.interruptionHandler = {
+                    completionGate.complete(
+                        with: .failure(
+                            HelperTransportError.connectionFailure("XPC connection interrupted.")
+                        )
+                    )
+                }
+                connection.invalidationHandler = {
+                    completionGate.complete(
+                        with: .failure(
+                            HelperTransportError.connectionFailure("XPC connection invalidated.")
+                        )
+                    )
+                }
+                let proxyObject = connection.remoteObjectProxyWithErrorHandler { error in
+                    completionGate.complete(
+                        with: .failure(
+                            HelperTransportError.connectionFailure(error.localizedDescription)
+                        )
+                    )
+                }
+
+                guard let proxy = proxyObject as? CellCapHelperXPCProtocol else {
+                    completionGate.complete(
+                        with: .failure(
+                            HelperTransportError.invalidResponse("Remote proxy cast failed.")
+                        )
+                    )
+                    return
+                }
+
+                connection.resume()
+
+                body(proxy) { result in
+                    completionGate.complete(with: result)
+                }
             }
-
-            guard let proxy = proxyObject as? CellCapHelperXPCProtocol else {
-                connection.invalidate()
-                continuation.resume(
-                    throwing: HelperTransportError.invalidResponse("Remote proxy cast failed.")
-                )
-                return
-            }
-
-            connection.resume()
-
-            body(proxy) { result in
-                connection.invalidate()
-                continuation.resume(with: result)
-            }
+        } onCancel: {
+            cancellationBox.run()
         }
+    }
+}
+
+final class OneShotResultGate<T: Sendable>: @unchecked Sendable {
+    private let lock = NSLock()
+    private let continuation: CheckedContinuation<T, Error>
+    private let onComplete: () -> Void
+    private var timeoutTask: Task<Void, Never>?
+    private var completed = false
+
+    init(
+        continuation: CheckedContinuation<T, Error>,
+        timeout: Duration? = nil,
+        timeoutError: (any Error)? = nil,
+        onComplete: @escaping () -> Void = {}
+    ) {
+        self.continuation = continuation
+        self.onComplete = onComplete
+        self.timeoutTask = nil
+        if let timeout, let timeoutError {
+            timeoutTask = Task { [self] in
+                do {
+                    try await Task.sleep(for: timeout)
+                } catch {
+                    return
+                }
+                complete(with: .failure(timeoutError))
+            }
+        } else {
+            self.timeoutTask = nil
+        }
+    }
+
+    func complete(with result: Result<T, Error>) {
+        lock.lock()
+        guard !completed else {
+            lock.unlock()
+            return
+        }
+        completed = true
+        let timeoutTask = timeoutTask
+        lock.unlock()
+
+        timeoutTask?.cancel()
+        onComplete()
+        continuation.resume(with: result)
+    }
+}
+
+final class CancellationHandlerBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var handler: (() -> Void)?
+
+    func set(_ handler: @escaping () -> Void) {
+        lock.lock()
+        self.handler = handler
+        lock.unlock()
+    }
+
+    func clear() {
+        lock.lock()
+        handler = nil
+        lock.unlock()
+    }
+
+    func run() {
+        lock.lock()
+        let handler = self.handler
+        lock.unlock()
+        handler?()
     }
 }

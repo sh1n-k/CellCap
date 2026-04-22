@@ -1,7 +1,7 @@
 @testable import Helper
-import Core
 import Foundation
 import Shared
+import SystemSupport
 import Testing
 
 @Test
@@ -123,6 +123,240 @@ func helperServiceReturnsStructuredErrorWhenChargingCommandFails() async {
     #expect(status.mode == .readOnly)
     #expect(status.isChargingEnabled == false)
     #expect(errorCode == "charging-command-failed")
+    #expect(retryable == false)
+}
+
+@Test
+func helperServiceMarksNonRetryableCommandErrors() async {
+    let service = CellCapHelperService(
+        capabilityChecker: CapabilityChecker(
+            environment: HelperMockEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        snapshotProvider: HelperFixedSnapshotProvider(
+            snapshot: BatterySnapshot(
+                chargePercent: 73,
+                isPowerConnected: true,
+                isCharging: false,
+                isBatteryPresent: true
+            )
+        ),
+        backend: HelperMockChargeControlBackend(
+            capability: ChargeControlCapability(
+                recommendedMode: .fullControl,
+                support: .experimental,
+                reason: "SMC backend ready",
+                helperPrivilegeSupport: .supported,
+                helperPrivilegeReason: "helper가 root 권한으로 실행 중입니다.",
+                helperInstallStatus: HelperInstallStatus(
+                    state: .xpcReachable,
+                    serviceName: CellCapHelperXPC.serviceName,
+                    helperPath: CellCapHelperXPC.installedBinaryPath,
+                    plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                    helperVersion: CellCapHelperXPC.contractVersion,
+                    expectedVersion: CellCapHelperXPC.contractVersion,
+                    reason: "helper XPC에 도달했습니다.",
+                    checkedAt: Date(timeIntervalSince1970: 2_100)
+                ),
+                isChargingEnabled: false,
+                temporaryOverrideUntil: nil,
+                lastErrorDescription: nil
+            ),
+            runtimeStatus: ChargeControlRuntimeStatus(
+                recommendedMode: .fullControl,
+                isChargingEnabled: false,
+                temporaryOverrideUntil: nil,
+                lastErrorDescription: nil,
+                checkedAt: Date(timeIntervalSince1970: 2_100)
+            ),
+            temporaryOverrideError: ChargeControlBackendError.commandRejected("temporary override 종료 시각이 이미 지났습니다.")
+        )
+    )
+
+    let retryable = await withCheckedContinuation { continuation in
+        service.setTemporaryOverride(
+            HelperSetTemporaryOverrideRequestDTO(until: Date(timeIntervalSince1970: 1_000))
+        ) { response in
+            continuation.resume(returning: response.error?.isRetryable)
+        }
+    }
+
+    #expect(retryable == false)
+}
+
+@Test
+func helperServiceMarksStateVerificationFailuresRetryable() async {
+    let service = CellCapHelperService(
+        capabilityChecker: CapabilityChecker(
+            environment: HelperMockEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        snapshotProvider: HelperFixedSnapshotProvider(
+            snapshot: BatterySnapshot(
+                chargePercent: 73,
+                isPowerConnected: true,
+                isCharging: false,
+                isBatteryPresent: true
+            )
+        ),
+        backend: HelperMockChargeControlBackend(
+            capability: ChargeControlCapability(
+                recommendedMode: .fullControl,
+                support: .experimental,
+                reason: "SMC backend ready",
+                helperPrivilegeSupport: .supported,
+                helperPrivilegeReason: "helper가 root 권한으로 실행 중입니다.",
+                helperInstallStatus: HelperInstallStatus(
+                    state: .xpcReachable,
+                    serviceName: CellCapHelperXPC.serviceName,
+                    helperPath: CellCapHelperXPC.installedBinaryPath,
+                    plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                    helperVersion: CellCapHelperXPC.contractVersion,
+                    expectedVersion: CellCapHelperXPC.contractVersion,
+                    reason: "helper XPC에 도달했습니다.",
+                    checkedAt: Date(timeIntervalSince1970: 2_200)
+                ),
+                isChargingEnabled: false,
+                temporaryOverrideUntil: nil,
+                lastErrorDescription: nil
+            ),
+            runtimeStatus: ChargeControlRuntimeStatus(
+                recommendedMode: .fullControl,
+                isChargingEnabled: false,
+                temporaryOverrideUntil: nil,
+                lastErrorDescription: nil,
+                checkedAt: Date(timeIntervalSince1970: 2_200)
+            ),
+            chargingError: ChargeControlBackendError.stateVerificationFailed(expected: false, actual: true)
+        )
+    )
+
+    let retryable = await withCheckedContinuation { continuation in
+        service.setChargingEnabled(HelperSetChargingEnabledRequestDTO(enabled: false)) { response in
+            continuation.resume(returning: response.error?.isRetryable)
+        }
+    }
+
+    #expect(retryable == true)
+}
+
+@Test
+func helperServiceMarksBackendFailuresRetryable() async {
+    let service = CellCapHelperService(
+        capabilityChecker: CapabilityChecker(
+            environment: HelperMockEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        snapshotProvider: HelperFixedSnapshotProvider(
+            snapshot: BatterySnapshot(
+                chargePercent: 73,
+                isPowerConnected: true,
+                isCharging: false,
+                isBatteryPresent: true
+            )
+        ),
+        backend: HelperMockChargeControlBackend(
+            capability: ChargeControlCapability(
+                recommendedMode: .fullControl,
+                support: .experimental,
+                reason: "SMC backend ready",
+                helperPrivilegeSupport: .supported,
+                helperPrivilegeReason: "helper가 root 권한으로 실행 중입니다.",
+                helperInstallStatus: HelperInstallStatus(
+                    state: .xpcReachable,
+                    serviceName: CellCapHelperXPC.serviceName,
+                    helperPath: CellCapHelperXPC.installedBinaryPath,
+                    plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                    helperVersion: CellCapHelperXPC.contractVersion,
+                    expectedVersion: CellCapHelperXPC.contractVersion,
+                    reason: "helper XPC에 도달했습니다.",
+                    checkedAt: Date(timeIntervalSince1970: 2_300)
+                ),
+                isChargingEnabled: false,
+                temporaryOverrideUntil: nil,
+                lastErrorDescription: nil
+            ),
+            runtimeStatus: ChargeControlRuntimeStatus(
+                recommendedMode: .fullControl,
+                isChargingEnabled: false,
+                temporaryOverrideUntil: nil,
+                lastErrorDescription: nil,
+                checkedAt: Date(timeIntervalSince1970: 2_300)
+            ),
+            chargingError: ChargeControlBackendError.backendFailure("bridge I/O failed")
+        )
+    )
+
+    let retryable = await withCheckedContinuation { continuation in
+        service.setChargingEnabled(HelperSetChargingEnabledRequestDTO(enabled: false)) { response in
+            continuation.resume(returning: response.error?.isRetryable)
+        }
+    }
+
+    #expect(retryable == true)
+}
+
+@Test
+func helperServiceMarksUnknownCommandErrorsRetryable() async {
+    let service = CellCapHelperService(
+        capabilityChecker: CapabilityChecker(
+            environment: HelperMockEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        snapshotProvider: HelperFixedSnapshotProvider(
+            snapshot: BatterySnapshot(
+                chargePercent: 73,
+                isPowerConnected: true,
+                isCharging: false,
+                isBatteryPresent: true
+            )
+        ),
+        backend: HelperMockChargeControlBackend(
+            capability: ChargeControlCapability(
+                recommendedMode: .fullControl,
+                support: .experimental,
+                reason: "SMC backend ready",
+                helperPrivilegeSupport: .supported,
+                helperPrivilegeReason: "helper가 root 권한으로 실행 중입니다.",
+                helperInstallStatus: HelperInstallStatus(
+                    state: .xpcReachable,
+                    serviceName: CellCapHelperXPC.serviceName,
+                    helperPath: CellCapHelperXPC.installedBinaryPath,
+                    plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                    helperVersion: CellCapHelperXPC.contractVersion,
+                    expectedVersion: CellCapHelperXPC.contractVersion,
+                    reason: "helper XPC에 도달했습니다.",
+                    checkedAt: Date(timeIntervalSince1970: 2_400)
+                ),
+                isChargingEnabled: false,
+                temporaryOverrideUntil: nil,
+                lastErrorDescription: nil
+            ),
+            runtimeStatus: ChargeControlRuntimeStatus(
+                recommendedMode: .fullControl,
+                isChargingEnabled: false,
+                temporaryOverrideUntil: nil,
+                lastErrorDescription: nil,
+                checkedAt: Date(timeIntervalSince1970: 2_400)
+            ),
+            genericChargingError: HelperUnknownCommandError()
+        )
+    )
+
+    let retryable = await withCheckedContinuation { continuation in
+        service.setChargingEnabled(HelperSetChargingEnabledRequestDTO(enabled: false)) { response in
+            continuation.resume(returning: response.error?.isRetryable)
+        }
+    }
+
     #expect(retryable == true)
 }
 
@@ -130,15 +364,21 @@ private actor HelperMockChargeControlBackend: ChargeControlBackend {
     let capability: ChargeControlCapability
     let runtimeStatus: ChargeControlRuntimeStatus
     let chargingError: ChargeControlBackendError?
+    let temporaryOverrideError: ChargeControlBackendError?
+    let genericChargingError: HelperUnknownCommandError?
 
     init(
         capability: ChargeControlCapability,
         runtimeStatus: ChargeControlRuntimeStatus,
-        chargingError: ChargeControlBackendError? = nil
+        chargingError: ChargeControlBackendError? = nil,
+        temporaryOverrideError: ChargeControlBackendError? = nil,
+        genericChargingError: HelperUnknownCommandError? = nil
     ) {
         self.capability = capability
         self.runtimeStatus = runtimeStatus
         self.chargingError = chargingError
+        self.temporaryOverrideError = temporaryOverrideError
+        self.genericChargingError = genericChargingError
     }
 
     func probe(snapshot: BatterySnapshot?, now: Date) async -> ChargeControlCapability {
@@ -150,6 +390,9 @@ private actor HelperMockChargeControlBackend: ChargeControlBackend {
     }
 
     func setChargingEnabled(_ enabled: Bool, now: Date) async throws -> ChargeControlRuntimeStatus {
+        if let genericChargingError {
+            throw genericChargingError
+        }
         if let chargingError {
             throw chargingError
         }
@@ -157,7 +400,10 @@ private actor HelperMockChargeControlBackend: ChargeControlBackend {
     }
 
     func setTemporaryOverride(until: Date?, now: Date) async throws -> ChargeControlRuntimeStatus {
-        runtimeStatus
+        if let temporaryOverrideError {
+            throw temporaryOverrideError
+        }
+        return runtimeStatus
     }
 
     func selfTest(snapshot: BatterySnapshot?, now: Date) async -> ControllerSelfTestResult {
@@ -172,6 +418,8 @@ private struct HelperFixedSnapshotProvider: BatterySnapshotProviding {
         snapshot
     }
 }
+
+private struct HelperUnknownCommandError: Error, Sendable {}
 
 private struct HelperMockEnvironmentProvider: SystemEnvironmentProviding {
     let operatingSystemVersion: OperatingSystemVersion

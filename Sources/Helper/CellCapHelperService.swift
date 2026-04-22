@@ -1,6 +1,6 @@
-import Core
 import Foundation
 import Shared
+import SystemSupport
 
 final class CellCapHelperService: NSObject, CellCapHelperXPCProtocol {
     private let capabilityChecker: CapabilityChecker
@@ -21,13 +21,12 @@ final class CellCapHelperService: NSObject, CellCapHelperXPCProtocol {
         _ request: HelperRequestDTO,
         withReply reply: @escaping (HelperControllerStatusResponseDTO) -> Void
     ) {
-        let replyBox = ReplyBox(reply)
         let requestedAt = request.requestedAt
         let backend = self.backend
-        Task {
+        replyAsync(reply) {
             let runtimeStatus = await backend.currentStatus(now: requestedAt)
-            let status = makeHelperStatus(from: runtimeStatus)
-            replyBox.reply(HelperControllerStatusResponseDTO(status: ControllerStatusDTO(status: status)))
+            let status = ControllerStatusDTO(status: makeHelperStatus(from: runtimeStatus))
+            return HelperControllerStatusResponseDTO(status: status)
         }
     }
 
@@ -35,21 +34,18 @@ final class CellCapHelperService: NSObject, CellCapHelperXPCProtocol {
         _ request: HelperSelfTestRequestDTO,
         withReply reply: @escaping (HelperSelfTestResponseDTO) -> Void
     ) {
-        let replyBox = ReplyBox(reply)
         let requestedAt = request.requestedAt
         let snapshotProvider = self.snapshotProvider
         let backend = self.backend
-        Task {
-            let snapshot = try? snapshotProvider.currentSnapshot(now: requestedAt)
+        replyAsync(reply) {
+            let snapshot = currentSnapshot(from: snapshotProvider, now: requestedAt)
             let result = await backend.selfTest(snapshot: snapshot, now: requestedAt)
             let runtimeStatus = await backend.currentStatus(now: requestedAt)
 
-            replyBox.reply(
-                HelperSelfTestResponseDTO(
-                    result: ControllerSelfTestResultDTO(result: result),
-                    status: ControllerStatusDTO(
-                        status: makeHelperStatus(from: runtimeStatus)
-                    )
+            return HelperSelfTestResponseDTO(
+                result: ControllerSelfTestResultDTO(result: result),
+                status: ControllerStatusDTO(
+                    status: makeHelperStatus(from: runtimeStatus)
                 )
             )
         }
@@ -59,13 +55,12 @@ final class CellCapHelperService: NSObject, CellCapHelperXPCProtocol {
         _ request: HelperCapabilityProbeRequestDTO,
         withReply reply: @escaping (HelperCapabilityProbeResponseDTO) -> Void
     ) {
-        let replyBox = ReplyBox(reply)
         let requestedAt = request.requestedAt
         let snapshotProvider = self.snapshotProvider
         let capabilityChecker = self.capabilityChecker
         let backend = self.backend
-        Task {
-            let snapshot = try? snapshotProvider.currentSnapshot(now: requestedAt)
+        replyAsync(reply) {
+            let snapshot = currentSnapshot(from: snapshotProvider, now: requestedAt)
             let report = await makeCapabilityReport(
                 snapshot: snapshot,
                 now: requestedAt,
@@ -74,11 +69,9 @@ final class CellCapHelperService: NSObject, CellCapHelperXPCProtocol {
             )
             let runtimeStatus = await backend.currentStatus(now: requestedAt)
             let status = makeHelperStatus(from: runtimeStatus)
-            replyBox.reply(
-                HelperCapabilityProbeResponseDTO(
-                    report: CapabilityReportDTO(report: report),
-                    status: ControllerStatusDTO(status: status)
-                )
+            return HelperCapabilityProbeResponseDTO(
+                report: CapabilityReportDTO(report: report),
+                status: ControllerStatusDTO(status: status)
             )
         }
     }
@@ -87,31 +80,16 @@ final class CellCapHelperService: NSObject, CellCapHelperXPCProtocol {
         _ request: HelperSetChargingEnabledRequestDTO,
         withReply reply: @escaping (HelperCommandResponseDTO) -> Void
     ) {
-        let replyBox = ReplyBox(reply)
         let requestedAt = request.requestedAt
         let enabled = request.enabled
         let backend = self.backend
-        Task {
-            do {
-                let runtimeStatus = try await backend.setChargingEnabled(enabled, now: requestedAt)
-                let status = ControllerStatusDTO(
-                    status: makeHelperStatus(from: runtimeStatus)
-                )
-                replyBox.reply(HelperCommandResponseDTO(status: status))
-            } catch {
-                let runtimeStatus = await backend.currentStatus(now: requestedAt)
-                replyBox.reply(
-                    HelperCommandResponseDTO(
-                        status: ControllerStatusDTO(
-                            status: makeHelperStatus(from: runtimeStatus)
-                        ),
-                        error: HelperXPCErrorDTO(
-                            code: "charging-command-failed",
-                            message: error.localizedDescription,
-                            isRetryable: true
-                        )
-                    )
-                )
+        replyAsync(reply) {
+            await performCommandResponse(
+                code: "charging-command-failed",
+                requestedAt: requestedAt,
+                backend: backend
+            ) {
+                try await backend.setChargingEnabled(enabled, now: requestedAt)
             }
         }
     }
@@ -120,31 +98,16 @@ final class CellCapHelperService: NSObject, CellCapHelperXPCProtocol {
         _ request: HelperSetTemporaryOverrideRequestDTO,
         withReply reply: @escaping (HelperCommandResponseDTO) -> Void
     ) {
-        let replyBox = ReplyBox(reply)
         let requestedAt = request.requestedAt
         let until = request.until
         let backend = self.backend
-        Task {
-            do {
-                let runtimeStatus = try await backend.setTemporaryOverride(until: until, now: requestedAt)
-                let status = ControllerStatusDTO(
-                    status: makeHelperStatus(from: runtimeStatus)
-                )
-                replyBox.reply(HelperCommandResponseDTO(status: status))
-            } catch {
-                let runtimeStatus = await backend.currentStatus(now: requestedAt)
-                replyBox.reply(
-                    HelperCommandResponseDTO(
-                        status: ControllerStatusDTO(
-                            status: makeHelperStatus(from: runtimeStatus)
-                        ),
-                        error: HelperXPCErrorDTO(
-                            code: "temporary-override-failed",
-                            message: error.localizedDescription,
-                            isRetryable: true
-                        )
-                    )
-                )
+        replyAsync(reply) {
+            await performCommandResponse(
+                code: "temporary-override-failed",
+                requestedAt: requestedAt,
+                backend: backend
+            ) {
+                try await backend.setTemporaryOverride(until: until, now: requestedAt)
             }
         }
     }
@@ -155,6 +118,65 @@ private final class ReplyBox<Response>: @unchecked Sendable {
 
     init(_ reply: @escaping (Response) -> Void) {
         self.reply = reply
+    }
+}
+
+private func replyAsync<Response>(
+    _ reply: @escaping (Response) -> Void,
+    operation: @escaping @Sendable () async -> Response
+) {
+    let replyBox = ReplyBox(reply)
+    Task {
+        replyBox.reply(await operation())
+    }
+}
+
+private func currentSnapshot(
+    from snapshotProvider: any BatterySnapshotProviding,
+    now: Date
+) -> BatterySnapshot? {
+    try? snapshotProvider.currentSnapshot(now: now)
+}
+
+private func performCommandResponse(
+    code: String,
+    requestedAt: Date,
+    backend: any ChargeControlBackend,
+    operation: @escaping @Sendable () async throws -> ChargeControlRuntimeStatus
+) async -> HelperCommandResponseDTO {
+    do {
+        let runtimeStatus = try await operation()
+        return HelperCommandResponseDTO(
+            status: ControllerStatusDTO(status: makeHelperStatus(from: runtimeStatus))
+        )
+    } catch {
+        let runtimeStatus = await backend.currentStatus(now: requestedAt)
+        return HelperCommandResponseDTO(
+            status: ControllerStatusDTO(
+                status: makeHelperStatus(from: runtimeStatus)
+            ),
+            error: HelperXPCErrorDTO(
+                code: code,
+                message: error.localizedDescription,
+                isRetryable: isRetryableHelperCommandError(error)
+            )
+        )
+    }
+}
+
+private func isRetryableHelperCommandError(_ error: Error) -> Bool {
+    guard let backendError = error as? ChargeControlBackendError else {
+        return true
+    }
+
+    switch backendError {
+    case .unsupportedEnvironment,
+            .approvalRequired,
+            .commandRejected:
+        return false
+    case .stateVerificationFailed,
+            .backendFailure:
+        return true
     }
 }
 

@@ -1,5 +1,6 @@
 import Core
 import Shared
+import SystemSupport
 
 @MainActor
 enum MenuBarPreviewFactory {

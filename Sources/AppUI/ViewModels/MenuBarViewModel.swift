@@ -1,6 +1,7 @@
 import Core
 import Shared
 import SwiftUI
+import SystemSupport
 
 @MainActor
 final class MenuBarViewModel: ObservableObject {
@@ -357,22 +358,17 @@ final class MenuBarViewModel: ObservableObject {
             guard let self else { return }
             let stream = await runtimeService.makeUpdateStream()
             for await update in stream {
-                let summary = await runtimeService.diagnosticsSummary()
                 await MainActor.run {
                     self.appState = update.appState
                     self.transitionReason = update.transitionReason
                     self.capabilityReport = update.capabilityReport
-                    self.diagnosticsSummary = summary
+                    self.diagnosticsSummary = update.diagnosticsSummary
                 }
             }
         }
 
         Task {
             await runtimeService.start()
-            let summary = await runtimeService.diagnosticsSummary()
-            await MainActor.run {
-                self.diagnosticsSummary = summary
-            }
         }
     }
 }

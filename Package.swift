@@ -26,25 +26,33 @@ let package = Package(
             name: "Shared"
         ),
         .target(
-            name: "Core",
+            name: "SystemSupport",
             dependencies: ["Shared"]
+        ),
+        .target(
+            name: "Core",
+            dependencies: ["Shared", "SystemSupport"],
+            exclude: [
+                "Monitoring/CapabilityChecker.swift",
+                "Monitoring/SystemBatterySnapshotProvider.swift"
+            ]
         ),
         .executableTarget(
             name: "AppUI",
-            dependencies: ["Core", "Shared"],
+            dependencies: ["Core", "Shared", "SystemSupport"],
             exclude: ["Assets.xcassets"]
         ),
         .executableTarget(
             name: "Helper",
-            dependencies: ["CellCapSMCBridge", "Core", "Shared"]
+            dependencies: ["CellCapSMCBridge", "Shared", "SystemSupport"]
         ),
         .testTarget(
             name: "AppUITests",
-            dependencies: ["AppUI", "Core", "Shared"]
+            dependencies: ["AppUI", "Core", "Shared", "SystemSupport"]
         ),
         .testTarget(
             name: "CoreTests",
-            dependencies: ["Core", "Shared", "Helper"]
+            dependencies: ["Core", "Shared", "Helper", "SystemSupport"]
         )
     ]
 )

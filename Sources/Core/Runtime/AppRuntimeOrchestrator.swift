@@ -1,5 +1,6 @@
 import Foundation
 import Shared
+import SystemSupport
 
 public enum AppRuntimeTrigger: Sendable, Equatable {
     case appLaunch
@@ -13,6 +14,7 @@ public struct AppRuntimeUpdate: Sendable, Equatable {
     public var appState: AppState
     public var transitionReason: ChargeTransitionReason
     public var capabilityReport: CapabilityReport
+    public var diagnosticsSummary: DiagnosticsSummary
     public var lastTrigger: AppRuntimeTrigger
     public var chargingCommand: ChargingCommand
 
@@ -20,12 +22,14 @@ public struct AppRuntimeUpdate: Sendable, Equatable {
         appState: AppState,
         transitionReason: ChargeTransitionReason,
         capabilityReport: CapabilityReport,
+        diagnosticsSummary: DiagnosticsSummary,
         lastTrigger: AppRuntimeTrigger,
         chargingCommand: ChargingCommand
     ) {
         self.appState = appState
         self.transitionReason = transitionReason
         self.capabilityReport = capabilityReport
+        self.diagnosticsSummary = diagnosticsSummary
         self.lastTrigger = lastTrigger
         self.chargingCommand = chargingCommand
     }
@@ -113,6 +117,23 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             appState: initialState,
             transitionReason: .missingBattery,
             capabilityReport: capabilityChecker.evaluate(snapshot: nil),
+            diagnosticsSummary: DiagnosticsSummary(
+                eventCount: 0,
+                currentChargeState: initialState.chargeState,
+                currentControllerMode: initialState.controllerStatus.mode,
+                currentPolicyUpperLimit: initialState.policy.upperLimit,
+                currentRechargeThreshold: initialState.policy.rechargeThreshold,
+                lastTransitionReason: ChargeTransitionReason.missingBattery.rawValue,
+                helperInstallState: nil,
+                helperVersion: nil,
+                helperInstallReason: nil,
+                lastCapabilityProbeMessage: nil,
+                lastCapabilityProbeAt: nil,
+                lastSelfTestMessage: nil,
+                lastSelfTestAt: nil,
+                lastReadOnlyFallbackReason: nil,
+                recentErrorMessages: []
+            ),
             lastTrigger: .appLaunch,
             chargingCommand: .noChange
         )
@@ -152,14 +173,39 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             userFacingSummary: nil
         )
 
-        let monitorStream = batteryMonitor.makeUpdateStream(emitInitialSnapshot: false)
-        monitorTask = Task {
-            do {
-                for try await update in monitorStream {
-                    await self.handleBatteryMonitorUpdate(update)
+        monitorTask = Task { [weak self, batteryMonitor] in
+            var monitorStream = batteryMonitor.makeUpdateStream(emitInitialSnapshot: false)
+
+            while !Task.isCancelled {
+                do {
+                    for try await update in monitorStream {
+                        guard let self else { return }
+                        await self.handleBatteryMonitorUpdate(update)
+                    }
+
+                    if Task.isCancelled {
+                        return
+                    }
+
+                    monitorStream = batteryMonitor.makeUpdateStream(emitInitialSnapshot: false)
+                } catch {
+                    if Task.isCancelled {
+                        return
+                    }
+
+                    let replacementStream = batteryMonitor.makeUpdateStream(emitInitialSnapshot: false)
+
+                    guard let self else { return }
+                    await self.eventLogger.record(
+                        level: .warning,
+                        category: .runtime,
+                        message: "BatteryMonitor 스트림이 종료되어 재구독합니다: \(error.localizedDescription)",
+                        details: [:],
+                        userFacingSummary: nil
+                    )
+                    await self.refresh(trigger: .resynchronization)
+                    monitorStream = replacementStream
                 }
-            } catch {
-                await self.refresh(trigger: .resynchronization)
             }
         }
 
@@ -207,7 +253,7 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
     }
 
     public func diagnosticsSummary() async -> DiagnosticsSummary {
-        await eventLogger.diagnosticsSummary(currentUpdate: currentUpdate)
+        currentUpdate.diagnosticsSummary
     }
 
     public func exportDiagnostics() async throws -> DiagnosticsExportArtifact {
@@ -246,7 +292,7 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
     ) async {
         let previousPolicy = currentUpdate.appState.policy
         let now = dateProvider.now
-        let systemSnapshot = preferredSnapshot ?? latestSystemSnapshot ?? (try? batteryMonitor.currentSnapshot(now: now))
+        let systemSnapshot = resolveSystemSnapshot(preferredSnapshot: preferredSnapshot, now: now)
         latestSystemSnapshot = systemSnapshot ?? latestSystemSnapshot
 
         let helperInstallStatus = await helperInstallChecker.currentStatus(now: now)
@@ -270,15 +316,10 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
         )
         controllerStatus = preflightGate.controllerStatus
         capabilityReport = preflightGate.capabilityReport
-        var evaluation = policyEngine.evaluate(
-            context: ChargeStateContext(
-                battery: systemSnapshot,
-                batterySnapshots: buildSnapshotCandidates(systemSnapshot: systemSnapshot),
-                policy: currentUpdate.appState.policy,
-                controllerStatus: controllerStatus,
-                now: now
-            ),
-            from: currentUpdate.appState.chargeState
+        var evaluation = evaluatePolicy(
+            systemSnapshot: systemSnapshot,
+            controllerStatus: controllerStatus,
+            now: now
         )
         controllerStatus = await controllerCommandApplier.applyIfNeeded(
             controllerStatus: controllerStatus,
@@ -300,33 +341,22 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
         )
         controllerStatus = finalGate.controllerStatus
         capabilityReport = finalGate.capabilityReport
-        evaluation = policyEngine.evaluate(
-            context: ChargeStateContext(
-                battery: systemSnapshot,
-                batterySnapshots: buildSnapshotCandidates(systemSnapshot: systemSnapshot),
-                policy: currentUpdate.appState.policy,
-                controllerStatus: controllerStatus,
-                now: now
-            ),
-            from: currentUpdate.appState.chargeState
+        evaluation = evaluatePolicy(
+            systemSnapshot: systemSnapshot,
+            controllerStatus: controllerStatus,
+            now: now
         )
 
         let previousState = currentUpdate.appState.chargeState
-        let nextUpdate = AppRuntimeUpdate(
-            appState: AppState(
-                battery: evaluation.resolution.selectedBattery,
-                policy: ChargePolicy(
-                    upperLimit: evaluation.effectivePolicy.upperLimit,
-                    rechargeThreshold: evaluation.effectivePolicy.rechargeThreshold,
-                    temporaryOverrideUntil: evaluation.effectivePolicy.temporaryOverrideUntil,
-                    isControlEnabled: evaluation.effectivePolicy.isControlEnabled
-                ),
+        var nextUpdate = AppRuntimeUpdate(
+            appState: makeAppState(
+                evaluation: evaluation,
                 controllerStatus: controllerStatus,
-                chargeState: evaluation.transition.current,
-                lastUpdatedAt: now
+                now: now
             ),
             transitionReason: evaluation.transition.reason,
             capabilityReport: capabilityReport,
+            diagnosticsSummary: currentUpdate.diagnosticsSummary,
             lastTrigger: trigger,
             chargingCommand: evaluation.chargingCommand
         )
@@ -347,9 +377,6 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             userFacingSummary: transitionSummary(for: nextUpdate)
         )
 
-        currentUpdate = nextUpdate
-        broadcast(nextUpdate)
-
         if nextUpdate.appState.policy != previousPolicy {
             await persistPolicy(
                 nextUpdate.appState.policy,
@@ -358,7 +385,9 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             )
         }
 
-        if allowResynchronization && needsResynchronization(update: nextUpdate) {
+        let shouldResynchronize = allowResynchronization && needsResynchronization(update: nextUpdate)
+
+        if shouldResynchronize {
             await eventLogger.record(
                 level: .warning,
                 category: .runtime,
@@ -368,8 +397,15 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
                     "chargeState": nextUpdate.appState.chargeState.rawValue,
                     "controllerMode": nextUpdate.appState.controllerStatus.mode.rawValue
                 ],
-                userFacingSummary: "상태 불일치가 감지되어 다시 동기화합니다."
-            )
+                    userFacingSummary: "상태 불일치가 감지되어 다시 동기화합니다."
+                )
+        }
+
+        nextUpdate.diagnosticsSummary = await eventLogger.diagnosticsSummary(currentUpdate: nextUpdate)
+        currentUpdate = nextUpdate
+        broadcast(nextUpdate)
+
+        if shouldResynchronize {
             await synchronize(
                 trigger: .resynchronization,
                 preferredSnapshot: systemSnapshot,
@@ -499,5 +535,64 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
                 userFacingSummary: userFacingSummary
             )
         }
+    }
+
+    private func resolveSystemSnapshot(
+        preferredSnapshot: BatterySnapshot?,
+        now: Date
+    ) -> BatterySnapshot? {
+        preferredSnapshot ?? latestSystemSnapshot ?? (try? batteryMonitor.currentSnapshot(now: now))
+    }
+
+    private func makeEvaluationContext(
+        systemSnapshot: BatterySnapshot?,
+        controllerStatus: ControllerStatus,
+        now: Date
+    ) -> ChargeStateContext {
+        ChargeStateContext(
+            battery: systemSnapshot,
+            batterySnapshots: buildSnapshotCandidates(systemSnapshot: systemSnapshot),
+            policy: currentUpdate.appState.policy,
+            controllerStatus: controllerStatus,
+            now: now
+        )
+    }
+
+    private func evaluatePolicy(
+        systemSnapshot: BatterySnapshot?,
+        controllerStatus: ControllerStatus,
+        now: Date
+    ) -> PolicyEvaluation {
+        policyEngine.evaluate(
+            context: makeEvaluationContext(
+                systemSnapshot: systemSnapshot,
+                controllerStatus: controllerStatus,
+                now: now
+            ),
+            from: currentUpdate.appState.chargeState
+        )
+    }
+
+    private func makeNormalizedPolicy(from effectivePolicy: EffectiveChargePolicy) -> ChargePolicy {
+        ChargePolicy(
+            upperLimit: effectivePolicy.upperLimit,
+            rechargeThreshold: effectivePolicy.rechargeThreshold,
+            temporaryOverrideUntil: effectivePolicy.temporaryOverrideUntil,
+            isControlEnabled: effectivePolicy.isControlEnabled
+        )
+    }
+
+    private func makeAppState(
+        evaluation: PolicyEvaluation,
+        controllerStatus: ControllerStatus,
+        now: Date
+    ) -> AppState {
+        AppState(
+            battery: evaluation.resolution.selectedBattery,
+            policy: makeNormalizedPolicy(from: evaluation.effectivePolicy),
+            controllerStatus: controllerStatus,
+            chargeState: evaluation.transition.current,
+            lastUpdatedAt: now
+        )
     }
 }
