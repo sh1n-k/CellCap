@@ -3,6 +3,7 @@
 build/
 dist/
 DerivedData/
+.derived-data/
 xcuserdata/
 *.xcuserstate
 AppIcon.preview-backup.png
