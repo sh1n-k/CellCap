@@ -5,14 +5,144 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "${SCRIPT_DIR}/helper_common.sh"
 source "${SCRIPT_DIR}/release_common.sh"
 
+console_user() {
+  local user
+  user="$(stat -f %Su /dev/console 2>/dev/null || true)"
+
+  if [[ -n "${user}" && "${user}" != "root" && "${user}" != "loginwindow" ]]; then
+    echo "${user}"
+  fi
+}
+
+user_id_for() {
+  id -u "$1" 2>/dev/null || true
+}
+
+run_for_user() {
+  local user="$1"
+  shift
+
+  local uid
+  uid="$(user_id_for "${user}")"
+  if [[ -z "${uid}" ]]; then
+    return 0
+  fi
+
+  launchctl asuser "${uid}" sudo -u "${user}" "$@" >/dev/null 2>&1 || true
+}
+
+app_bundle_identifier() {
+  local app_path="$1"
+  local info_plist="${app_path}/Contents/Info.plist"
+
+  if [[ ! -f "${info_plist}" ]]; then
+    return 0
+  fi
+
+  plutil -extract CFBundleIdentifier raw -o - "${info_plist}" 2>/dev/null || true
+}
+
+is_cellcap_app_bundle() {
+  local app_path="$1"
+  [[ -d "${app_path}" ]] || return 1
+  [[ "$(app_bundle_identifier "${app_path}")" == "${APP_BUNDLE_IDENTIFIER}" ]]
+}
+
+cellcap_app_candidates() {
+  local home
+
+  echo "${APP_INSTALL_PATH}"
+  for home in /Users/*; do
+    [[ -d "${home}" ]] || continue
+    [[ "$(basename "${home}")" == "Shared" ]] && continue
+    echo "${home}/Applications/${APP_BUNDLE_NAME}"
+  done
+}
+
+cellcap_users() {
+  local home user
+
+  {
+    user="$(console_user)"
+    if [[ -n "${user}" ]]; then
+      echo "${user}"
+    fi
+
+    for home in /Users/*; do
+      [[ -d "${home}" ]] || continue
+      [[ "$(basename "${home}")" == "Shared" ]] && continue
+      user="$(stat -f %Su "${home}" 2>/dev/null || true)"
+      if [[ -n "${user}" && "${user}" != "root" ]]; then
+        echo "${user}"
+      fi
+    done
+  } | awk '!seen[$0]++'
+}
+
+cleanup_login_item_with_app() {
+  local app_path="$1"
+  local user="$2"
+  local executable_path="${app_path}/Contents/MacOS/${APP_PRODUCT_NAME}"
+
+  if [[ -n "${user}" && -x "${executable_path}" ]]; then
+    run_for_user "${user}" "${executable_path}" "${UNINSTALL_CLEANUP_ARGUMENT}"
+  fi
+}
+
+remove_user_defaults_for_home() {
+  local home="$1"
+  local user="$2"
+  local preferences_dir="${home}/Library/Preferences"
+  local defaults_path="${preferences_dir}/${APP_BUNDLE_IDENTIFIER}.plist"
+
+  if [[ -n "${user}" ]]; then
+    run_for_user "${user}" defaults delete "${APP_BUNDLE_IDENTIFIER}"
+  fi
+
+  rm -f "${defaults_path}"
+}
+
+remove_user_defaults() {
+  local home user
+
+  remove_user_defaults_for_home "/var/root" "root"
+  for home in /Users/*; do
+    [[ -d "${home}" ]] || continue
+    [[ "$(basename "${home}")" == "Shared" ]] && continue
+    user="$(stat -f %Su "${home}" 2>/dev/null || true)"
+    remove_user_defaults_for_home "${home}" "${user}"
+  done
+}
+
+remove_cellcap_apps() {
+  local user app_path
+
+  while IFS= read -r app_path; do
+    if is_cellcap_app_bundle "${app_path}"; then
+      while IFS= read -r user; do
+        cleanup_login_item_with_app "${app_path}" "${user}"
+      done < <(cellcap_users)
+      rm -rf "${app_path}"
+    fi
+  done < <(cellcap_app_candidates)
+}
+
+forget_receipts() {
+  pkgutil --forget "${INSTALL_PACKAGE_IDENTIFIER}" >/dev/null 2>&1 || true
+  pkgutil --forget "${UNINSTALL_PACKAGE_IDENTIFIER}" >/dev/null 2>&1 || true
+
+  nohup /bin/zsh -c "sleep 2; pkgutil --forget '${UNINSTALL_PACKAGE_IDENTIFIER}' >/dev/null 2>&1 || true" >/dev/null 2>&1 &
+}
+
 launchctl bootout "system/${SERVICE_NAME}" >/dev/null 2>&1 || true
 launchctl bootout system "${PLIST_PATH}" >/dev/null 2>&1 || true
 
 rm -f "${PLIST_PATH}"
 rm -f "${INSTALL_PATH}"
-rm -rf "${APP_INSTALL_PATH}"
 rm -rf "${LOG_DIR}"
 
-pkgutil --forget "${INSTALL_PACKAGE_IDENTIFIER}" >/dev/null 2>&1 || true
+remove_cellcap_apps
+remove_user_defaults
+forget_receipts
 
 echo "CellCap 제거가 완료되었습니다."

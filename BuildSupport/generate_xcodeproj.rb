@@ -56,12 +56,14 @@ def configure_build_settings(target, bundle_id: nil, generate_info_plist: true, 
   end
 end
 
-def add_swift_sources(target:, parent_group:, relative_folder:)
+def add_swift_sources(target:, parent_group:, relative_folder:, exclude: [])
   folder_group = parent_group.new_group(File.basename(relative_folder), File.basename(relative_folder))
   absolute_folder = ROOT / relative_folder
 
   Dir.glob((absolute_folder / "**/*.swift").to_s).sort.each do |absolute_path|
     relative_path = Pathname(absolute_path).relative_path_from(absolute_folder).to_s
+    next if exclude.include?(relative_path)
+
     file_ref = folder_group.new_file(relative_path)
     target.add_file_references([file_ref])
   end
@@ -107,6 +109,7 @@ end
 
 smc_bridge_target = project.new_target(:static_library, "CellCapSMCBridge", :osx, "26.0")
 shared_target = project.new_target(:framework, "Shared", :osx, "26.0")
+system_support_target = project.new_target(:framework, "SystemSupport", :osx, "26.0")
 core_target = project.new_target(:framework, "Core", :osx, "26.0")
 app_target = project.new_target(:application, "AppUI", :osx, "26.0")
 helper_target = project.new_target(:command_line_tool, "Helper", :osx, "26.0")
@@ -114,6 +117,7 @@ tests_target = project.new_target(:unit_test_bundle, "CoreTests", :osx, "26.0")
 
 configure_build_settings(smc_bridge_target, generate_info_plist: false)
 configure_build_settings(shared_target, bundle_id: "com.shin.cellcap.shared")
+configure_build_settings(system_support_target, bundle_id: "com.shin.cellcap.systemsupport")
 configure_build_settings(core_target, bundle_id: "com.shin.cellcap.core")
 configure_build_settings(app_target, bundle_id: "com.shin.cellcap.app", enable_code_signing: true)
 configure_build_settings(helper_target, generate_info_plist: false)
@@ -137,6 +141,11 @@ smc_bridge_target.build_configurations.each do |configuration|
 end
 
 shared_target.build_configurations.each do |configuration|
+  configuration.build_settings["DEFINES_MODULE"] = "YES"
+  configuration.build_settings["SKIP_INSTALL"] = "YES"
+end
+
+system_support_target.build_configurations.each do |configuration|
   configuration.build_settings["DEFINES_MODULE"] = "YES"
   configuration.build_settings["SKIP_INSTALL"] = "YES"
 end
@@ -176,7 +185,16 @@ end
 
 add_c_sources(target: smc_bridge_target, parent_group: sources_group, relative_folder: "Sources/CellCapSMCBridge")
 add_swift_sources(target: shared_target, parent_group: sources_group, relative_folder: "Sources/Shared")
-add_swift_sources(target: core_target, parent_group: sources_group, relative_folder: "Sources/Core")
+add_swift_sources(target: system_support_target, parent_group: sources_group, relative_folder: "Sources/SystemSupport")
+add_swift_sources(
+  target: core_target,
+  parent_group: sources_group,
+  relative_folder: "Sources/Core",
+  exclude: [
+    "Monitoring/CapabilityChecker.swift",
+    "Monitoring/SystemBatterySnapshotProvider.swift"
+  ]
+)
 app_group = add_swift_sources(target: app_target, parent_group: sources_group, relative_folder: "Sources/AppUI")
 add_swift_sources(target: helper_target, parent_group: sources_group, relative_folder: "Sources/Helper")
 add_swift_sources(target: tests_target, parent_group: tests_group, relative_folder: "Tests/CoreTests")
@@ -187,19 +205,24 @@ add_resources(
   relative_paths: ["Sources/AppUI/Assets.xcassets"]
 )
 
+add_dependency(target: system_support_target, dependency: shared_target)
 add_dependency(target: core_target, dependency: shared_target)
+add_dependency(target: core_target, dependency: system_support_target)
 add_dependency(target: app_target, dependency: shared_target)
+add_dependency(target: app_target, dependency: system_support_target)
 add_dependency(target: app_target, dependency: core_target)
 add_dependency(target: helper_target, dependency: smc_bridge_target)
 add_dependency(target: helper_target, dependency: core_target)
 add_dependency(target: helper_target, dependency: shared_target)
+add_dependency(target: helper_target, dependency: system_support_target)
 add_dependency(target: tests_target, dependency: shared_target)
 add_dependency(target: tests_target, dependency: core_target)
 add_dependency(target: tests_target, dependency: helper_target)
+add_dependency(target: tests_target, dependency: system_support_target)
 
 embed_frameworks_phase = app_target.new_copy_files_build_phase("Embed Frameworks")
 embed_frameworks_phase.symbol_dst_subfolder_spec = :frameworks
-[shared_target, core_target].each do |framework_target|
+[shared_target, system_support_target, core_target].each do |framework_target|
   build_file = embed_frameworks_phase.add_file_reference(framework_target.product_reference, true)
   build_file.settings = { "ATTRIBUTES" => ["CodeSignOnCopy", "RemoveHeadersOnCopy"] }
 end

@@ -1,4 +1,5 @@
 import Core
+import Foundation
 import SwiftUI
 import SystemSupport
 
@@ -7,6 +8,10 @@ struct CellCapApp: App {
     @StateObject private var viewModel: MenuBarViewModel
 
     init() {
+        if UninstallCleanupCommand.runIfRequested() {
+            Foundation.exit(0)
+        }
+
         let eventLogger = EventLogger()
         let controller = XPCChargeController(eventLogger: eventLogger)
         let batteryMonitor = BatteryMonitor(

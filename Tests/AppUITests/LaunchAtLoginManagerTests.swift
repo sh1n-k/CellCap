@@ -74,6 +74,49 @@ func launchAtLoginManagerExplainsUnsupportedUnsignedBuild() throws {
     #expect(service.registerCallCount == 0)
 }
 
+@Test
+func uninstallCleanupCommandRemovesLoginItemAndUserDefaultsDomain() throws {
+    let suiteName = "UninstallCleanupCommandTests.\(UUID().uuidString)"
+    let userDefaults = try #require(UserDefaults(suiteName: suiteName))
+    userDefaults.set(true, forKey: LaunchAtLoginManager.preferenceKey)
+    userDefaults.set(Data("policy".utf8), forKey: UninstallCleanupCommand.chargePolicyKey)
+
+    let service = MockLaunchAtLoginService(status: .enabled)
+    let didRun = UninstallCleanupCommand.runIfRequested(
+        arguments: ["CellCap", UninstallCleanupCommand.argument],
+        userDefaults: userDefaults,
+        bundleIdentifier: suiteName,
+        launchAtLoginService: service
+    )
+
+    #expect(didRun)
+    #expect(service.unregisterCallCount == 1)
+    #expect(userDefaults.object(forKey: LaunchAtLoginManager.preferenceKey) == nil)
+    #expect(userDefaults.object(forKey: UninstallCleanupCommand.chargePolicyKey) == nil)
+}
+
+@Test
+func uninstallCleanupCommandIgnoresNormalLaunch() throws {
+    let suiteName = "UninstallCleanupCommandTests.\(UUID().uuidString)"
+    let userDefaults = try #require(UserDefaults(suiteName: suiteName))
+    userDefaults.set(true, forKey: LaunchAtLoginManager.preferenceKey)
+    defer {
+        userDefaults.removePersistentDomain(forName: suiteName)
+    }
+
+    let service = MockLaunchAtLoginService(status: .enabled)
+    let didRun = UninstallCleanupCommand.runIfRequested(
+        arguments: ["CellCap"],
+        userDefaults: userDefaults,
+        bundleIdentifier: suiteName,
+        launchAtLoginService: service
+    )
+
+    #expect(didRun == false)
+    #expect(service.unregisterCallCount == 0)
+    #expect(userDefaults.bool(forKey: LaunchAtLoginManager.preferenceKey))
+}
+
 private final class MockLaunchAtLoginService: LaunchAtLoginServiceControlling {
     var status: LaunchAtLoginServiceStatus
     private(set) var registerCallCount = 0
