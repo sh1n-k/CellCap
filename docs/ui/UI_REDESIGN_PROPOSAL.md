@@ -285,15 +285,17 @@ UI는 단일 메뉴 막대 진입점(`MenuBarExtra` + `.menuBarExtraStyle(.windo
 **제안**:
 
 - **헤더 단순화**:
-  - 토글: `DisclosureGroup("고급 정보")` 사용. 우측 자동 chevron 제공, 헤더 자체 디자인 부담을 SwiftUI에 위임.
-  - 상태 배지: "확인 필요"일 때만 `Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.yellow)` 한 글리프. "정상"일 때는 아예 표시하지 않음(정상은 조용히 원칙).
+  - 토글: 헤더 전체를 `Button(.plain)`으로 감싸고, 안쪽에 chevron(`chevron.right`/`chevron.down`) + "고급 정보" 타이틀 + 비정상 시 ⚠ 글리프 1개. `.contentShape(Rectangle())`로 헤더 전체를 hit area로. ([§11 실측 보정](#11-실측-보정-사항-post-impl)에서 결정: `DisclosureGroup`은 chevron만 hit area라서 헤더 클릭이 동작하지 않음.)
+  - 상태 배지: "확인 필요"일 때만 `Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(noticeWarn)` 한 글리프. "정상"일 때는 아예 표시하지 않음(정상은 조용히 원칙).
   - `compactHelperSummaryText`는 헤더에서 빼고 본문 첫 줄로 이동.
 
 - **본문 구조**:
-  1. `LabeledContent`로 3행: "Helper 상태 / 설치 상태 / 현재 모드" — 3열 카드 대신 2열 정렬 list. (현재 메트릭 카드 디자인은 정보량 대비 면적이 큼.)
-  2. `helperInstallReasonText`가 있을 때만 `.callout`(`.secondary` 톤) 한 줄.
-  3. "최근 제어 오류"가 있을 때만 노란 톤 `GroupBox` 한 칸.
+  1. `Grid` + `GridRow` 3행: "Helper 상태 / 설치 상태 / 현재 모드". 좌측 라벨은 `.secondary` + `gridColumnAlignment(.leading)`, 우측 값은 `.primary` 정렬. ([§11 실측 보정](#11-실측-보정-사항-post-impl)에서 결정: `LabeledContent`는 396pt 팝오버에서 라벨/값이 한 줄에 붙어 표 정렬이 무너짐.)
+  2. `helperInstallReasonText`가 있을 때만 `.caption`(`.secondary` 톤) 한 줄.
+  3. "최근 제어 오류"가 있을 때만 `InlineNotice(tone: .warn)` 한 칸.
   4. **`CapabilityStatusListView` 재구성** — 다음 §5.5.
+
+- **펼침 transition**: `.transition(.opacity)`만 사용하고 카드에 `.clipShape(RoundedRectangle(cornerRadius: large))`를 적용. `.move(edge: .top)`은 카드 위 밖에서 슬라이드해 들어오는 모양이라 clip 없는 컨테이너에서는 카드 경계 밖으로 본문이 새어 보이는 결함이 발생([§11 4번](#11-실측-보정-사항-post-impl)).
 
 ---
 
@@ -377,9 +379,12 @@ UI는 단일 메뉴 막대 진입점(`MenuBarExtra` + `.menuBarExtraStyle(.windo
 ### 6.4 컴포넌트 가이드
 | 용도 | 권장 컴포넌트 |
 |---|---|
-| 라벨+컨트롤 | `LabeledContent` |
+| 카드 내 섹션 헤더 | `.title3.bold()` + 좌측 3pt `stateCharging` 액센트 바 (구현: `sectionHeader(title:lockIcon:)` 헬퍼) |
+| 라벨+컨트롤 (1행) | `LabeledContent` |
+| 라벨+값 표 정렬 (n행) | `Grid` + `GridRow` (`LabeledContent`는 좁은 팝오버에서 컬럼 정렬이 무너짐) |
 | 폼 섹션 | `GroupBox` / `Form { Section }` |
-| 펼침 영역 | `DisclosureGroup` |
+| 펼침 영역 | 헤더 전체를 `Button(.plain)` + chevron + `contentShape(Rectangle())` (macOS `DisclosureGroup`은 chevron만 hit area라 비권장) |
+| 펼침 transition | `.transition(.opacity)` + 카드 `.clipShape(RoundedRectangle(...))` (`.move(edge: .top)`은 카드 경계 밖으로 누출) |
 | 시간 선택 | `Picker(.segmented)` |
 | 토글 | `Toggle(…).toggleStyle(.switch)` |
 | 슬라이더 | `Slider` (보조 라벨은 `.help()`) |
@@ -436,7 +441,8 @@ UI는 단일 메뉴 막대 진입점(`MenuBarExtra` + `.menuBarExtraStyle(.windo
    - 현재 `StatusSummaryView` 내부 `private struct StatusTone`에 색이 박혀 있고, `CapabilityStatusListView`·`PolicySettingsView`도 R/G/B 리터럴을 쓴다. 새 색 토큰 enum을 만들어 두 곳에서 같은 색을 참조하면 일관성이 자동 보장됨.
 
 4. **자동 펼침 로직(`shouldAutoExpandAdvancedSection`) 유지**.
-   - `RootView.swift:33-40`의 `onAppear`/`onChange`를 그대로 두면 `DisclosureGroup`에도 `isExpanded` 바인딩을 전달 가능. 동작 변경 없음.
+   - `RootView.swift`의 `onAppear`/`onChange`를 그대로 두면 커스텀 Button 헤더에도 `@Binding isExpanded`로 동기화 가능. 동작 변경 없음.
+   - 펼침 transition은 반드시 `.transition(.opacity)` + 카드 `clipShape`로 처리한다(§5.4, §6.4 참조). `.move(edge: .top)`은 카드 모서리 밖에서 본문이 새어 보인다.
 
 5. **다크/라이트 모두에서 검증**.
    - 현재 라이트 카드 톤(`(0.97,0.96,0.95)`)은 다크 모드 시스템 메뉴와 부조화. 머티리얼로 바꾸면 자동 해결되지만, 임의 색은 반드시 `Asset Catalog`나 `Color.adaptive(...)`로 분기.
@@ -491,7 +497,37 @@ UI는 단일 메뉴 막대 진입점(`MenuBarExtra` + `.menuBarExtraStyle(.windo
 
 ---
 
-## 11. 부록 — 코드 위치 인덱스 (개편 작업 시 빠른 점프)
+## 11. 실측 보정 사항 (post-impl)
+
+구현 후 실기기에서 발견되어 SOT를 갱신한 항목. 후속 작업자는 본 절을 §5/§6보다 우선해 적용한다.
+
+1. **고급 정보 헤더: `DisclosureGroup` → 커스텀 `Button(.plain) + chevron + contentShape(Rectangle())`**
+   - 원안(§5.4)은 `DisclosureGroup` 권장. 실기기에서 macOS는 chevron만 hit area로 잡아 헤더 텍스트/배경 클릭이 동작하지 않음.
+   - 적용: `Image(systemName: isExpanded ? "chevron.down" : "chevron.right")` + 타이틀 + 비정상 시 ⚠. `accessibilityAddTraits(.isButton)`로 보조 기술에 동일하게 노출.
+
+2. **고급 정보 본문: `LabeledContent` 3행 → `Grid` + `GridRow`**
+   - 원안(§5.4)은 `LabeledContent` 3행 권장. 396pt 팝오버에서 라벨/값이 한 줄에 띄어쓰기로만 구분되어 표 정렬이 무너지고 가독성이 낮음.
+   - 적용: `Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 14, verticalSpacing: 8) { GridRow { Text(label).foregroundStyle(.secondary).gridColumnAlignment(.leading); Text(value).frame(maxWidth: .infinity, alignment: .leading) } }`. 라벨/값이 두 컬럼으로 깔끔하게 정렬.
+
+3. **카드 내 섹션 헤더: `.headline` → `.title3.bold()` + 좌측 3pt 액센트 바**
+   - 원안(§6.4)은 `.headline` 사용. 카드 내부 sub-section 헤더로는 약해 다음 sub-section과의 분리가 시각적으로 모호.
+   - 적용: `HStack { RoundedRectangle(cornerRadius: 2).fill(stateCharging).frame(width: 3, height: 18); Text(title).font(.title3.weight(.bold)); ... }`. "충전 한계", "임시 100% 충전" 같은 카드 내 sub-section에 일관 적용.
+
+4. **고급 정보 펼침 transition: `.move(edge: .top)` 제거**
+   - 원안에는 transition 명시가 없었지만 초기 구현은 `.opacity.combined(with: .move(edge: .top))`를 사용. 본문이 카드 위쪽 경계 밖에서 슬라이드해 들어와 새어 보이는 결함 발생.
+   - 적용: `.transition(.opacity)`만 사용 + 카드 자체에 `.clipShape(RoundedRectangle(cornerRadius: large))` 추가. 본문이 그 자리에서 페이드인/아웃되고 카드 높이만 부드럽게 변하는 모양.
+
+5. **메뉴 막대 SF Symbol Hierarchical 렌더링**(§10에서 검증 필요로 표시한 항목)
+   - macOS 26 메뉴 막대에서 정상 동작 확인. 상태별 5종 SF Symbol(`battery.100.bolt`/`bolt.batteryblock`/`battery.75`/`pause.circle`/`exclamationmark.triangle.fill`) 모두 hierarchical 렌더링 적용 가능.
+
+6. **한국어 `Picker(.segmented)` 폭**(§10 검증 필요로 표시한 항목)
+   - "30분 / 1시간 / 2시간 / 4시간" 4 segment는 396pt 팝오버 안에 들어감(좌측 80pt 라벨 + 우측 segmented). 2×2 fallback 미발동.
+
+---
+
+## 12. 부록 — 코드 위치 인덱스 (개편 전 baseline 기준)
+
+> 본 표는 개편 전 main 브랜치 기준으로, 개편 후에는 파일 구조·라인 번호가 모두 달라졌다. 새 디자인 토큰은 `Sources/AppUI/CellCapTheme.swift`에 있고, View 본문 위치는 개편 commit(`git log -p Sources/AppUI/`) 참조.
 
 | 영역 | 파일 | 핵심 위치 |
 |---|---|---|
