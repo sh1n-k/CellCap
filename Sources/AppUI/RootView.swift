@@ -6,27 +6,16 @@ struct RootView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: CellCapTheme.Spacing.section) {
                 StatusSummaryView(viewModel: viewModel)
                 PolicySettingsView(viewModel: viewModel)
                 AdvancedStatusSectionView(
                     viewModel: viewModel,
                     isExpanded: $isAdvancedExpanded
                 )
-
-                HStack {
-                    Button {
-                        viewModel.recomputeState()
-                    } label: {
-                        Label("상태 다시 계산", systemImage: "arrow.clockwise")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color(red: 0.88, green: 0.53, blue: 0.21))
-
-                    Spacer(minLength: 0)
-                }
+                footerActions
             }
-            .padding(18)
+            .padding(CellCapTheme.Spacing.popoverPadding)
         }
         .frame(width: 396, height: 560)
         .background(CellCapPanelBackground())
@@ -38,6 +27,31 @@ struct RootView: View {
                 isAdvancedExpanded = true
             }
         }
+    }
+
+    private var footerActions: some View {
+        HStack(spacing: 16) {
+            Button {
+                viewModel.recomputeState()
+            } label: {
+                Label("상태 다시 계산", systemImage: "arrow.clockwise")
+            }
+            .buttonStyle(.borderless)
+            .foregroundStyle(.secondary)
+            .accessibilityHint("앱 상태와 helper 연결을 다시 동기화합니다")
+
+            Button {
+                viewModel.prepareDiagnosticsExport()
+            } label: {
+                Label("진단 내보내기", systemImage: "square.and.arrow.up")
+            }
+            .buttonStyle(.borderless)
+            .foregroundStyle(.secondary)
+            .accessibilityHint("최근 진단 요약을 내보냅니다")
+
+            Spacer(minLength: 0)
+        }
+        .font(.callout)
     }
 }
 

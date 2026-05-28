@@ -6,125 +6,132 @@ struct CapabilityStatusListView: View {
     var title: String = "가능 여부"
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        let groups = grouped(statuses: viewModel.capabilityReport.statuses)
+
+        VStack(alignment: .leading, spacing: 12) {
             Text(title)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.black.opacity(0.84))
+                .font(.headline)
+                .foregroundStyle(.primary)
 
-            VStack(spacing: 10) {
-                ForEach(viewModel.capabilityReport.statuses, id: \.key) { status in
-                    HStack(alignment: .top, spacing: 12) {
-                        Image(systemName: icon(for: status.support))
-                            .foregroundStyle(accentColor(for: status))
-                            .frame(width: 18, height: 18)
+            Text(viewModel.capabilityCountSummary)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .accessibilityLabel("기능 가능 여부 요약: \(viewModel.capabilityCountSummary)")
 
-                        VStack(alignment: .leading, spacing: 3) {
-                            HStack {
-                                Text(viewModel.capabilityTitle(for: status.key))
-                                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Color.black.opacity(0.82))
+            if !groups.supported.isEmpty {
+                supportedChipGrid(statuses: groups.supported)
+            }
 
-                                Spacer()
-
-                                Text(viewModel.capabilityLabel(for: status.support))
-                                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(accentColor(for: status).opacity(0.18), in: Capsule())
-                                    .foregroundStyle(accentColor(for: status))
-                            }
-
-                            Text(status.reason)
-                                .font(.system(size: 11, weight: .medium, design: .rounded))
-                                .foregroundStyle(Color.black.opacity(0.68))
-                                .lineLimit(2)
-                        }
+            if !groups.notable.isEmpty {
+                VStack(spacing: 8) {
+                    ForEach(groups.notable, id: \.key) { status in
+                        notableCard(for: status)
                     }
-                    .padding(14)
-                    .background(
-                        backgroundColor(for: status),
-                        in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(accentColor(for: status).opacity(0.18), lineWidth: 1)
-                    )
                 }
             }
         }
     }
 
-    private func icon(for support: CapabilitySupport) -> String {
-        switch support {
-        case .supported:
-            return "checkmark.circle.fill"
-        case .unsupported:
-            return "xmark.circle.fill"
-        case .experimental:
-            return "flask.fill"
-        case .readOnlyFallback:
-            return "eye.circle.fill"
+    private func supportedChipGrid(statuses: [CapabilityStatus]) -> some View {
+        let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
+        return LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
+            ForEach(statuses, id: \.key) { status in
+                HStack(spacing: 6) {
+                    Image(systemName: icon(for: status))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(CellCapTheme.tint(for: status.support))
+                        .accessibilityHidden(true)
+                    Text(viewModel.capabilityTitle(for: status.key))
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(.quaternary.opacity(0.4))
+                )
+                .help(status.reason)
+                .accessibilityLabel(
+                    "\(viewModel.capabilityTitle(for: status.key)) \(viewModel.capabilityLabel(for: status.support)): \(status.reason)"
+                )
+            }
         }
     }
 
-    private func accentColor(for status: CapabilityStatus) -> Color {
-        if status.key == .chargeControl, status.support == .experimental {
-            return Color(red: 0.31, green: 0.66, blue: 0.37)
-        }
+    private func notableCard(for status: CapabilityStatus) -> some View {
+        let tint = CellCapTheme.tint(for: status.support)
+        return HStack(alignment: .top, spacing: 10) {
+            Image(systemName: icon(for: status))
+                .foregroundStyle(tint)
+                .font(.callout)
+                .frame(width: 20, height: 20)
+                .accessibilityHidden(true)
 
-        switch status.support {
-        case .supported:
-            return Color(red: 0.31, green: 0.66, blue: 0.37)
-        case .unsupported:
-            return Color(red: 0.82, green: 0.27, blue: 0.23)
-        case .experimental:
-            return Color(red: 0.91, green: 0.60, blue: 0.18)
-        case .readOnlyFallback:
-            return Color(red: 0.36, green: 0.53, blue: 0.80)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(viewModel.capabilityTitle(for: status.key))
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Spacer(minLength: 0)
+                    Text(viewModel.capabilityLabel(for: status.support))
+                        .font(.caption.weight(.bold))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(tint.opacity(0.15), in: Capsule(style: .continuous))
+                        .foregroundStyle(tint)
+                }
+                Text(status.reason)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: CellCapTheme.Corner.medium, style: .continuous)
+                .fill(.quaternary.opacity(0.3))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: CellCapTheme.Corner.medium, style: .continuous)
+                .stroke(tint.opacity(0.25), lineWidth: 0.5)
+        )
+        .accessibilityElement(children: .combine)
     }
 
-    private func backgroundColor(for status: CapabilityStatus) -> Color {
-        if status.key == .chargeControl, status.support == .experimental {
-            return Color(red: 0.98, green: 0.99, blue: 0.98).opacity(0.98)
+    private func grouped(statuses: [CapabilityStatus]) -> (supported: [CapabilityStatus], notable: [CapabilityStatus]) {
+        var supported: [CapabilityStatus] = []
+        var notable: [CapabilityStatus] = []
+        for status in statuses {
+            switch status.support {
+            case .supported:
+                supported.append(status)
+            case .experimental, .unsupported, .readOnlyFallback:
+                notable.append(status)
+            }
         }
+        return (supported, notable)
+    }
 
+    private func icon(for status: CapabilityStatus) -> String {
         switch status.support {
-        case .supported:
-            return Color(red: 0.98, green: 0.99, blue: 0.98).opacity(0.98)
-        case .unsupported:
-            return Color(red: 0.99, green: 0.95, blue: 0.94).opacity(0.99)
-        case .experimental:
-            return Color(red: 0.99, green: 0.97, blue: 0.92).opacity(0.99)
-        case .readOnlyFallback:
-            return Color(red: 0.93, green: 0.96, blue: 1.0).opacity(0.99)
+        case .supported: return "checkmark.circle.fill"
+        case .unsupported: return "xmark.octagon.fill"
+        case .experimental: return "flask.fill"
+        case .readOnlyFallback: return "eye.fill"
         }
     }
 }
 
 struct CellCapPanelBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 0.93, green: 0.90, blue: 0.86),
-                Color(red: 0.86, green: 0.88, blue: 0.92)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .overlay(
-            ZStack {
-                Circle()
-                    .fill(Color(red: 0.89, green: 0.69, blue: 0.43).opacity(0.16))
-                    .frame(width: 220, height: 220)
-                    .offset(x: 170, y: -140)
-
-                Circle()
-                    .fill(Color(red: 0.28, green: 0.40, blue: 0.57).opacity(0.12))
-                    .frame(width: 180, height: 180)
-                    .offset(x: -180, y: 180)
-            }
-        )
-        .ignoresSafeArea()
+        Rectangle()
+            .fill(.background)
+            .overlay(.thinMaterial)
+            .ignoresSafeArea()
     }
 }

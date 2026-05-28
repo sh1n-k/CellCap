@@ -12,13 +12,17 @@ protocol MenuBarPresenting {
     var helperInstallReasonText: String? { get }
     var compactHelperSummaryText: String { get }
     var temporaryOverrideSummaryText: String { get }
+    var temporaryOverrideRemainingText: String? { get }
+    var temporaryOverrideProgress: Double? { get }
     var advancedSectionStatusText: String { get }
     var controlNoticeTitle: String { get }
     var temporaryOverrideNoticeTitle: String { get }
     var isReadOnlyPresentation: Bool { get }
     var selectedOverrideDurationLabel: String { get }
     var menuBarSymbolName: String { get }
+    var menuBarAccessibilityLabel: String { get }
     var diagnosticsSummaryText: String { get }
+    var capabilityCountSummary: String { get }
     func capabilityLabel(for support: CapabilitySupport) -> String
     func capabilityTitle(for key: CapabilityKey) -> String
 }
@@ -237,6 +241,54 @@ struct MenuBarPresentation: MenuBarPresenting {
             return "exclamationmark.triangle.fill"
         }
     }
+
+    var menuBarAccessibilityLabel: String {
+        "\(batteryPercentText), \(chargeStateTitle)"
+    }
+
+    var temporaryOverrideRemainingText: String? {
+        guard let until = appState.policy.temporaryOverrideUntil, until > now else { return nil }
+        let remaining = until.timeIntervalSince(now)
+        if remaining < 60 { return "1분 미만" }
+        return Self.remainingFormatter.string(from: remaining)
+    }
+
+    var temporaryOverrideProgress: Double? {
+        guard let until = appState.policy.temporaryOverrideUntil, until > now else { return nil }
+        let total = overrideDurationMinutes * 60
+        guard total > 0 else { return nil }
+        let remaining = until.timeIntervalSince(now)
+        let elapsed = max(0, total - remaining)
+        return min(1, max(0, elapsed / total))
+    }
+
+    var capabilityCountSummary: String {
+        var supported = 0, experimental = 0, unsupported = 0, fallback = 0
+        for status in capabilityReport.statuses {
+            switch status.support {
+            case .supported: supported += 1
+            case .experimental: experimental += 1
+            case .unsupported: unsupported += 1
+            case .readOnlyFallback: fallback += 1
+            }
+        }
+        var parts: [String] = ["\(capabilityReport.statuses.count)개 기능"]
+        if supported > 0 { parts.append("\(supported) 지원") }
+        if experimental > 0 { parts.append("\(experimental) 실험적") }
+        if fallback > 0 { parts.append("\(fallback) 읽기 전용") }
+        if unsupported > 0 { parts.append("\(unsupported) 미지원") }
+        return parts.joined(separator: " · ")
+    }
+
+    private static let remainingFormatter: DateComponentsFormatter = {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .abbreviated
+        formatter.allowedUnits = [.hour, .minute]
+        formatter.maximumUnitCount = 2
+        formatter.zeroFormattingBehavior = .dropAll
+        formatter.calendar = Calendar(identifier: .gregorian)
+        return formatter
+    }()
 
     var diagnosticsSummaryText: String {
         guard let diagnosticsSummary else {

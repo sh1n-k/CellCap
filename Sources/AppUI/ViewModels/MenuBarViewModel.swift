@@ -141,6 +141,22 @@ final class MenuBarViewModel: ObservableObject {
         presentation.temporaryOverrideSummaryText
     }
 
+    var temporaryOverrideRemainingText: String? {
+        presentation.temporaryOverrideRemainingText
+    }
+
+    var temporaryOverrideProgress: Double? {
+        presentation.temporaryOverrideProgress
+    }
+
+    var capabilityCountSummary: String {
+        presentation.capabilityCountSummary
+    }
+
+    var menuBarAccessibilityLabel: String {
+        presentation.menuBarAccessibilityLabel
+    }
+
     var shouldAutoExpandAdvancedSection: Bool {
         controlAvailabilityResolver.shouldAutoExpandAdvancedSection(
             appState: appState,
