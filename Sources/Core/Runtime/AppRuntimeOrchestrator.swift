@@ -277,6 +277,18 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             userFacingSummary: nil
         )
 
+        // P1: powerSourceChanged가 직전 스냅샷과 의미있는 변화(충전%, 전원 연결,
+        // 충전 여부, 배터리 존재)가 없으면 helper 동기화 묶음(launchctl spawn + 다중
+        // XPC)을 건너뛴다. 충전 중 1% 미만 변동·중복 알림에서 발생하는 불필요한 부하를
+        // 제거한다. wake/sleep 및 그 외 트리거는 상태가 실제로 바뀔 수 있으므로 항상 통과.
+        if update.trigger == .powerSourceChanged,
+           let newSnapshot = update.snapshot,
+           let previousSnapshot = latestSystemSnapshot,
+           snapshotsAreEquivalent(previousSnapshot, newSnapshot) {
+            latestSystemSnapshot = newSnapshot
+            return
+        }
+
         latestSystemSnapshot = update.snapshot
         await synchronize(
             trigger: .batteryEvent(update.trigger),
@@ -288,14 +300,27 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
     private func synchronize(
         trigger: AppRuntimeTrigger,
         preferredSnapshot: BatterySnapshot?,
-        allowResynchronization: Bool
+        allowResynchronization: Bool,
+        cachedHelperInstallStatus: HelperInstallStatus? = nil
     ) async {
         let previousPolicy = currentUpdate.appState.policy
         let now = dateProvider.now
         let systemSnapshot = resolveSystemSnapshot(preferredSnapshot: preferredSnapshot, now: now)
         latestSystemSnapshot = systemSnapshot ?? latestSystemSnapshot
 
-        let helperInstallStatus = await helperInstallChecker.currentStatus(now: now)
+        // P5/P7: 재동기화 패스는 1회차에서 받은 install-status를 재사용해 launchctl
+        // 프로세스 재spawn을 피한다. 그 외에는 설치 상태 변화가 즉시 반영돼야 하는
+        // 트리거에서만 캐시를 우회(forceRefresh)하고, 잦은 powerSourceChanged에서는
+        // 짧은 TTL 캐시를 활용한다.
+        let helperInstallStatus: HelperInstallStatus
+        if let cachedHelperInstallStatus {
+            helperInstallStatus = cachedHelperInstallStatus
+        } else {
+            helperInstallStatus = await helperInstallChecker.currentStatus(
+                now: now,
+                forceRefresh: shouldForceHelperInstallRefresh(for: trigger)
+            )
+        }
         var controllerStatus = await controller.getControllerStatus()
         let selfTestResult = await selfTestPolicy.performIfNeeded(
             trigger: trigger,
@@ -321,18 +346,25 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             controllerStatus: controllerStatus,
             now: now
         )
+        let controllerStatusBeforeApply = controllerStatus
         controllerStatus = await controllerCommandApplier.applyIfNeeded(
             controllerStatus: controllerStatus,
             capabilityReport: capabilityReport,
             evaluation: evaluation,
             now: now
         )
-        capabilityReport = await capabilityReportResolver.resolve(
-            snapshot: systemSnapshot,
-            controllerStatus: controllerStatus,
-            trigger: trigger,
-            helperInstallStatus: helperInstallStatus
-        )
+        // P6: applyIfNeeded가 명령을 실제로 적용해 controllerStatus가 바뀐 경우에만
+        // 재-probe한다. 명령을 보내지 않은 read-only/no-change 상황(대부분의 모니터링
+        // 동기화)에서는 입력이 그대로이므로 1회차 capabilityReport를 재사용해 중복
+        // capabilityProbe XPC를 제거한다.
+        if controllerStatus != controllerStatusBeforeApply {
+            capabilityReport = await capabilityReportResolver.resolve(
+                snapshot: systemSnapshot,
+                controllerStatus: controllerStatus,
+                trigger: trigger,
+                helperInstallStatus: helperInstallStatus
+            )
+        }
         let finalGate = runtimeSafetyGate.apply(
             controllerStatus: controllerStatus,
             capabilityReport: capabilityReport,
@@ -409,8 +441,34 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             await synchronize(
                 trigger: .resynchronization,
                 preferredSnapshot: systemSnapshot,
-                allowResynchronization: false
+                allowResynchronization: false,
+                cachedHelperInstallStatus: helperInstallStatus
             )
+        }
+    }
+
+    // P1: 충전 제어 판정에 영향을 주는 필드만 비교한다. observedAt/source는 매번
+    // 달라지므로 BatterySnapshot 전체 ==가 아니라 의미있는 필드만 본다.
+    private func snapshotsAreEquivalent(_ lhs: BatterySnapshot, _ rhs: BatterySnapshot) -> Bool {
+        lhs.chargePercent == rhs.chargePercent
+            && lhs.isPowerConnected == rhs.isPowerConnected
+            && lhs.isCharging == rhs.isCharging
+            && lhs.isBatteryPresent == rhs.isBatteryPresent
+    }
+
+    // P5: 설치/제거가 즉시 반영돼야 하는 트리거에서는 launchctl 캐시를 우회한다.
+    // 고빈도 powerSourceChanged만 짧은 TTL 캐시를 활용한다.
+    private func shouldForceHelperInstallRefresh(for trigger: AppRuntimeTrigger) -> Bool {
+        switch trigger {
+        case .appLaunch, .manualRefresh, .policyChanged, .resynchronization:
+            return true
+        case .batteryEvent(let batteryTrigger):
+            switch batteryTrigger {
+            case .didWake, .willSleep, .monitorStarted, .manualRefresh:
+                return true
+            case .powerSourceChanged:
+                return false
+            }
         }
     }
 

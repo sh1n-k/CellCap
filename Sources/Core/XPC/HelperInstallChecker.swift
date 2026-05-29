@@ -63,21 +63,59 @@ public struct DefaultFileSystemInspector: FileSystemInspecting {
 
 public protocol HelperInstallChecking: Sendable {
     func currentStatus(now: Date) async -> HelperInstallStatus
+    func currentStatus(now: Date, forceRefresh: Bool) async -> HelperInstallStatus
 }
 
-public struct SystemHelperInstallChecker: HelperInstallChecking {
+public extension HelperInstallChecking {
+    // forceRefresh를 모르는 구현(주로 테스트 mock)은 기본 동작으로 위임한다.
+    func currentStatus(now: Date, forceRefresh: Bool) async -> HelperInstallStatus {
+        await currentStatus(now: now)
+    }
+}
+
+public actor SystemHelperInstallChecker: HelperInstallChecking {
     private let fileSystem: any FileSystemInspecting
     private let commandExecutor: any CommandExecuting
+    private let cacheTTL: TimeInterval
+    private var cachedStatus: HelperInstallStatus?
+    private var cachedAt: Date?
 
     public init(
         fileSystem: any FileSystemInspecting = DefaultFileSystemInspector(),
-        commandExecutor: any CommandExecuting = ProcessCommandExecutor()
+        commandExecutor: any CommandExecuting = ProcessCommandExecutor(),
+        cacheTTL: TimeInterval = 3
     ) {
         self.fileSystem = fileSystem
         self.commandExecutor = commandExecutor
+        self.cacheTTL = cacheTTL
     }
 
     public func currentStatus(now: Date) async -> HelperInstallStatus {
+        await currentStatus(now: now, forceRefresh: false)
+    }
+
+    // launchctl 프로세스 spawn은 비싸고 설치 상태는 런타임 중 거의 불변이므로
+    // 짧은 TTL 동안 결과를 캐시한다. 설치/제거 직후 즉시 반영이 필요한 트리거
+    // (appLaunch·manualRefresh·policyChanged·resynchronization·sleep/wake)는
+    // 호출부에서 forceRefresh=true로 캐시를 우회한다. 시계 역행 시에도 캐시를 무시한다.
+    public func currentStatus(now: Date, forceRefresh: Bool) async -> HelperInstallStatus {
+        if !forceRefresh,
+           let cachedStatus,
+           let cachedAt,
+           now >= cachedAt,
+           now.timeIntervalSince(cachedAt) < cacheTTL {
+            var refreshed = cachedStatus
+            refreshed.checkedAt = now
+            return refreshed
+        }
+
+        let status = computeStatus(now: now)
+        cachedStatus = status
+        cachedAt = now
+        return status
+    }
+
+    private func computeStatus(now: Date) -> HelperInstallStatus {
         let helperPath = CellCapHelperXPC.installedBinaryPath
         let plistPath = CellCapHelperXPC.launchDaemonPlistPath
         let serviceName = CellCapHelperXPC.serviceName

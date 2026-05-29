@@ -61,14 +61,16 @@ final class CellCapHelperService: NSObject, CellCapHelperXPCProtocol {
         let backend = self.backend
         replyAsync(reply) {
             let snapshot = currentSnapshot(from: snapshotProvider, now: requestedAt)
-            let report = await makeCapabilityReport(
+            // P4: probe를 1회만 수행한다. 직후 currentStatus를 또 호출하면 SMC를 다시
+            // 읽으므로(probe 내부에서 readStatus), probe가 돌려준 capability에서 직접
+            // ControllerStatus를 구성해 중복 SMC 읽기를 제거한다.
+            let (report, capability) = await makeCapabilityReport(
                 snapshot: snapshot,
                 now: requestedAt,
                 capabilityChecker: capabilityChecker,
                 backend: backend
             )
-            let runtimeStatus = await backend.currentStatus(now: requestedAt)
-            let status = makeHelperStatus(from: runtimeStatus)
+            let status = makeHelperStatus(from: capability, now: requestedAt)
             return HelperCapabilityProbeResponseDTO(
                 report: CapabilityReportDTO(report: report),
                 status: ControllerStatusDTO(status: status)
@@ -185,10 +187,10 @@ private func makeCapabilityReport(
     now: Date,
     capabilityChecker: CapabilityChecker,
     backend: any ChargeControlBackend
-) async -> CapabilityReport {
+) async -> (report: CapabilityReport, capability: ChargeControlCapability) {
     let baseReport = capabilityChecker.evaluate(snapshot: snapshot)
     let capability = await backend.probe(snapshot: snapshot, now: now)
-    return CapabilityReport(
+    let report = CapabilityReport(
         statuses: baseReport.statuses.map { status in
             switch status.key {
             case .chargeControl:
@@ -216,6 +218,7 @@ private func makeCapabilityReport(
         recommendedControllerMode: capability.recommendedMode,
         helperInstallStatus: capability.helperInstallStatus
     )
+    return (report, capability)
 }
 
 private func makeHelperStatus(from runtimeStatus: ChargeControlRuntimeStatus) -> ControllerStatus {
@@ -226,5 +229,19 @@ private func makeHelperStatus(from runtimeStatus: ChargeControlRuntimeStatus) ->
         temporaryOverrideUntil: runtimeStatus.temporaryOverrideUntil,
         lastErrorDescription: runtimeStatus.lastErrorDescription,
         checkedAt: runtimeStatus.checkedAt
+    )
+}
+
+// P4: probe가 돌려준 capability를 currentStatus와 동일한 형태의 ControllerStatus로
+// 매핑한다. currentStatus(now:)와 동일하게 mode/isChargingEnabled/override/lastError를
+// 사용하되, SMC를 다시 읽지 않는다.
+private func makeHelperStatus(from capability: ChargeControlCapability, now: Date) -> ControllerStatus {
+    ControllerStatus(
+        mode: capability.recommendedMode,
+        helperConnection: .connected,
+        isChargingEnabled: capability.isChargingEnabled,
+        temporaryOverrideUntil: capability.temporaryOverrideUntil,
+        lastErrorDescription: capability.lastErrorDescription,
+        checkedAt: now
     )
 }

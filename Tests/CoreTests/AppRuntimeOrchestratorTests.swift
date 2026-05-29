@@ -682,6 +682,87 @@ func orchestratorReevaluatesOnPowerSourceChange() async {
 }
 
 @Test
+func orchestratorCoalescesPowerSourceChangeWhenSnapshotIsUnchanged() async {
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: BatterySnapshot(
+            chargePercent: 80,
+            isPowerConnected: true,
+            isCharging: false,
+            observedAt: Date(timeIntervalSince1970: 600),
+            source: .system
+        )
+    )
+    let controller = SequencedChargeController(
+        statuses: [
+            ControllerStatus(mode: .fullControl, helperConnection: .connected, isChargingEnabled: false)
+        ]
+    )
+    let orchestrator = AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: controller,
+        capabilityChecker: CapabilityChecker(
+            environment: MockRuntimeEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: Date(timeIntervalSince1970: 600),
+                isChargingEnabled: false
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 600))
+        ),
+        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 600))
+    )
+
+    let stream = await orchestrator.makeUpdateStream()
+    let task = Task {
+        var iterator = stream.makeAsyncIterator()
+        _ = await iterator.next()
+        return await iterator.next()
+    }
+
+    await orchestrator.start()
+    await monitor.waitUntilStreamCount(atLeast: 1)
+
+    // 동일한 스냅샷(충전%/전원/충전여부/배터리존재 모두 같음)의 powerSourceChanged는
+    // 코얼레싱되어 broadcast를 만들지 않는다. 이어지는 변경 이벤트만 통과해야 한다.
+    monitor.emit(
+        BatteryMonitorUpdate(
+            trigger: .powerSourceChanged,
+            snapshot: BatterySnapshot(
+                chargePercent: 80,
+                isPowerConnected: true,
+                isCharging: false,
+                observedAt: Date(timeIntervalSince1970: 601),
+                source: .system
+            ),
+            observedAt: Date(timeIntervalSince1970: 601)
+        )
+    )
+    monitor.emit(
+        BatteryMonitorUpdate(
+            trigger: .powerSourceChanged,
+            snapshot: BatterySnapshot(
+                chargePercent: 74,
+                isPowerConnected: true,
+                isCharging: false,
+                observedAt: Date(timeIntervalSince1970: 602),
+                source: .system
+            ),
+            observedAt: Date(timeIntervalSince1970: 602)
+        )
+    )
+
+    let update = await task.value
+    // 코얼레싱이 동작하면 첫 broadcast는 동일 스냅샷(80)을 건너뛴 변경 이벤트(74)다.
+    #expect(update?.appState.battery?.chargePercent == 74)
+}
+
+@Test
 func orchestratorTreatsReadOnlyCapabilityModeAsSuspendedNotError() async {
     let monitor = MockRuntimeBatteryMonitor(
         currentSnapshotValue: BatterySnapshot(
@@ -1311,6 +1392,10 @@ private struct MockHelperInstallChecker: HelperInstallChecking {
     let status: HelperInstallStatus
 
     func currentStatus(now: Date) async -> HelperInstallStatus {
+        status
+    }
+
+    func currentStatus(now: Date, forceRefresh: Bool) async -> HelperInstallStatus {
         status
     }
 }
