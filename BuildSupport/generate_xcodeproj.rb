@@ -189,11 +189,7 @@ add_swift_sources(target: system_support_target, parent_group: sources_group, re
 add_swift_sources(
   target: core_target,
   parent_group: sources_group,
-  relative_folder: "Sources/Core",
-  exclude: [
-    "Monitoring/CapabilityChecker.swift",
-    "Monitoring/SystemBatterySnapshotProvider.swift"
-  ]
+  relative_folder: "Sources/Core"
 )
 app_group = add_swift_sources(target: app_target, parent_group: sources_group, relative_folder: "Sources/AppUI")
 add_swift_sources(target: helper_target, parent_group: sources_group, relative_folder: "Sources/Helper")

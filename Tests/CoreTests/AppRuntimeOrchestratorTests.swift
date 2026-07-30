@@ -34,7 +34,7 @@ func orchestratorBroadcastsInitialLaunchStateFromBatteryAndHelper() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -48,7 +48,7 @@ func orchestratorBroadcastsInitialLaunchStateFromBatteryAndHelper() async {
         helperInstallChecker: MockHelperInstallChecker(
             status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 100))
         ),
-        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 100))
+        dateProvider: FixedDateProvider(now: Date(timeIntervalSince1970: 100))
     )
 
     let stream = await orchestrator.makeUpdateStream()
@@ -90,7 +90,7 @@ func orchestratorPrefersHelperInstallStatusBeforeCapabilityProbe() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -107,7 +107,7 @@ func orchestratorPrefersHelperInstallStatusBeforeCapabilityProbe() async {
                 checkedAt: Date(timeIntervalSince1970: 110)
             )
         ),
-        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 110))
+        dateProvider: FixedDateProvider(now: Date(timeIntervalSince1970: 110))
     )
 
     let stream = await orchestrator.makeUpdateStream()
@@ -161,7 +161,7 @@ func orchestratorResynchronizesWhenControllerStatusDoesNotMatchDesiredCommand() 
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -175,7 +175,7 @@ func orchestratorResynchronizesWhenControllerStatusDoesNotMatchDesiredCommand() 
         helperInstallChecker: MockHelperInstallChecker(
             status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 200))
         ),
-        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 200))
+        dateProvider: FixedDateProvider(now: Date(timeIntervalSince1970: 200))
     )
 
     await orchestrator.start()
@@ -212,12 +212,12 @@ func orchestratorFallsBackToReadOnlyWhenHelperIsDisconnected() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
         ),
-        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 300))
+        dateProvider: FixedDateProvider(now: Date(timeIntervalSince1970: 300))
     )
 
     let stream = await orchestrator.makeUpdateStream()
@@ -253,7 +253,7 @@ func orchestratorReevaluatesOnWakeEvent() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -267,7 +267,7 @@ func orchestratorReevaluatesOnWakeEvent() async {
         helperInstallChecker: MockHelperInstallChecker(
             status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 400))
         ),
-        dateProvider: SequenceRuntimeDateProvider(
+        dateProvider: SequenceDateProvider(
             dates: [
                 Date(timeIntervalSince1970: 400),
                 Date(timeIntervalSince1970: 450),
@@ -327,7 +327,7 @@ func orchestratorResubscribesAfterBatteryMonitorFailure() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -341,7 +341,7 @@ func orchestratorResubscribesAfterBatteryMonitorFailure() async {
         helperInstallChecker: MockHelperInstallChecker(
             status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 405))
         ),
-        dateProvider: SequenceRuntimeDateProvider(
+        dateProvider: SequenceDateProvider(
             dates: [
                 Date(timeIntervalSince1970: 405),
                 Date(timeIntervalSince1970: 406),
@@ -408,7 +408,7 @@ func orchestratorPreservesQueuedBatteryEventsAcrossMonitorRecovery() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -422,7 +422,7 @@ func orchestratorPreservesQueuedBatteryEventsAcrossMonitorRecovery() async {
         helperInstallChecker: MockHelperInstallChecker(
             status: bootstrappedHelperInstallStatus(at: now)
         ),
-        dateProvider: FixedRuntimeDateProvider(now: now)
+        dateProvider: FixedDateProvider(now: now)
     )
 
     await orchestrator.start()
@@ -502,7 +502,7 @@ func orchestratorKeepsPushAndPullDiagnosticsSummaryAlignedDuringResynchronizatio
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -517,7 +517,7 @@ func orchestratorKeepsPushAndPullDiagnosticsSummaryAlignedDuringResynchronizatio
             status: bootstrappedHelperInstallStatus(at: now)
         ),
         policyStore: store,
-        dateProvider: FixedRuntimeDateProvider(now: now)
+        dateProvider: FixedDateProvider(now: now)
     )
 
     let stream = await orchestrator.makeUpdateStream()
@@ -563,7 +563,7 @@ func orchestratorReevaluatesWhenPolicyChanges() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -577,7 +577,7 @@ func orchestratorReevaluatesWhenPolicyChanges() async {
         helperInstallChecker: MockHelperInstallChecker(
             status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 500))
         ),
-        dateProvider: SequenceRuntimeDateProvider(
+        dateProvider: SequenceDateProvider(
             dates: [
                 Date(timeIntervalSince1970: 500),
                 Date(timeIntervalSince1970: 550)
@@ -629,7 +629,7 @@ func orchestratorReevaluatesOnPowerSourceChange() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -643,7 +643,7 @@ func orchestratorReevaluatesOnPowerSourceChange() async {
         helperInstallChecker: MockHelperInstallChecker(
             status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 600))
         ),
-        dateProvider: SequenceRuntimeDateProvider(
+        dateProvider: SequenceDateProvider(
             dates: [
                 Date(timeIntervalSince1970: 600),
                 Date(timeIntervalSince1970: 610),
@@ -701,7 +701,7 @@ func orchestratorCoalescesPowerSourceChangeWhenSnapshotIsUnchanged() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -715,7 +715,7 @@ func orchestratorCoalescesPowerSourceChangeWhenSnapshotIsUnchanged() async {
         helperInstallChecker: MockHelperInstallChecker(
             status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 600))
         ),
-        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 600))
+        dateProvider: FixedDateProvider(now: Date(timeIntervalSince1970: 600))
     )
 
     let stream = await orchestrator.makeUpdateStream()
@@ -788,12 +788,12 @@ func orchestratorTreatsReadOnlyCapabilityModeAsSuspendedNotError() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
         ),
-        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 700))
+        dateProvider: FixedDateProvider(now: Date(timeIntervalSince1970: 700))
     )
 
     let stream = await orchestrator.makeUpdateStream()
@@ -840,7 +840,7 @@ func orchestratorStoresCapabilityAndSelfTestDiagnostics() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -858,7 +858,7 @@ func orchestratorStoresCapabilityAndSelfTestDiagnostics() async {
                 checkedAt: Date(timeIntervalSince1970: 800)
             )
         ),
-        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 800)),
+        dateProvider: FixedDateProvider(now: Date(timeIntervalSince1970: 800)),
         eventLogger: logger
     )
 
@@ -902,7 +902,7 @@ func orchestratorDoesNotApplyCommandsWhenSelfTestFails() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -930,7 +930,7 @@ func orchestratorDoesNotApplyCommandsWhenSelfTestFails() async {
                 checkedAt: Date(timeIntervalSince1970: 900)
             )
         ),
-        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 900))
+        dateProvider: FixedDateProvider(now: Date(timeIntervalSince1970: 900))
     )
 
     await orchestrator.start()
@@ -990,7 +990,7 @@ func orchestratorDoesNotApplyCommandsWhenCapabilityProbeReportsVersionMismatch()
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -1018,7 +1018,7 @@ func orchestratorDoesNotApplyCommandsWhenCapabilityProbeReportsVersionMismatch()
                 checkedAt: Date(timeIntervalSince1970: 950)
             )
         ),
-        dateProvider: FixedRuntimeDateProvider(now: Date(timeIntervalSince1970: 950))
+        dateProvider: FixedDateProvider(now: Date(timeIntervalSince1970: 950))
     )
 
     await orchestrator.start()
@@ -1069,7 +1069,7 @@ func orchestratorRestoresPersistedPolicyOnStart() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -1084,7 +1084,7 @@ func orchestratorRestoresPersistedPolicyOnStart() async {
             status: bootstrappedHelperInstallStatus(at: now)
         ),
         policyStore: store,
-        dateProvider: FixedRuntimeDateProvider(now: now)
+        dateProvider: FixedDateProvider(now: now)
     )
 
     let stream = await orchestrator.makeUpdateStream()
@@ -1138,7 +1138,7 @@ func orchestratorKeepsChargingWithinBandAfterAppRestartWhenControllerIsAlreadyCh
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -1153,7 +1153,7 @@ func orchestratorKeepsChargingWithinBandAfterAppRestartWhenControllerIsAlreadyCh
             status: bootstrappedHelperInstallStatus(at: now)
         ),
         policyStore: store,
-        dateProvider: FixedRuntimeDateProvider(now: now)
+        dateProvider: FixedDateProvider(now: now)
     )
 
     let stream = await orchestrator.makeUpdateStream()
@@ -1207,7 +1207,7 @@ func orchestratorPersistsNormalizedPolicyWhenExpiredOverrideIsRestored() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -1222,7 +1222,7 @@ func orchestratorPersistsNormalizedPolicyWhenExpiredOverrideIsRestored() async {
             status: bootstrappedHelperInstallStatus(at: now)
         ),
         policyStore: store,
-        dateProvider: FixedRuntimeDateProvider(now: now)
+        dateProvider: FixedDateProvider(now: now)
     )
 
     await orchestrator.start()
@@ -1264,7 +1264,7 @@ func orchestratorFallsBackToDefaultPolicyWhenStoredPolicyLoadFails() async {
         batteryMonitor: monitor,
         controller: controller,
         capabilityChecker: CapabilityChecker(
-            environment: MockRuntimeEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -1279,7 +1279,7 @@ func orchestratorFallsBackToDefaultPolicyWhenStoredPolicyLoadFails() async {
             status: bootstrappedHelperInstallStatus(at: now)
         ),
         policyStore: store,
-        dateProvider: FixedRuntimeDateProvider(now: now)
+        dateProvider: FixedDateProvider(now: now)
     )
 
     let stream = await orchestrator.makeUpdateStream()
@@ -1568,39 +1568,6 @@ private actor BlockingResynchronizingChargeController: ChargeController {
     func resumeBlockedStatusRequest() {
         blockedRequestContinuation?.resume()
         blockedRequestContinuation = nil
-    }
-}
-
-private struct MockRuntimeEnvironmentProvider: SystemEnvironmentProviding {
-    let operatingSystemVersion: OperatingSystemVersion
-    let isAppleSiliconValue: Bool
-
-    init(operatingSystemVersion: OperatingSystemVersion, isAppleSilicon: Bool) {
-        self.operatingSystemVersion = operatingSystemVersion
-        self.isAppleSiliconValue = isAppleSilicon
-    }
-
-    func isAppleSilicon() -> Bool {
-        isAppleSiliconValue
-    }
-}
-
-private struct FixedRuntimeDateProvider: DateProviding {
-    let now: Date
-}
-
-private final class SequenceRuntimeDateProvider: @unchecked Sendable, DateProviding {
-    private let lock = NSLock()
-    private var dates: [Date]
-
-    init(dates: [Date]) {
-        self.dates = dates
-    }
-
-    var now: Date {
-        lock.lock()
-        defer { lock.unlock() }
-        return dates.isEmpty ? .distantPast : dates.removeFirst()
     }
 }
 

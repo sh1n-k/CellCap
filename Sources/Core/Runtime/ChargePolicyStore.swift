@@ -20,6 +20,8 @@ public struct DiscardingChargePolicyStore: ChargePolicyStoring {
 }
 
 public struct UserDefaultsChargePolicyStore: ChargePolicyStoring, @unchecked Sendable {
+    public static let defaultStorageKey = "com.shin.cellcap.charge-policy"
+
     private let userDefaults: UserDefaults
     private let storageKey: String
     private let encoder: JSONEncoder
@@ -27,7 +29,7 @@ public struct UserDefaultsChargePolicyStore: ChargePolicyStoring, @unchecked Sen
 
     public init(
         userDefaults: UserDefaults = .standard,
-        storageKey: String = "com.shin.cellcap.charge-policy"
+        storageKey: String = UserDefaultsChargePolicyStore.defaultStorageKey
     ) {
         self.userDefaults = userDefaults
         self.storageKey = storageKey

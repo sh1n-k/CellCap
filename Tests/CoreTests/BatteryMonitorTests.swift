@@ -7,7 +7,7 @@ import Testing
 @Test
 func batterySnapshotTranslatorClampsChargePercent() {
     let translator = BatterySnapshotTranslator()
-    let snapshot = translator.translate(
+    let high = translator.translate(
         PowerSourceReading(
             chargePercent: 130,
             isPowerConnected: true,
@@ -16,9 +16,20 @@ func batterySnapshotTranslatorClampsChargePercent() {
         ),
         observedAt: Date(timeIntervalSince1970: 100)
     )
+    let low = translator.translate(
+        PowerSourceReading(
+            chargePercent: -5,
+            isPowerConnected: false,
+            isCharging: false,
+            isBatteryPresent: true
+        ),
+        observedAt: Date(timeIntervalSince1970: 100)
+    )
 
-    #expect(snapshot.chargePercent == 100)
-    #expect(snapshot.isPowerConnected)
+    #expect(high.chargePercent == 100)
+    #expect(high.isPowerConnected)
+    #expect(low.chargePercent == 0)
+    #expect(!low.isPowerConnected)
 }
 
 @Test
@@ -89,16 +100,28 @@ func batteryMonitorEmitsInitialSnapshotAndWakeEvent() async throws {
 }
 
 @Test
-func systemBatteryMonitorEventSourceCombinesPowerAndSleepWakeHooks() {
-    let composite = CompositeBatteryMonitorEventSource(
-        sources: [
-            MockBatteryMonitorEventSource(),
-            MockBatteryMonitorEventSource()
-        ]
-    )
+func compositeBatteryMonitorEventSourceFansOutEventsAndCancelsChildren() {
+    let first = MockBatteryMonitorEventSource()
+    let second = MockBatteryMonitorEventSource()
+    let composite = CompositeBatteryMonitorEventSource(sources: [first, second])
+    let received = TriggerRecorder()
 
-    let observation = composite.start { _ in }
+    let observation = composite.start { trigger in
+        received.append(trigger)
+    }
+
+    first.emit(.powerSourceChanged)
+    second.emit(.didWake)
+    #expect(received.values() == [.powerSourceChanged, .didWake])
+    #expect(first.isActive)
+    #expect(second.isActive)
+
     observation.cancel()
+    #expect(!first.isActive)
+    #expect(!second.isActive)
+
+    first.emit(.willSleep)
+    #expect(received.values() == [.powerSourceChanged, .didWake])
 }
 
 private struct MockBatterySnapshotProvider: BatterySnapshotProviding {
@@ -128,6 +151,12 @@ private final class MockBatteryMonitorEventSource: @unchecked Sendable, BatteryM
     private let lock = NSLock()
     private var handler: (@Sendable (BatteryMonitorTrigger) -> Void)?
 
+    var isActive: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return handler != nil
+    }
+
     func start(_ handler: @escaping @Sendable (BatteryMonitorTrigger) -> Void) -> BatteryMonitorObservation {
         lock.lock()
         self.handler = handler
@@ -148,21 +177,20 @@ private final class MockBatteryMonitorEventSource: @unchecked Sendable, BatteryM
     }
 }
 
-private struct FixedDateProvider: DateProviding {
-    let now: Date
-}
-
-private final class SequenceDateProvider: @unchecked Sendable, DateProviding {
+private final class TriggerRecorder: @unchecked Sendable {
     private let lock = NSLock()
-    private var dates: [Date]
+    private var stored: [BatteryMonitorTrigger] = []
 
-    init(dates: [Date]) {
-        self.dates = dates
+    func append(_ trigger: BatteryMonitorTrigger) {
+        lock.lock()
+        stored.append(trigger)
+        lock.unlock()
     }
 
-    var now: Date {
+    func values() -> [BatteryMonitorTrigger] {
         lock.lock()
         defer { lock.unlock() }
-        return dates.isEmpty ? .distantPast : dates.removeFirst()
+        return stored
     }
 }
+

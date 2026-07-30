@@ -24,7 +24,17 @@ func userDefaultsChargePolicyStoreSavesAndLoadsPolicy() throws {
 
     let restored = try store.load()
     #expect(restored == policy)
+    #expect(userDefaults.data(forKey: UserDefaultsChargePolicyStore.defaultStorageKey) != nil)
 
+    try store.clear()
+    #expect(try store.load() == nil)
+}
+
+@Test
+func discardingChargePolicyStoreNeverPersists() throws {
+    let store = DiscardingChargePolicyStore()
+    try store.save(ChargePolicy(upperLimit: 80))
+    #expect(try store.load() == nil)
     try store.clear()
     #expect(try store.load() == nil)
 }

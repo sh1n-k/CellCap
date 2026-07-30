@@ -27,7 +27,6 @@ public struct PowerSourceReading: Sendable, Equatable {
 
 public enum PowerSourceReadingProviderError: Error, Equatable {
     case unavailableSnapshot
-    case invalidPowerSourceDescription
 }
 
 public protocol PowerSourceReadingProviding: Sendable {

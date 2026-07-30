@@ -8,7 +8,7 @@ import Testing
 func directBackendReturnsMonitoringOnlyOnUnsupportedArchitecture() async {
     let backend = DirectSMCChargeControlBackend(
         bridge: MockSMCBridge(status: .capableChargingDisabled),
-        environment: BackendMockEnvironmentProvider(
+        environment: MockSystemEnvironmentProvider(
             operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
             isAppleSilicon: false
         ),
@@ -29,7 +29,7 @@ func directBackendReturnsMonitoringOnlyOnUnsupportedArchitecture() async {
 func directBackendReturnsReadOnlyWhenPrivilegeIsMissing() async {
     let backend = DirectSMCChargeControlBackend(
         bridge: MockSMCBridge(status: .capableChargingDisabled),
-        environment: BackendMockEnvironmentProvider(
+        environment: MockSystemEnvironmentProvider(
             operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
             isAppleSilicon: true
         ),
@@ -50,7 +50,7 @@ func directBackendReturnsReadOnlyWhenPrivilegeIsMissing() async {
 func directBackendReturnsFullControlWhenSMCKeysAndPrivilegeAreAvailable() async {
     let backend = DirectSMCChargeControlBackend(
         bridge: MockSMCBridge(status: .capableChargingDisabled),
-        environment: BackendMockEnvironmentProvider(
+        environment: MockSystemEnvironmentProvider(
             operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
             isAppleSilicon: true
         ),
@@ -71,7 +71,7 @@ func directBackendReturnsFullControlWhenSMCKeysAndPrivilegeAreAvailable() async 
 func directBackendRejectsExpiredOverride() async {
     let backend = DirectSMCChargeControlBackend(
         bridge: MockSMCBridge(status: .capableChargingDisabled),
-        environment: BackendMockEnvironmentProvider(
+        environment: MockSystemEnvironmentProvider(
             operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
             isAppleSilicon: true
         ),
@@ -94,7 +94,7 @@ func directBackendFallsBackToReadOnlyAfterVerificationFailure() async {
     )
     let backend = DirectSMCChargeControlBackend(
         bridge: bridge,
-        environment: BackendMockEnvironmentProvider(
+        environment: MockSystemEnvironmentProvider(
             operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
             isAppleSilicon: true
         ),
@@ -130,20 +130,6 @@ private final class MockSMCBridge: @unchecked Sendable, SMCBridgeReading {
     func setChargingEnabled(_ enabled: Bool) throws {
         status.chargingEnabledKnown = true
         status.chargingEnabled = enabled
-    }
-}
-
-private struct BackendMockEnvironmentProvider: SystemEnvironmentProviding {
-    let operatingSystemVersion: OperatingSystemVersion
-    let isAppleSiliconValue: Bool
-
-    init(operatingSystemVersion: OperatingSystemVersion, isAppleSilicon: Bool) {
-        self.operatingSystemVersion = operatingSystemVersion
-        self.isAppleSiliconValue = isAppleSilicon
-    }
-
-    func isAppleSilicon() -> Bool {
-        isAppleSiliconValue
     }
 }
 

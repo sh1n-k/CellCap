@@ -1,8 +1,9 @@
+import Core
 import Foundation
 
 enum UninstallCleanupCommand {
     static let argument = "--cellcap-uninstall-cleanup"
-    static let chargePolicyKey = "com.shin.cellcap.charge-policy"
+    static let chargePolicyKey = UserDefaultsChargePolicyStore.defaultStorageKey
     static let launchAtLoginPreferenceKey = LaunchAtLoginManager.preferenceKey
 
     static func runIfRequested(

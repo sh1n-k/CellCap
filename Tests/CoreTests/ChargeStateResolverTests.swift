@@ -201,3 +201,90 @@ func resolverCanUseCustomSnapshotHook() {
     #expect(resolution.selectedBattery == cachedSnapshot)
     #expect(resolution.state == .charging)
 }
+
+@Test
+func resolverSuspendsWhenBatteryIsMissing() {
+    let resolver = ChargeStateResolver()
+    let effectivePolicy = EffectiveChargePolicy(
+        upperLimit: 80,
+        rechargeThreshold: 75,
+        temporaryOverrideUntil: nil,
+        isTemporaryOverrideActive: false,
+        isControlEnabled: true
+    )
+
+    let resolution = resolver.resolve(
+        context: ChargeStateContext(
+            battery: nil,
+            policy: ChargePolicy(),
+            controllerStatus: ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected
+            ),
+            now: Date(timeIntervalSince1970: 1_000)
+        ),
+        effectivePolicy: effectivePolicy
+    )
+
+    #expect(resolution.state == .suspended)
+    #expect(resolution.reason == .missingBattery)
+    #expect(resolution.selectedBattery == nil)
+}
+
+@Test
+func resolverReturnsErrorReadOnlyOnHelperFailure() {
+    let resolver = ChargeStateResolver()
+    let effectivePolicy = EffectiveChargePolicy(
+        upperLimit: 80,
+        rechargeThreshold: 75,
+        temporaryOverrideUntil: nil,
+        isTemporaryOverrideActive: false,
+        isControlEnabled: true
+    )
+
+    let resolution = resolver.resolve(
+        context: ChargeStateContext(
+            battery: BatterySnapshot(chargePercent: 70, isPowerConnected: true, isCharging: false),
+            policy: ChargePolicy(),
+            controllerStatus: ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .disconnected,
+                lastErrorDescription: "XPC timeout"
+            ),
+            now: Date(timeIntervalSince1970: 1_000)
+        ),
+        effectivePolicy: effectivePolicy
+    )
+
+    #expect(resolution.state == .errorReadOnly)
+    #expect(resolution.reason == .helperFailure)
+}
+
+@Test
+func resolverSuspendsWhenControlIsDisabled() {
+    let resolver = ChargeStateResolver()
+    let effectivePolicy = EffectiveChargePolicy(
+        upperLimit: 80,
+        rechargeThreshold: 75,
+        temporaryOverrideUntil: nil,
+        isTemporaryOverrideActive: false,
+        isControlEnabled: false
+    )
+
+    let resolution = resolver.resolve(
+        context: ChargeStateContext(
+            battery: BatterySnapshot(chargePercent: 70, isPowerConnected: true, isCharging: false),
+            policy: ChargePolicy(isControlEnabled: false),
+            controllerStatus: ControllerStatus(
+                mode: .fullControl,
+                helperConnection: .connected
+            ),
+            now: Date(timeIntervalSince1970: 1_000)
+        ),
+        effectivePolicy: effectivePolicy
+    )
+
+    #expect(resolution.state == .suspended)
+    #expect(resolution.reason == .controlSuspended)
+}
+

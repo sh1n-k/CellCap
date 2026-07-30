@@ -31,11 +31,7 @@ let package = Package(
         ),
         .target(
             name: "Core",
-            dependencies: ["Shared", "SystemSupport"],
-            exclude: [
-                "Monitoring/CapabilityChecker.swift",
-                "Monitoring/SystemBatterySnapshotProvider.swift"
-            ]
+            dependencies: ["Shared", "SystemSupport"]
         ),
         .executableTarget(
             name: "AppUI",

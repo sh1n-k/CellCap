@@ -8,7 +8,7 @@ import Testing
 func helperServiceReflectsBackendCapabilityProbe() async {
     let service = CellCapHelperService(
         capabilityChecker: CapabilityChecker(
-            environment: HelperMockEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -69,7 +69,7 @@ func helperServiceReflectsBackendCapabilityProbe() async {
 func helperServiceReturnsStructuredErrorWhenChargingCommandFails() async {
     let service = CellCapHelperService(
         capabilityChecker: CapabilityChecker(
-            environment: HelperMockEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -130,7 +130,7 @@ func helperServiceReturnsStructuredErrorWhenChargingCommandFails() async {
 func helperServiceMarksNonRetryableCommandErrors() async {
     let service = CellCapHelperService(
         capabilityChecker: CapabilityChecker(
-            environment: HelperMockEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -190,7 +190,7 @@ func helperServiceMarksNonRetryableCommandErrors() async {
 func helperServiceMarksStateVerificationFailuresRetryable() async {
     let service = CellCapHelperService(
         capabilityChecker: CapabilityChecker(
-            environment: HelperMockEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -248,7 +248,7 @@ func helperServiceMarksStateVerificationFailuresRetryable() async {
 func helperServiceMarksBackendFailuresRetryable() async {
     let service = CellCapHelperService(
         capabilityChecker: CapabilityChecker(
-            environment: HelperMockEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -306,7 +306,7 @@ func helperServiceMarksBackendFailuresRetryable() async {
 func helperServiceMarksUnknownCommandErrorsRetryable() async {
     let service = CellCapHelperService(
         capabilityChecker: CapabilityChecker(
-            environment: HelperMockEnvironmentProvider(
+            environment: MockSystemEnvironmentProvider(
                 operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
                 isAppleSilicon: true
             )
@@ -420,17 +420,3 @@ private struct HelperFixedSnapshotProvider: BatterySnapshotProviding {
 }
 
 private struct HelperUnknownCommandError: Error, Sendable {}
-
-private struct HelperMockEnvironmentProvider: SystemEnvironmentProviding {
-    let operatingSystemVersion: OperatingSystemVersion
-    let isAppleSiliconValue: Bool
-
-    init(operatingSystemVersion: OperatingSystemVersion, isAppleSilicon: Bool) {
-        self.operatingSystemVersion = operatingSystemVersion
-        self.isAppleSiliconValue = isAppleSilicon
-    }
-
-    func isAppleSilicon() -> Bool {
-        isAppleSiliconValue
-    }
-}

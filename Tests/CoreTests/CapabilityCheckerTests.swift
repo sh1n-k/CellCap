@@ -89,17 +89,3 @@ func capabilityCheckerRejectsUnsupportedOSVersion() {
     #expect(report.status(for: .chargeControl)?.support == .unsupported)
     #expect(report.recommendedControllerMode == .monitoringOnly)
 }
-
-private struct MockSystemEnvironmentProvider: SystemEnvironmentProviding {
-    let operatingSystemVersion: OperatingSystemVersion
-    let isAppleSiliconValue: Bool
-
-    init(operatingSystemVersion: OperatingSystemVersion, isAppleSilicon: Bool) {
-        self.operatingSystemVersion = operatingSystemVersion
-        self.isAppleSiliconValue = isAppleSilicon
-    }
-
-    func isAppleSilicon() -> Bool {
-        isAppleSiliconValue
-    }
-}
