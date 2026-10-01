@@ -319,6 +319,14 @@ actor DirectSMCChargeControlBackend: ChargeControlBackend {
         }
     }
 
+    func releaseControl(now: Date) async throws -> ChargeControlRuntimeStatus {
+        // SMC 충전 억제는 재부팅 시 풀리므로 원래 값 복원 없이 충전 허용으로 해제한다.
+        // 최근 실패로 남은 read-only 상태 때문에 해제가 막히지 않도록 먼저 비운다.
+        stickyFailure = nil
+        temporaryOverrideUntil = nil
+        return try await setChargingEnabled(true, now: now)
+    }
+
     func selfTest(snapshot: BatterySnapshot?, now: Date) async -> ControllerSelfTestResult {
         let capability = await probe(snapshot: snapshot, now: now)
         switch capability.recommendedMode {

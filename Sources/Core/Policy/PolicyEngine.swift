@@ -26,6 +26,8 @@ public struct EffectiveChargePolicy: Sendable, Equatable {
 public enum ChargingCommand: String, Sendable, Equatable, CaseIterable {
     case enableCharging
     case disableCharging
+    /// 제어 OFF: helper가 건 제한을 풀고 시스템 충전 한도를 원래 값으로 되돌린다.
+    case releaseControl
     case noChange
 }
 
@@ -119,6 +121,7 @@ public struct PolicyEngine: Sendable {
             transition: transition,
             chargingCommand: chargingCommand(
                 for: resolution,
+                effectivePolicy: effectivePolicy,
                 controllerStatus: context.controllerStatus
             )
         )
@@ -126,14 +129,20 @@ public struct PolicyEngine: Sendable {
 
     private func chargingCommand(
         for resolution: ChargeStateResolution,
+        effectivePolicy: EffectiveChargePolicy,
         controllerStatus: ControllerStatus
     ) -> ChargingCommand {
         // 사용자가 제어를 끄면 helper에 남은 충전 제한을 해제한다. 시스템 충전 한도
-        // backend는 한도가 재부팅 후에도 유지되므로 그대로 두면 제어 OFF 상태에서도 제한이 남는다.
-        if resolution.state == .suspended,
-           resolution.reason == .controlSuspended,
-           controllerStatus.mode == .fullControl {
-            return controllerStatus.isChargingEnabled == true ? .noChange : .enableCharging
+        // backend는 한도가 재부팅 후에도 유지되므로, helper가 오류·read-only 상태여도 해제를 시도한다.
+        if !effectivePolicy.isControlEnabled {
+            // nil(상태 모름)이면 helper가 제한을 건 적이 없으므로 해제하지 않는다.
+            // 같은 제어 OFF 구간에서 해제가 한 번 성공하면 ControllerCommandApplier가 반복 전송을 막는다.
+            guard controllerStatus.helperConnection == .connected,
+                  controllerStatus.mode != .monitoringOnly,
+                  controllerStatus.isChargingEnabled != nil else {
+                return .noChange
+            }
+            return .releaseControl
         }
 
         return chargingCommand(for: resolution.state, controllerStatus: controllerStatus)

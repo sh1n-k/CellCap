@@ -48,6 +48,7 @@ public protocol HelperServiceTransporting: Sendable {
     func capabilityProbe() async throws -> HelperCapabilityProbeSummary
     func setChargingEnabled(_ enabled: Bool) async throws -> ControllerStatus
     func setTemporaryOverride(until: Date?) async throws -> ControllerStatus
+    func releaseControl() async throws -> ControllerStatus
 }
 
 public actor NSXPCHelperServiceTransport: HelperServiceTransporting {
@@ -131,6 +132,19 @@ public actor NSXPCHelperServiceTransport: HelperServiceTransporting {
     public func setTemporaryOverride(until: Date?) async throws -> ControllerStatus {
         try await withConnection { remote, finish in
             remote.setTemporaryOverride(HelperSetTemporaryOverrideRequestDTO(until: until)) { response in
+                if let error = response.error {
+                    finish(.failure(HelperTransportError.fromDTO(error)))
+                    return
+                }
+
+                finish(.success(response.status.makeModel()))
+            }
+        }
+    }
+
+    public func releaseControl() async throws -> ControllerStatus {
+        try await withConnection { remote, finish in
+            remote.releaseControl(HelperRequestDTO()) { response in
                 if let error = response.error {
                     finish(.failure(HelperTransportError.fromDTO(error)))
                     return

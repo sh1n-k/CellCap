@@ -115,6 +115,25 @@ final class CellCapHelperService: NSObject, CellCapHelperXPCProtocol {
     }
 }
 
+extension CellCapHelperService {
+    func releaseControl(
+        _ request: HelperRequestDTO,
+        withReply reply: @escaping (HelperCommandResponseDTO) -> Void
+    ) {
+        let requestedAt = request.requestedAt
+        let backend = self.backend
+        replyAsync(reply) {
+            await performCommandResponse(
+                code: "release-control-failed",
+                requestedAt: requestedAt,
+                backend: backend
+            ) {
+                try await backend.releaseControl(now: requestedAt)
+            }
+        }
+    }
+}
+
 private final class ReplyBox<Response>: @unchecked Sendable {
     let reply: (Response) -> Void
 

@@ -406,6 +406,13 @@ private actor HelperMockChargeControlBackend: ChargeControlBackend {
         return runtimeStatus
     }
 
+    func releaseControl(now: Date) async throws -> ChargeControlRuntimeStatus {
+        if let chargingError {
+            throw chargingError
+        }
+        return runtimeStatus
+    }
+
     func selfTest(snapshot: BatterySnapshot?, now: Date) async -> ControllerSelfTestResult {
         ControllerSelfTestResult(outcome: .passed, message: "ok", checkedAt: now)
     }

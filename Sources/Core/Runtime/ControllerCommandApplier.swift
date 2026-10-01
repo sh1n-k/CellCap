@@ -14,6 +14,8 @@ actor ControllerCommandApplier: ControllerCommandApplying {
     private let controller: any ChargeController
     private let eventLogger: any EventLogging
     private var commandInFlight = false
+    /// 제어 OFF 구간마다 해제는 한 번만 성공하면 된다. 제어가 다시 켜지면 초기화한다.
+    private var hasReleasedForCurrentControlOff = false
 
     init(
         controller: any ChargeController,
@@ -31,6 +33,16 @@ actor ControllerCommandApplier: ControllerCommandApplying {
     ) async -> ControllerStatus {
         guard !commandInFlight else {
             return controllerStatus
+        }
+        if evaluation.effectivePolicy.isControlEnabled {
+            hasReleasedForCurrentControlOff = false
+        }
+        if evaluation.chargingCommand == .releaseControl {
+            return await applyRelease(
+                controllerStatus: controllerStatus,
+                capabilityReport: capabilityReport,
+                now: now
+            )
         }
         guard capabilityReport.recommendedControllerMode == .fullControl else {
             return controllerStatus
@@ -78,7 +90,7 @@ actor ControllerCommandApplier: ControllerCommandApplying {
             case .disableCharging:
                 attemptedCommand = true
                 try await controller.setChargingEnabled(false)
-            case .noChange:
+            case .releaseControl, .noChange:
                 break
             }
 
@@ -111,6 +123,47 @@ actor ControllerCommandApplier: ControllerCommandApplying {
                 checkedAt: now
             )
         }
+    }
+
+    /// 제어 해제는 오류·read-only 상태에서도 보내야 시스템 충전 한도가 남지 않는다.
+    /// 다만 helper 설치·버전이 맞지 않으면 해제 명령 자체를 이해하지 못하므로 보내지 않는다.
+    private func applyRelease(
+        controllerStatus: ControllerStatus,
+        capabilityReport: CapabilityReport,
+        now: Date
+    ) async -> ControllerStatus {
+        guard !hasReleasedForCurrentControlOff,
+              controllerStatus.helperConnection == .connected,
+              capabilityReport.status(for: .helperInstallation)?.support == .supported,
+              capabilityReport.status(for: .helperPrivilege)?.support == .supported else {
+            return controllerStatus
+        }
+
+        commandInFlight = true
+        defer { commandInFlight = false }
+
+        do {
+            try await controller.releaseControl()
+            hasReleasedForCurrentControlOff = true
+            await eventLogger.record(
+                level: .notice,
+                category: .runtime,
+                message: "제어 OFF에 따라 충전 제한을 해제했습니다.",
+                details: [:],
+                userFacingSummary: nil
+            )
+        } catch {
+            await eventLogger.record(
+                level: .error,
+                category: .helperCommunication,
+                message: "충전 제한 해제가 실패했습니다: \(error.localizedDescription)",
+                details: [
+                    "chargingCommand": ChargingCommand.releaseControl.rawValue
+                ],
+                userFacingSummary: "충전 제한 해제에 실패했습니다. 다음 동기화에서 다시 시도합니다."
+            )
+        }
+        return await controller.getControllerStatus()
     }
 
     private func canApplyCommands(with capabilityReport: CapabilityReport) -> Bool {

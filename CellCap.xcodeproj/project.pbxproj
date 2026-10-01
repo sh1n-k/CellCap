@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		873F3F5396E1451089EAC792 /* PowerSourceNotificationObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFD1C2A5EB6D49C58ADEBE64 /* PowerSourceNotificationObserver.swift */; };
 		5D77A3B18C294A91A4993384 /* ManagedChargeLimitBackendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E86669C62874E2AA5C72B3B /* ManagedChargeLimitBackendTests.swift */; };
 		28FA974A25C44A7EBE5579EC /* SystemChargeLimitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F323FBD99F0E4310906C6D9D /* SystemChargeLimitStore.swift */; };
 		F6C109E1B83C4E7B811CD99C /* ManagedChargeLimitBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E48D457E8AE4473B86D0D7E /* ManagedChargeLimitBackend.swift */; };
@@ -222,6 +223,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AFD1C2A5EB6D49C58ADEBE64 /* PowerSourceNotificationObserver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PowerSourceNotificationObserver.swift; sourceTree = "<group>"; };
 		5E86669C62874E2AA5C72B3B /* ManagedChargeLimitBackendTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ManagedChargeLimitBackendTests.swift; sourceTree = "<group>"; };
 		F323FBD99F0E4310906C6D9D /* SystemChargeLimitStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SystemChargeLimitStore.swift; sourceTree = "<group>"; };
 		7E48D457E8AE4473B86D0D7E /* ManagedChargeLimitBackend.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ManagedChargeLimitBackend.swift; sourceTree = "<group>"; };
@@ -554,6 +556,7 @@
 			isa = PBXGroup;
 			children = (
 				32B45A005955CEA1492AB08A /* CapabilityChecker.swift */,
+				AFD1C2A5EB6D49C58ADEBE64 /* PowerSourceNotificationObserver.swift */,
 				DA1D36BBFF1DF38486C33DD6 /* SystemBatterySnapshotProvider.swift */,
 			);
 			name = SystemSupport;
@@ -870,6 +873,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAC4DC7CE4708C4E3F661FF1 /* CapabilityChecker.swift in Sources */,
+				873F3F5396E1451089EAC792 /* PowerSourceNotificationObserver.swift in Sources */,
 				591767CA4455A0B99AF67502 /* SystemBatterySnapshotProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

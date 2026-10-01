@@ -113,3 +113,29 @@ func directBackendFallsBackToReadOnlyAfterVerificationFailure() async {
     #expect(capability.recommendedMode == .readOnly)
     #expect(capability.lastErrorDescription != nil)
 }
+
+@Test
+func directBackendReleaseControlEnablesChargingAfterStickyFailure() async throws {
+    let bridge = MockSMCBridge(
+        status: .capableChargingDisabled,
+        postWriteStatus: .capableChargingDisabled
+    )
+    let backend = DirectSMCChargeControlBackend(
+        bridge: bridge,
+        environment: MockSystemEnvironmentProvider(
+            operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+            isAppleSilicon: true
+        ),
+        privilegeProvider: MockPrivilegeProvider(hasWritePrivilege: true)
+    )
+
+    await #expect(throws: ChargeControlBackendError.self) {
+        try await backend.setChargingEnabled(true, now: Date(timeIntervalSince1970: 100))
+    }
+    bridge.postWriteStatus = nil
+
+    let released = try await backend.releaseControl(now: Date(timeIntervalSince1970: 101))
+
+    #expect(released.isChargingEnabled == true)
+    #expect(released.lastErrorDescription == nil)
+}

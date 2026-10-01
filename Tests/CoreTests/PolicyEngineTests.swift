@@ -171,11 +171,55 @@ func policyEngineReleasesChargeLimitWhenControlIsTurnedOff() {
 
     #expect(evaluation.transition.current == .suspended)
     #expect(evaluation.transition.reason == .controlSuspended)
-    #expect(evaluation.chargingCommand == .enableCharging)
+    #expect(evaluation.chargingCommand == .releaseControl)
 }
 
 @Test
-func policyEngineKeepsNoChangeWhenControlIsOffAndChargingAlreadyAllowed() {
+func policyEngineReleasesChargeLimitEvenWhenHelperReportsError() {
+    let engine = PolicyEngine()
+    let evaluation = engine.evaluate(
+        context: ChargeStateContext(
+            battery: BatterySnapshot(chargePercent: 70, isPowerConnected: true, isCharging: false),
+            policy: ChargePolicy(upperLimit: 60, rechargeThreshold: 55, isControlEnabled: false),
+            controllerStatus: ControllerStatus(
+                mode: .readOnly,
+                helperConnection: .connected,
+                isChargingEnabled: false,
+                lastErrorDescription: "macOS가 CellCap 충전 한도(60%)를 적용하지 않았습니다."
+            ),
+            now: Date(timeIntervalSince1970: 1_000)
+        ),
+        from: .errorReadOnly
+    )
+
+    #expect(evaluation.transition.current == .errorReadOnly)
+    #expect(evaluation.chargingCommand == .releaseControl)
+}
+
+@Test
+func policyEngineDoesNotReleaseWithoutReachableControllableHelper() {
+    let engine = PolicyEngine()
+    for status in [
+        ControllerStatus(mode: .monitoringOnly, helperConnection: .connected, isChargingEnabled: false),
+        ControllerStatus(mode: .readOnly, helperConnection: .disconnected, isChargingEnabled: false),
+        ControllerStatus(mode: .fullControl, helperConnection: .connected, isChargingEnabled: nil)
+    ] {
+        let evaluation = engine.evaluate(
+            context: ChargeStateContext(
+                battery: BatterySnapshot(chargePercent: 70, isPowerConnected: true, isCharging: false),
+                policy: ChargePolicy(upperLimit: 60, rechargeThreshold: 55, isControlEnabled: false),
+                controllerStatus: status,
+                now: Date(timeIntervalSince1970: 1_000)
+            ),
+            from: .suspended
+        )
+
+        #expect(evaluation.chargingCommand == .noChange)
+    }
+}
+
+@Test
+func policyEngineRequestsReleaseWhenControlIsOffEvenIfChargingIsAllowed() {
     let engine = PolicyEngine()
     let evaluation = engine.evaluate(
         context: ChargeStateContext(
@@ -195,8 +239,9 @@ func policyEngineKeepsNoChangeWhenControlIsOffAndChargingAlreadyAllowed() {
         from: .suspended
     )
 
+    // 충전 허용(한도 100) 상태여도 사용자의 원래 macOS 한도로 되돌려야 하므로 해제를 요청한다.
     #expect(evaluation.transition.current == .suspended)
-    #expect(evaluation.chargingCommand == .noChange)
+    #expect(evaluation.chargingCommand == .releaseControl)
 }
 
 @Test

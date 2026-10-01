@@ -1298,6 +1298,7 @@ private actor SequencedChargeController: ChargeController {
     enum Command: Sendable, Equatable {
         case setChargingEnabled(Bool)
         case setTemporaryOverride(Date?)
+        case releaseControl
     }
 
     private var statuses: [ControllerStatus]
@@ -1331,6 +1332,15 @@ private actor SequencedChargeController: ChargeController {
         statuses = statuses.map { status in
             var updated = status
             updated.temporaryOverrideUntil = until
+            return updated
+        }
+    }
+
+    func releaseControl() async throws {
+        recordedCommands.append(.releaseControl)
+        statuses = statuses.map { status in
+            var updated = status
+            updated.isChargingEnabled = true
             return updated
         }
     }
@@ -1540,6 +1550,8 @@ private actor BlockingResynchronizingChargeController: ChargeController {
     func setChargingEnabled(_ enabled: Bool) async throws {}
 
     func setTemporaryOverride(until: Date?) async throws {}
+
+    func releaseControl() async throws {}
 
     func getControllerStatus() async -> ControllerStatus {
         statusRequests += 1

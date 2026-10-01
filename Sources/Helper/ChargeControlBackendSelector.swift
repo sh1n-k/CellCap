@@ -45,6 +45,14 @@ actor ChargeControlBackendSelector: ChargeControlBackend {
         await resolveBackend().selfTest(snapshot: snapshot, now: now)
     }
 
+    func releaseControl(now: Date) async throws -> ChargeControlRuntimeStatus {
+        try await resolveBackend().releaseControl(now: now)
+    }
+
+    func handlePowerSourceChange(now: Date) async {
+        await resolveBackend().handlePowerSourceChange(now: now)
+    }
+
     private func resolveBackend() -> any ChargeControlBackend {
         if let selectedBackend {
             return selectedBackend

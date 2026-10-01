@@ -5,6 +5,7 @@ public actor MockChargeController: ChargeController {
     public enum Command: Equatable, Sendable {
         case setChargingEnabled(Bool)
         case setTemporaryOverride(Date?)
+        case releaseControl
     }
 
     private var status: ControllerStatus
@@ -40,6 +41,13 @@ public actor MockChargeController: ChargeController {
     public func setTemporaryOverride(until: Date?) async throws {
         commands.append(.setTemporaryOverride(until))
         status.temporaryOverrideUntil = until
+        status.lastErrorDescription = nil
+        status.checkedAt = .now
+    }
+
+    public func releaseControl() async throws {
+        commands.append(.releaseControl)
+        status.isChargingEnabled = true
         status.lastErrorDescription = nil
         status.checkedAt = .now
     }

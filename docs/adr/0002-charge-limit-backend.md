@@ -20,7 +20,11 @@
 - 적용 확인은 `/Library/Preferences/com.apple.powerd.charging.plist`의 `ChargeCtrlPolicy`(reason `manualChargeLimit`)를 읽는다.
   이 파일은 늦게 갱신될 수 있어 120초 grace가 지나도 다를 때만 오류로 본다.
 - 최초 개입 전 `mclLimitValue`를 `CellCapHelperXPC.chargeLimitBaselinePath`에 보관하고 uninstall(dev/release)이 복원한다.
-- 사용자가 제어를 끄면 Core가 충전 허용 명령을 보내 한도를 해제한다.
+- 사용자가 제어를 끄면 Core가 `releaseControl` XPC 명령을 보낸다. helper는 baseline이 있으면 그 값으로 되돌리고 관리를 멈추며,
+  CellCap이 한도를 바꾼 적이 없으면(baseline 없음) 사용자 설정을 건드리지 않는다. 이 명령은 helper 오류·read-only 상태에서도 실행되고 성공하면 실패 상태를 푼다.
+  Core는 제어 OFF 구간마다 해제를 한 번만 성공시키고(재시도는 실패 시에만), helper 상태가 nil(관리한 적 없음)이면 보내지 않는다.
+- helper 재시작 시 baseline이 남아 있으면 저장된 한도로 관리 상태(유지/허용)를 복원하고, 없으면 nil로 보고해 Core의 명령을 기다린다.
+- helper는 IOPS 전원 변화 알림을 직접 구독해 앱 실행 여부와 무관하게 래칫을 수행한다. 배터리 사용 중에는 powerd가 한도 정책을 내려 두므로 적용값 비교를 하지 않는다.
 
 ## 결과와 한계
 - CellCap이 설치되어 있는 동안 macOS 설정의 충전 한도 값은 CellCap이 덮어쓴다. 충전 허용 상태에서는 사용자의 80% 한도도 해제된다.

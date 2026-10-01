@@ -25,6 +25,13 @@ import Foundation
         _ request: HelperSetTemporaryOverrideRequestDTO,
         withReply reply: @escaping (HelperCommandResponseDTO) -> Void
     )
+
+    /// 사용자가 제어를 끄면 helper가 건 충전 제한을 풀고, 시스템 충전 한도를 CellCap 개입 전 값으로 되돌린다.
+    /// 최근 명령 실패로 read-only 상태여도 실행된다.
+    func releaseControl(
+        _ request: HelperRequestDTO,
+        withReply reply: @escaping (HelperCommandResponseDTO) -> Void
+    )
 }
 
 public enum CellCapHelperXPC {

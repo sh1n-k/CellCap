@@ -195,6 +195,10 @@ private struct MockHelperServiceTransport: HelperServiceTransporting {
     func setTemporaryOverride(until: Date?) async throws -> ControllerStatus {
         try statusResult.get()
     }
+
+    func releaseControl() async throws -> ControllerStatus {
+        try statusResult.get()
+    }
 }
 
 private final class LockedCounter: @unchecked Sendable {

@@ -505,7 +505,7 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             if update.appState.controllerStatus.isChargingEnabled == true {
                 return true
             }
-        case .noChange:
+        case .releaseControl, .noChange:
             break
         }
 

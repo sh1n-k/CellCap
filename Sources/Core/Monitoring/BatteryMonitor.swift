@@ -1,6 +1,5 @@
 import AppKit
 import Foundation
-import IOKit.ps
 import Shared
 import SystemSupport
 
@@ -162,26 +161,13 @@ public final class PowerSourceChangeEventSource: @unchecked Sendable, BatteryMon
     public init() {}
 
     public func start(_ handler: @escaping @Sendable (BatteryMonitorTrigger) -> Void) -> BatteryMonitorObservation {
-        let callbackBox = CallbackBox(handler: handler)
-        let retainedBox = Unmanaged.passRetained(callbackBox)
-
-        guard let runLoopSourceRef = IOPSNotificationCreateRunLoopSource(
-            { context in
-                guard let context else { return }
-                let box = Unmanaged<CallbackBox>.fromOpaque(context).takeUnretainedValue()
-                box.handler(.powerSourceChanged)
-            },
-            retainedBox.toOpaque()
-        )?.takeRetainedValue() else {
-            retainedBox.release()
+        let observer = PowerSourceNotificationObserver()
+        guard observer.start({ handler(.powerSourceChanged) }) else {
             return BatteryMonitorObservation()
         }
 
-        CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSourceRef, .defaultMode)
-
         return BatteryMonitorObservation {
-            CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSourceRef, .defaultMode)
-            retainedBox.release()
+            observer.stop()
         }
     }
 }
@@ -231,13 +217,5 @@ public struct SystemBatteryMonitorEventSource: BatteryMonitorEventSource {
 
     public func start(_ handler: @escaping @Sendable (BatteryMonitorTrigger) -> Void) -> BatteryMonitorObservation {
         composite.start(handler)
-    }
-}
-
-private final class CallbackBox {
-    let handler: @Sendable (BatteryMonitorTrigger) -> Void
-
-    init(handler: @escaping @Sendable (BatteryMonitorTrigger) -> Void) {
-        self.handler = handler
     }
 }

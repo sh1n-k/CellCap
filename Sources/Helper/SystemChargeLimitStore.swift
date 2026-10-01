@@ -21,6 +21,7 @@ protocol ChargeLimitStoring: Sendable {
 protocol ChargeLimitBaselineStoring: Sendable {
     func loadBaseline() -> Int?
     func saveBaseline(_ limit: Int) throws
+    func clearBaseline() throws
 }
 
 /// PowerUIAgent는 root 사용자 도메인의 `mclLimitValue`를 `defaultschanged` 알림 때 다시 읽어
@@ -149,6 +150,17 @@ struct FileChargeLimitBaselineStore: ChargeLimitBaselineStoring {
             try data.write(to: url, options: .atomic)
         } catch {
             throw ChargeControlBackendError.backendFailure("원래 충전 한도를 보관하지 못했습니다: \(error.localizedDescription)")
+        }
+    }
+
+    func clearBaseline() throws {
+        guard FileManager.default.fileExists(atPath: path) else {
+            return
+        }
+        do {
+            try FileManager.default.removeItem(atPath: path)
+        } catch {
+            throw ChargeControlBackendError.backendFailure("보관한 원래 충전 한도를 정리하지 못했습니다: \(error.localizedDescription)")
         }
     }
 }

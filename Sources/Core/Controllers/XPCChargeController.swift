@@ -76,6 +76,33 @@ public actor XPCChargeController: ChargeController, HelperCapabilityProbing {
         }
     }
 
+    public func releaseControl() async throws {
+        do {
+            let status = try await transport.releaseControl()
+            await eventLogger.record(
+                level: .notice,
+                category: .helperCommunication,
+                message: "Helper에 제어 해제 요청을 보냈습니다.",
+                details: [
+                    "command": "releaseControl",
+                    "mode": status.mode.rawValue
+                ],
+                userFacingSummary: nil
+            )
+        } catch {
+            await eventLogger.record(
+                level: .error,
+                category: .helperCommunication,
+                message: "Helper 제어 해제 요청이 실패했습니다: \(error.localizedDescription)",
+                details: [
+                    "command": "releaseControl"
+                ],
+                userFacingSummary: "충전 제한 해제 요청이 실패했습니다."
+            )
+            throw error
+        }
+    }
+
     public func getControllerStatus() async -> ControllerStatus {
         do {
             let status = try await transport.fetchControllerStatus()

@@ -7,6 +7,14 @@ protocol ChargeControlBackend: Sendable {
     func setChargingEnabled(_ enabled: Bool, now: Date) async throws -> ChargeControlRuntimeStatus
     func setTemporaryOverride(until: Date?, now: Date) async throws -> ChargeControlRuntimeStatus
     func selfTest(snapshot: BatterySnapshot?, now: Date) async -> ControllerSelfTestResult
+    /// 제어 OFF: 충전 제한을 풀고 CellCap 개입 전 상태로 되돌린다. 최근 명령 실패로 read-only여도 실행한다.
+    func releaseControl(now: Date) async throws -> ChargeControlRuntimeStatus
+    /// helper가 직접 받은 전원 상태 변화 알림. 앱이 꺼져 있어도 호출된다.
+    func handlePowerSourceChange(now: Date) async
+}
+
+extension ChargeControlBackend {
+    func handlePowerSourceChange(now: Date) async {}
 }
 
 struct ChargeControlCapability: Sendable, Equatable {

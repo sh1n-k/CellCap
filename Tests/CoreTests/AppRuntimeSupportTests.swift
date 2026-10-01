@@ -183,10 +183,108 @@ func controllerCommandApplierSynchronizesOverrideAndChargingState() async {
     ])
 }
 
+@Test
+func controllerCommandApplierReleasesControlEvenWhenHelperReportsError() async {
+    let controller = SupportTestChargeController()
+    let applier = ControllerCommandApplier(controller: controller, eventLogger: EventLogger())
+
+    _ = await applier.applyIfNeeded(
+        controllerStatus: ControllerStatus(
+            mode: .readOnly,
+            helperConnection: .connected,
+            isChargingEnabled: false,
+            lastErrorDescription: "applied limit mismatch",
+            checkedAt: Date(timeIntervalSince1970: 80)
+        ),
+        capabilityReport: makeReleaseCapabilityReport(installation: .supported),
+        evaluation: makeReleaseEvaluation(),
+        now: Date(timeIntervalSince1970: 80)
+    )
+
+    let commands = await controller.commands()
+    #expect(commands == [.releaseControl])
+}
+
+@Test
+func controllerCommandApplierSkipsReleaseWhenHelperVersionDoesNotMatch() async {
+    let controller = SupportTestChargeController()
+    let applier = ControllerCommandApplier(controller: controller, eventLogger: EventLogger())
+
+    _ = await applier.applyIfNeeded(
+        controllerStatus: ControllerStatus(
+            mode: .readOnly,
+            helperConnection: .connected,
+            isChargingEnabled: false,
+            checkedAt: Date(timeIntervalSince1970: 80)
+        ),
+        capabilityReport: makeReleaseCapabilityReport(installation: .readOnlyFallback),
+        evaluation: makeReleaseEvaluation(),
+        now: Date(timeIntervalSince1970: 80)
+    )
+
+    let commands = await controller.commands()
+    #expect(commands.isEmpty)
+}
+
+@Test
+func controllerCommandApplierReleasesOncePerControlOffPeriod() async {
+    let controller = SupportTestChargeController()
+    let applier = ControllerCommandApplier(controller: controller, eventLogger: EventLogger())
+    let status = ControllerStatus(
+        mode: .fullControl,
+        helperConnection: .connected,
+        isChargingEnabled: true,
+        checkedAt: Date(timeIntervalSince1970: 80)
+    )
+    let report = makeReleaseCapabilityReport(installation: .supported)
+
+    _ = await applier.applyIfNeeded(controllerStatus: status, capabilityReport: report, evaluation: makeReleaseEvaluation(), now: Date(timeIntervalSince1970: 80))
+    _ = await applier.applyIfNeeded(controllerStatus: status, capabilityReport: report, evaluation: makeReleaseEvaluation(), now: Date(timeIntervalSince1970: 81))
+    #expect(await controller.commands() == [.releaseControl])
+
+    var controlOn = makeReleaseEvaluation()
+    controlOn.effectivePolicy.isControlEnabled = true
+    controlOn.chargingCommand = .noChange
+    _ = await applier.applyIfNeeded(controllerStatus: status, capabilityReport: report, evaluation: controlOn, now: Date(timeIntervalSince1970: 82))
+    _ = await applier.applyIfNeeded(controllerStatus: status, capabilityReport: report, evaluation: makeReleaseEvaluation(), now: Date(timeIntervalSince1970: 83))
+    #expect(await controller.commands() == [.releaseControl, .releaseControl])
+}
+
+private func makeReleaseCapabilityReport(installation: CapabilitySupport) -> CapabilityReport {
+    CapabilityReport(
+        statuses: [
+            CapabilityStatus(key: .helperInstallation, support: installation, reason: "test"),
+            CapabilityStatus(key: .helperPrivilege, support: .supported, reason: "ok"),
+            CapabilityStatus(key: .chargeControl, support: .readOnlyFallback, reason: "error")
+        ],
+        recommendedControllerMode: .readOnly
+    )
+}
+
+private func makeReleaseEvaluation() -> PolicyEvaluation {
+    PolicyEvaluation(
+        effectivePolicy: EffectiveChargePolicy(
+            upperLimit: 80,
+            rechargeThreshold: 75,
+            temporaryOverrideUntil: nil,
+            isTemporaryOverrideActive: false,
+            isControlEnabled: false
+        ),
+        resolution: ChargeStateResolution(
+            state: .errorReadOnly,
+            reason: .helperFailure,
+            selectedBattery: nil
+        ),
+        transition: ChargeTransition(previous: .holdingAtLimit, current: .errorReadOnly, reason: .helperFailure),
+        chargingCommand: .releaseControl
+    )
+}
+
 private actor SupportTestChargeController: ChargeController {
     enum Command: Equatable {
         case setChargingEnabled(Bool)
         case setTemporaryOverride(Date?)
+        case releaseControl
     }
 
     private let statusToReturn: ControllerStatus
@@ -217,6 +315,10 @@ private actor SupportTestChargeController: ChargeController {
 
     func setTemporaryOverride(until: Date?) async throws {
         recordedCommands.append(.setTemporaryOverride(until))
+    }
+
+    func releaseControl() async throws {
+        recordedCommands.append(.releaseControl)
     }
 
     func getControllerStatus() async -> ControllerStatus {

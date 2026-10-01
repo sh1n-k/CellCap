@@ -106,6 +106,41 @@ func chargeLimitBackendReportsUnknownIntentAfterRestart() async {
 }
 
 @Test
+func chargeLimitBackendRestoresManagedStateAfterRestart() async {
+    let store = MockChargeLimitStore(limit: 72)
+    let baseline = MockChargeLimitBaselineStore()
+    baseline.baseline = 80
+    let snapshots = MockChargePercentProvider(chargePercent: 72)
+    let backend = makeChargeLimitBackend(store: store, baseline: baseline, snapshots: snapshots)
+
+    let status = await backend.currentStatus(now: Date(timeIntervalSince1970: 100))
+    #expect(status.isChargingEnabled == false)
+
+    snapshots.chargePercent = 70
+    await backend.handlePowerSourceChange(now: Date(timeIntervalSince1970: 200))
+    #expect(store.limit == 70)
+
+    let released = MockChargeLimitStore(limit: 100)
+    let releasedBackend = makeChargeLimitBackend(store: released, baseline: baseline, chargePercent: 72)
+    #expect(await releasedBackend.currentStatus(now: Date(timeIntervalSince1970: 100)).isChargingEnabled == true)
+}
+
+@Test
+func chargeLimitBackendKeepsPendingApplyAfterRestart() async {
+    let store = MockChargeLimitStore(limit: 72)
+    store.applied = .limited(100)
+    let baseline = MockChargeLimitBaselineStore()
+    baseline.baseline = 80
+    let backend = makeChargeLimitBackend(store: store, baseline: baseline, chargePercent: 72)
+
+    _ = await backend.currentStatus(now: Date(timeIntervalSince1970: 100))
+    let status = await backend.currentStatus(now: Date(timeIntervalSince1970: 400))
+
+    #expect(status.isChargingEnabled == false)
+    #expect(status.lastErrorDescription == nil)
+}
+
+@Test
 func chargeLimitBackendBecomesReadOnlyWhenStoredLimitDoesNotMatch() async {
     let store = MockChargeLimitStore(limit: 80)
     store.ignoresWrites = true
@@ -163,6 +198,23 @@ func chargeLimitBackendWaitsForBatteryLevelChangeBeforeReportingMismatch() async
 }
 
 @Test
+func chargeLimitBackendIgnoresAppliedLimitWhileOnBattery() async throws {
+    let store = MockChargeLimitStore(limit: 80)
+    store.applied = .none
+    let snapshots = MockChargePercentProvider(chargePercent: 20)
+    let backend = makeChargeLimitBackend(store: store, snapshots: snapshots)
+
+    _ = try await backend.setChargingEnabled(false, now: Date(timeIntervalSince1970: 100))
+    snapshots.isPowerConnected = false
+    snapshots.chargePercent = 15
+    _ = await backend.currentStatus(now: Date(timeIntervalSince1970: 200))
+    let status = await backend.currentStatus(now: Date(timeIntervalSince1970: 2_000))
+
+    #expect(store.limit == ManagedChargeLimitBackend.minimumHoldLimit)
+    #expect(status.lastErrorDescription == nil)
+}
+
+@Test
 func chargeLimitBackendTreatsMissingPolicyAsReleased() async throws {
     let store = MockChargeLimitStore(limit: 80)
     store.applied = .none
@@ -199,6 +251,115 @@ func chargeLimitBackendIsUnsupportedWithoutChargeLimitSettings() async {
 
     #expect(capability.recommendedMode == .monitoringOnly)
     #expect(capability.helperInstallStatus.helperVersion == CellCapHelperXPC.contractVersion)
+}
+
+@Test
+func chargeLimitBackendReleaseRestoresBaselineAndStopsManaging() async throws {
+    let store = MockChargeLimitStore(limit: 80)
+    let baseline = MockChargeLimitBaselineStore()
+    let snapshots = MockChargePercentProvider(chargePercent: 70)
+    let backend = makeChargeLimitBackend(store: store, baseline: baseline, snapshots: snapshots)
+
+    _ = try await backend.setChargingEnabled(false, now: Date(timeIntervalSince1970: 100))
+    #expect(store.limit == 70)
+
+    let released = try await backend.releaseControl(now: Date(timeIntervalSince1970: 200))
+    #expect(released.isChargingEnabled == true)
+    #expect(store.limit == 80)
+    #expect(baseline.baseline == nil)
+
+    // 해제 후에는 SoC가 내려가도 한도를 건드리지 않고, 적용값 불일치도 보지 않는다.
+    store.applied = .limited(50)
+    snapshots.chargePercent = 60
+    let status = await backend.currentStatus(now: Date(timeIntervalSince1970: 1_000))
+    await backend.handlePowerSourceChange(now: Date(timeIntervalSince1970: 1_001))
+    #expect(store.limit == 80)
+    #expect(status.lastErrorDescription == nil)
+
+    // 다시 제어하면 그 시점 값을 새 baseline으로 보관한다.
+    _ = try await backend.setChargingEnabled(false, now: Date(timeIntervalSince1970: 1_100))
+    #expect(baseline.baseline == 80)
+    #expect(store.limit == 60)
+}
+
+@Test
+func chargeLimitBackendReleaseDoesNotTouchUserLimitWhenNeverManaged() async throws {
+    let store = MockChargeLimitStore(limit: 85)
+    let baseline = MockChargeLimitBaselineStore()
+    let backend = makeChargeLimitBackend(store: store, baseline: baseline, chargePercent: 70)
+
+    let released = try await backend.releaseControl(now: Date(timeIntervalSince1970: 100))
+
+    #expect(released.isChargingEnabled == true)
+    #expect(store.limit == 85)
+    #expect(store.writeCount == 0)
+    #expect(baseline.baseline == nil)
+}
+
+@Test
+func chargeLimitBackendReleaseRecoversFromStickyFailure() async throws {
+    let store = MockChargeLimitStore(limit: 80)
+    store.ignoresWrites = true
+    let baseline = MockChargeLimitBaselineStore()
+    let backend = makeChargeLimitBackend(store: store, baseline: baseline, chargePercent: 70)
+
+    await #expect(throws: ChargeControlBackendError.self) {
+        try await backend.setChargingEnabled(false, now: Date(timeIntervalSince1970: 100))
+    }
+    #expect(await backend.probe(snapshot: nil, now: Date(timeIntervalSince1970: 101)).recommendedMode == .readOnly)
+
+    store.ignoresWrites = false
+    _ = try await backend.releaseControl(now: Date(timeIntervalSince1970: 102))
+    let capability = await backend.probe(snapshot: nil, now: Date(timeIntervalSince1970: 103))
+
+    #expect(capability.recommendedMode == .fullControl)
+    #expect(capability.lastErrorDescription == nil)
+    #expect(store.limit == 80)
+}
+
+@Test
+func chargeLimitBackendRatchetsOnPowerSourceChangeWithoutAppPolling() async throws {
+    let store = MockChargeLimitStore(limit: 80)
+    let snapshots = MockChargePercentProvider(chargePercent: 75)
+    let backend = makeChargeLimitBackend(store: store, snapshots: snapshots)
+
+    _ = try await backend.setChargingEnabled(false, now: Date(timeIntervalSince1970: 100))
+    snapshots.chargePercent = 71
+    await backend.handlePowerSourceChange(now: Date(timeIntervalSince1970: 200))
+
+    #expect(store.limit == 71)
+}
+
+@Test
+func chargeLimitBackendIgnoresPowerSourceChangeWhileReadOnly() async throws {
+    let store = MockChargeLimitStore(limit: 80)
+    let snapshots = MockChargePercentProvider(chargePercent: 75)
+    let backend = makeChargeLimitBackend(store: store, snapshots: snapshots, hasWritePrivilege: false)
+
+    snapshots.chargePercent = 60
+    await backend.handlePowerSourceChange(now: Date(timeIntervalSince1970: 200))
+
+    #expect(store.limit == 80)
+    #expect(store.writeCount == 0)
+}
+
+@Test
+func backendSelectorForwardsPowerSourceChangeToSelectedBackend() async throws {
+    let store = MockChargeLimitStore(limit: 80)
+    let snapshots = MockChargePercentProvider(chargePercent: 75)
+    let chargeLimitBackend = makeChargeLimitBackend(store: store, snapshots: snapshots)
+    let selector = ChargeControlBackendSelector(
+        bridge: MockSMCBridge(status: .chargingKeysRemoved),
+        chargeLimitStore: store,
+        directBackend: RecordingBackend(name: "direct"),
+        chargeLimitBackend: chargeLimitBackend
+    )
+
+    _ = try await selector.setChargingEnabled(false, now: Date(timeIntervalSince1970: 100))
+    snapshots.chargePercent = 70
+    await selector.handlePowerSourceChange(now: Date(timeIntervalSince1970: 200))
+
+    #expect(store.limit == 70)
 }
 
 @Test
@@ -287,6 +448,7 @@ private final class MockChargeLimitStore: @unchecked Sendable, ChargeLimitStorin
     var available = true
     var ignoresWrites = false
     var applied: AppliedChargeLimit = .unknown
+    var writeCount = 0
 
     init(limit: Int?) {
         self.limit = limit
@@ -297,6 +459,7 @@ private final class MockChargeLimitStore: @unchecked Sendable, ChargeLimitStorin
     func readLimit() -> Int? { limit }
 
     func writeLimit(_ limit: Int) throws {
+        writeCount += 1
         guard !ignoresWrites else { return }
         self.limit = limit
     }
@@ -312,17 +475,22 @@ private final class MockChargeLimitBaselineStore: @unchecked Sendable, ChargeLim
     func saveBaseline(_ limit: Int) throws {
         baseline = limit
     }
+
+    func clearBaseline() throws {
+        baseline = nil
+    }
 }
 
 private final class MockChargePercentProvider: @unchecked Sendable, BatterySnapshotProviding {
     var chargePercent: Int
+    var isPowerConnected = true
 
     init(chargePercent: Int) {
         self.chargePercent = chargePercent
     }
 
     func currentSnapshot(now: Date) throws -> BatterySnapshot? {
-        BatterySnapshot(chargePercent: chargePercent, isPowerConnected: true, isCharging: false, isBatteryPresent: true)
+        BatterySnapshot(chargePercent: chargePercent, isPowerConnected: isPowerConnected, isCharging: false, isBatteryPresent: true)
     }
 }
 
@@ -362,6 +530,10 @@ private actor RecordingBackend: ChargeControlBackend {
     }
 
     func setTemporaryOverride(until: Date?, now: Date) async throws -> ChargeControlRuntimeStatus {
+        await currentStatus(now: now)
+    }
+
+    func releaseControl(now: Date) async throws -> ChargeControlRuntimeStatus {
         await currentStatus(now: now)
     }
 

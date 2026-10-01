@@ -20,8 +20,9 @@ actor ManagedChargeLimitBackend: ChargeControlBackend {
     private let environment: any SystemEnvironmentProviding
     private let privilegeProvider: any HelperPrivilegeProviding
 
-    /// helper가 마지막으로 적용한 의도. helper 재시작 직후에는 nil이며 Core가 다음 동기화에서 다시 명령한다.
+    /// helper가 마지막으로 적용한 의도. CellCap이 관리한 적이 없으면 nil이며 Core가 다음 동기화에서 명령한다.
     private var chargingEnabledIntent: Bool?
+    private var didRestoreManagedState = false
     private var expectedLimit: Int?
     private var temporaryOverrideUntil: Date?
     private var stickyFailure: String?
@@ -43,6 +44,7 @@ actor ManagedChargeLimitBackend: ChargeControlBackend {
     }
 
     func probe(snapshot: BatterySnapshot?, now: Date) async -> ChargeControlCapability {
+        restoreManagedStateIfNeeded(now: now)
         normalizeOverride(now: now)
         let helperBaseStatus = makeHelperBaseStatus(now: now)
 
@@ -105,6 +107,7 @@ actor ManagedChargeLimitBackend: ChargeControlBackend {
     }
 
     func currentStatus(now: Date) async -> ChargeControlRuntimeStatus {
+        restoreManagedStateIfNeeded(now: now)
         normalizeOverride(now: now)
         let capability = await probe(snapshot: nil, now: now)
         if capability.recommendedMode == .fullControl {
@@ -197,6 +200,56 @@ actor ManagedChargeLimitBackend: ChargeControlBackend {
         }
     }
 
+    func releaseControl(now: Date) async throws -> ChargeControlRuntimeStatus {
+        restoreManagedStateIfNeeded(now: now)
+        normalizeOverride(now: now)
+        // 해제는 최근 실패로 인한 read-only(stickyFailure)와 무관하게 실행한다.
+        guard environment.isAppleSilicon(), store.isAvailable() else {
+            throw ChargeControlBackendError.unsupportedEnvironment("이 기기에서 macOS 충전 한도 설정을 찾지 못했습니다.")
+        }
+        guard privilegeProvider.hasWritePrivilege() else {
+            throw ChargeControlBackendError.approvalRequired("macOS 충전 한도 변경에는 root 권한 helper가 필요합니다.")
+        }
+
+        // CellCap이 한도를 바꾼 적이 없으면(baseline 없음) 사용자 설정을 건드리지 않는다.
+        let baseline = baselineStore.loadBaseline()
+        if let baseline {
+            try store.writeLimit(baseline)
+        }
+
+        // 복원 쓰기가 끝나면 baseline 정리 실패와 무관하게 관리를 멈춰, 래칫이 복원값을 다시 덮지 않게 한다.
+        chargingEnabledIntent = true
+        expectedLimit = nil
+        appliedMismatchSince = nil
+        lastWrite = nil
+        stickyFailure = nil
+        temporaryOverrideUntil = nil
+
+        if baseline != nil {
+            try baselineStore.clearBaseline()
+        }
+
+        return ChargeControlRuntimeStatus(
+            recommendedMode: .fullControl,
+            isChargingEnabled: true,
+            temporaryOverrideUntil: nil,
+            lastErrorDescription: nil,
+            checkedAt: now
+        )
+    }
+
+    func handlePowerSourceChange(now: Date) async {
+        restoreManagedStateIfNeeded(now: now)
+        normalizeOverride(now: now)
+        guard stickyFailure == nil,
+              privilegeProvider.hasWritePrivilege(),
+              store.isAvailable() else {
+            return
+        }
+        ratchetHoldLimitIfNeeded(now: now)
+        updateAppliedMismatch(now: now)
+    }
+
     static func holdLimit(for chargePercent: Int) -> Int {
         min(releasedLimit, max(minimumHoldLimit, chargePercent))
     }
@@ -252,7 +305,8 @@ actor ManagedChargeLimitBackend: ChargeControlBackend {
     /// 한도를 100으로 해제한 뒤 다시 걸면 PowerUIAgent가 다음 배터리 % 변화 때 적용한다(실측 약 110초, 4.5 A 충전 중).
     /// 그래서 기록 당시 SoC가 그대로인 동안은 적용 대기로 보고 grace를 시작하지 않는다.
     private func updateAppliedMismatch(now: Date) {
-        guard let expectedLimit else {
+        // 배터리 사용 중에는 powerd가 충전 한도 정책을 내려 두므로 비교하지 않는다(실측: 분리 중 battlimit 비어 있음).
+        guard let expectedLimit, currentSnapshot(now: now)?.isPowerConnected != false else {
             appliedMismatchSince = nil
             return
         }
@@ -292,11 +346,34 @@ actor ManagedChargeLimitBackend: ChargeControlBackend {
     }
 
     private func currentChargePercent(now: Date) -> Int? {
+        currentSnapshot(now: now)?.chargePercent
+    }
+
+    private func currentSnapshot(now: Date) -> BatterySnapshot? {
         guard let snapshot = try? snapshotProvider.currentSnapshot(now: now),
               snapshot.isBatteryPresent else {
             return nil
         }
-        return snapshot.chargePercent
+        return snapshot
+    }
+
+    /// helper 재시작 후 이전 관리 상태를 되살린다. baseline이 남아 있으면 CellCap이 한도를 관리 중이었다는 뜻이다.
+    /// baseline이 없으면 사용자 설정이므로 의도를 nil로 두고 Core의 다음 명령을 기다린다.
+    private func restoreManagedStateIfNeeded(now: Date) {
+        guard !didRestoreManagedState else {
+            return
+        }
+        didRestoreManagedState = true
+
+        guard chargingEnabledIntent == nil,
+              baselineStore.loadBaseline() != nil,
+              let limit = store.readLimit() else {
+            return
+        }
+        expectedLimit = limit
+        chargingEnabledIntent = limit >= Self.releasedLimit
+        // 재시작 직전에 쓴 값이 아직 적용 대기 중일 수 있으므로 방금 쓴 것으로 간주해 grace 판정을 시작한다.
+        lastWrite = (now, currentChargePercent(now: now))
     }
 
     private func normalizeOverride(now: Date) {
