@@ -1,5 +1,7 @@
 import Core
 import Foundation
+import ServiceManagement
+import Shared
 
 enum UninstallCleanupCommand {
     static let argument = "--cellcap-uninstall-cleanup"
@@ -10,7 +12,8 @@ enum UninstallCleanupCommand {
         arguments: [String] = CommandLine.arguments,
         userDefaults: UserDefaults = .standard,
         bundleIdentifier: String? = Bundle.main.bundleIdentifier,
-        launchAtLoginService: any LaunchAtLoginServiceControlling = MainAppLaunchAtLoginService()
+        launchAtLoginService: any LaunchAtLoginServiceControlling = MainAppLaunchAtLoginService(),
+        unregisterHelperDaemon: () -> Void = unregisterBundledHelperDaemon
     ) -> Bool {
         guard arguments.contains(argument) else {
             return false
@@ -21,6 +24,8 @@ enum UninstallCleanupCommand {
             bundleIdentifier: bundleIdentifier,
             launchAtLoginService: launchAtLoginService
         )
+        // 제거 pkg가 helper job을 이미 내렸으므로, 앱 삭제 전에 백그라운드 항목 등록 기록만 지운다.
+        unregisterHelperDaemon()
         return true
     }
 
@@ -31,6 +36,10 @@ enum UninstallCleanupCommand {
     ) {
         removeLoginItem(using: launchAtLoginService)
         removeUserDefaults(userDefaults, bundleIdentifier: bundleIdentifier)
+    }
+
+    static func unregisterBundledHelperDaemon() {
+        try? SMAppService.daemon(plistName: CellCapHelperXPC.launchDaemonPlistName).unregister()
     }
 
     private static func removeLoginItem(using service: any LaunchAtLoginServiceControlling) {

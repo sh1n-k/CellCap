@@ -28,7 +28,11 @@ struct CellCapApp: App {
         _viewModel = StateObject(
             wrappedValue: MenuBarViewModel(
                 service: orchestrator,
-                launchAtLoginManager: LaunchAtLoginManager()
+                launchAtLoginManager: LaunchAtLoginManager(),
+                // helper는 앱 번들에 내장되므로 swift run 같은 번들 밖 실행에서는 설치 기능을 열지 않는다.
+                helperServiceManager: Bundle.main.bundleURL.pathExtension == "app"
+                    ? HelperServiceManager(controller: controller)
+                    : nil
             )
         )
     }

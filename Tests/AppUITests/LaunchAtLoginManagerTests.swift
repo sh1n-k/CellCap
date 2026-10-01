@@ -82,15 +82,18 @@ func uninstallCleanupCommandRemovesLoginItemAndUserDefaultsDomain() throws {
     userDefaults.set(Data("policy".utf8), forKey: UninstallCleanupCommand.chargePolicyKey)
 
     let service = MockLaunchAtLoginService(status: .enabled)
+    var helperUnregisterCount = 0
     let didRun = UninstallCleanupCommand.runIfRequested(
         arguments: ["CellCap", UninstallCleanupCommand.argument],
         userDefaults: userDefaults,
         bundleIdentifier: suiteName,
-        launchAtLoginService: service
+        launchAtLoginService: service,
+        unregisterHelperDaemon: { helperUnregisterCount += 1 }
     )
 
     #expect(didRun)
     #expect(service.unregisterCallCount == 1)
+    #expect(helperUnregisterCount == 1)
     #expect(userDefaults.object(forKey: LaunchAtLoginManager.preferenceKey) == nil)
     #expect(userDefaults.object(forKey: UninstallCleanupCommand.chargePolicyKey) == nil)
 }
@@ -109,7 +112,8 @@ func uninstallCleanupCommandIgnoresNormalLaunch() throws {
         arguments: ["CellCap"],
         userDefaults: userDefaults,
         bundleIdentifier: suiteName,
-        launchAtLoginService: service
+        launchAtLoginService: service,
+        unregisterHelperDaemon: { Issue.record("일반 실행에서는 helper 등록을 지우지 않아야 합니다.") }
     )
 
     #expect(didRun == false)

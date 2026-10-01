@@ -386,8 +386,8 @@ actor ManagedChargeLimitBackend: ChargeControlBackend {
         HelperInstallStatus(
             state: .xpcReachable,
             serviceName: CellCapHelperXPC.serviceName,
-            helperPath: CellCapHelperXPC.installedBinaryPath,
-            plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+            helperPath: CellCapHelperXPC.bundledHelperProgramPath,
+            plistPath: CellCapHelperXPC.bundledLaunchDaemonPlistPath,
             helperVersion: CellCapHelperXPC.contractVersion,
             expectedVersion: CellCapHelperXPC.contractVersion,
             reason: "helper XPC에 도달했습니다.",

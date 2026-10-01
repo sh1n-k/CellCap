@@ -342,9 +342,57 @@ struct AdvancedStatusSectionView: View {
                 InlineNotice(title: "최근 제어 오류", detail: controllerError, tone: .warn)
             }
 
+            helperActions
+
             Divider()
 
             CapabilityStatusListView(viewModel: viewModel, title: "기능 가능 여부")
+        }
+    }
+
+    @ViewBuilder
+    private var helperActions: some View {
+        let actions = viewModel.availableHelperActions
+
+        if !actions.isEmpty || viewModel.helperActionMessage != nil {
+            VStack(alignment: .leading, spacing: 8) {
+                if !actions.isEmpty {
+                    HStack(spacing: 8) {
+                        ForEach(actions, id: \.self) { action in
+                            Button(viewModel.helperActionTitle(for: action)) {
+                                viewModel.performHelperAction(action)
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(viewModel.isHelperActionRunning)
+                        }
+
+                        if viewModel.isHelperActionRunning {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
+                    }
+                }
+
+                if let message = viewModel.helperActionMessage {
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .confirmationDialog(
+                "충전 제한을 풀지 못한 채 helper를 제거할까요?",
+                isPresented: $viewModel.isForceHelperRemovalConfirmationPresented
+            ) {
+                Button("그대로 제거", role: .destructive) {
+                    viewModel.confirmForcedHelperRemoval()
+                }
+                Button("취소", role: .cancel) {
+                    viewModel.cancelForcedHelperRemoval()
+                }
+            } message: {
+                Text(viewModel.helperActionMessage ?? "")
+            }
         }
     }
 

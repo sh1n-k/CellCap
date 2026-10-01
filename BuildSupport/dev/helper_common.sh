@@ -1,11 +1,14 @@
 #!/bin/zsh
 
 SERVICE_NAME="com.shin.cellcap.helper"
-INSTALL_PATH="/Library/PrivilegedHelperTools/${SERVICE_NAME}"
-PLIST_PATH="/Library/LaunchDaemons/${SERVICE_NAME}.plist"
-LOG_DIR="/Library/Logs/CellCap"
-STDOUT_LOG="${LOG_DIR}/${SERVICE_NAME}.stdout.log"
-STDERR_LOG="${LOG_DIR}/${SERVICE_NAME}.stderr.log"
+# helper는 앱 번들에 내장되어 SMAppService로 등록된다(CellCapHelperXPC.bundled* 상수와 같은 값).
+HELPER_BUNDLE_PROGRAM_PATH="Contents/MacOS/CellCapHelper"
+HELPER_BUNDLE_PLIST_PATH="Contents/Library/LaunchDaemons/${SERVICE_NAME}.plist"
+# 아래는 sudo 스크립트/pkg로 설치하던 이전 방식 위치다(CellCapHelperXPC.legacy* 상수와 같은 값).
+# 남아 있으면 앱 내장 helper 등록과 충돌하므로 제거에만 쓴다.
+LEGACY_INSTALL_PATH="/Library/PrivilegedHelperTools/${SERVICE_NAME}"
+LEGACY_PLIST_PATH="/Library/LaunchDaemons/${SERVICE_NAME}.plist"
+LEGACY_LOG_DIR="/Library/Logs/CellCap"
 # CellCapHelperXPC.chargeLimitBaselinePath와 같은 값을 유지한다.
 CHARGE_LIMIT_BASELINE_PATH="/Library/Application Support/CellCap/charge-limit-baseline.plist"
 # helper가 바꾸는 macOS 충전 한도 설정(PowerUIAgent root 도메인)과 변경 알림.
@@ -42,4 +45,13 @@ restore_charge_limit_baseline() {
 
   rm -f "${CHARGE_LIMIT_BASELINE_PATH}"
   rmdir "$(dirname "${CHARGE_LIMIT_BASELINE_PATH}")" 2>/dev/null || true
+}
+
+# helper launchd job을 내린다. 이전 방식 설치가 남아 있으면 파일까지 지운다.
+# 충전 한도 복원보다 먼저 호출해야 helper가 복원값을 다시 덮어쓰지 않는다.
+stop_helper_and_remove_legacy_install() {
+  launchctl bootout "system/${SERVICE_NAME}" >/dev/null 2>&1 || true
+  launchctl bootout system "${LEGACY_PLIST_PATH}" >/dev/null 2>&1 || true
+  rm -f "${LEGACY_PLIST_PATH}" "${LEGACY_INSTALL_PATH}"
+  rm -rf "${LEGACY_LOG_DIR}"
 }

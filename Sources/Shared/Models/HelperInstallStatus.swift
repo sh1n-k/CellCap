@@ -2,6 +2,10 @@ import Foundation
 
 public enum HelperInstallState: String, Codable, Sendable, CaseIterable {
     case notInstalled
+    /// SMAppService 등록은 됐지만 시스템 설정 > 로그인 항목에서 사용자 승인을 기다리는 상태.
+    case requiresApproval
+    /// sudo 스크립트나 pkg로 설치한 이전 방식 helper가 남아 있어 앱 내장 helper를 등록할 수 없는 상태.
+    case legacyInstalled
     case installedButNotBootstrapped
     case bootstrapped
     case xpcReachable
@@ -41,7 +45,8 @@ public struct HelperInstallStatus: Codable, Sendable, Equatable {
 
     public var installationSupport: CapabilitySupport {
         switch state {
-        case .notInstalled, .installedButNotBootstrapped, .permissionMismatch, .versionMismatch:
+        case .notInstalled, .requiresApproval, .legacyInstalled, .installedButNotBootstrapped,
+             .permissionMismatch, .versionMismatch:
             return .readOnlyFallback
         case .bootstrapped, .xpcReachable:
             return .supported
@@ -54,7 +59,8 @@ public struct HelperInstallStatus: Codable, Sendable, Equatable {
             return .readOnlyFallback
         case .xpcReachable:
             return .supported
-        case .notInstalled, .installedButNotBootstrapped, .bootstrapped, .versionMismatch:
+        case .notInstalled, .requiresApproval, .legacyInstalled, .installedButNotBootstrapped,
+             .bootstrapped, .versionMismatch:
             return .readOnlyFallback
         }
     }
@@ -67,7 +73,7 @@ public struct HelperInstallStatus: Codable, Sendable, Equatable {
             return "helper가 root 권한으로 동작 중입니다."
         case .bootstrapped:
             return "helper가 등록되었지만 XPC로 확인되기 전입니다."
-        case .notInstalled, .installedButNotBootstrapped, .versionMismatch:
+        case .notInstalled, .requiresApproval, .legacyInstalled, .installedButNotBootstrapped, .versionMismatch:
             return reason
         }
     }

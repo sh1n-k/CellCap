@@ -20,8 +20,8 @@ func selfTestPolicyRunsOnlyForEligibleTriggers() async {
     let helperInstallStatus = HelperInstallStatus(
         state: .xpcReachable,
         serviceName: CellCapHelperXPC.serviceName,
-        helperPath: CellCapHelperXPC.installedBinaryPath,
-        plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+        helperPath: CellCapHelperXPC.bundledHelperProgramPath,
+        plistPath: CellCapHelperXPC.bundledLaunchDaemonPlistPath,
         expectedVersion: CellCapHelperXPC.contractVersion,
         reason: "ready",
         checkedAt: Date(timeIntervalSince1970: 10)
@@ -55,8 +55,8 @@ func capabilityReportResolverMarksVersionMismatchWhenProbeReturnsDifferentVersio
     let helperInstallStatus = HelperInstallStatus(
         state: .bootstrapped,
         serviceName: CellCapHelperXPC.serviceName,
-        helperPath: CellCapHelperXPC.installedBinaryPath,
-        plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+        helperPath: CellCapHelperXPC.bundledHelperProgramPath,
+        plistPath: CellCapHelperXPC.bundledLaunchDaemonPlistPath,
         helperVersion: nil,
         expectedVersion: CellCapHelperXPC.contractVersion,
         reason: "launchd 등록됨",
@@ -79,8 +79,35 @@ func capabilityReportResolverMarksVersionMismatchWhenProbeReturnsDifferentVersio
     )
 
     #expect(merged.state == .versionMismatch)
-    #expect(merged.helperPath == CellCapHelperXPC.installedBinaryPath)
+    #expect(merged.helperPath == CellCapHelperXPC.bundledHelperProgramPath)
     #expect(merged.reason.contains("unexpected-version"))
+}
+
+@Test
+func capabilityReportResolverMarksVersionMismatchWhenOldHelperReportsItsOwnVersion() {
+    let local = HelperInstallStatus(
+        state: .bootstrapped,
+        serviceName: CellCapHelperXPC.serviceName,
+        helperPath: CellCapHelperXPC.bundledHelperProgramPath,
+        plistPath: CellCapHelperXPC.bundledLaunchDaemonPlistPath,
+        expectedVersion: CellCapHelperXPC.contractVersion,
+        reason: "launchd 등록됨"
+    )
+    // 이전 빌드 helper는 helperVersion과 expectedVersion을 모두 자기 계약 버전으로 채운다.
+    let remote = HelperInstallStatus(
+        state: .xpcReachable,
+        serviceName: CellCapHelperXPC.serviceName,
+        helperPath: "/tmp/ignored",
+        plistPath: "/tmp/ignored.plist",
+        helperVersion: "old-version",
+        expectedVersion: "old-version",
+        reason: "remote ready"
+    )
+
+    let merged = CapabilityReportResolver.mergeHelperInstallStatus(local: local, remote: remote)
+
+    #expect(merged.state == .versionMismatch)
+    #expect(merged.expectedVersion == CellCapHelperXPC.contractVersion)
 }
 
 @Test

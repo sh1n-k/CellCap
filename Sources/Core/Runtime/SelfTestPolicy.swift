@@ -28,8 +28,8 @@ struct SelfTestPolicy: SelfTestPolicying {
     ) async -> ControllerSelfTestResult? {
         switch trigger {
         case .appLaunch, .manualRefresh:
-            guard helperInstallStatus.state != .notInstalled,
-                  helperInstallStatus.state != .installedButNotBootstrapped else {
+            guard ![.notInstalled, .requiresApproval, .legacyInstalled, .installedButNotBootstrapped]
+                .contains(helperInstallStatus.state) else {
                 await eventLogger.record(
                     level: .notice,
                     category: .selfTest,

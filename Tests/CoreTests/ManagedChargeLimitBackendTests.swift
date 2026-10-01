@@ -511,8 +511,8 @@ private actor RecordingBackend: ChargeControlBackend {
             helperInstallStatus: HelperInstallStatus(
                 state: .xpcReachable,
                 serviceName: CellCapHelperXPC.serviceName,
-                helperPath: CellCapHelperXPC.installedBinaryPath,
-                plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                helperPath: CellCapHelperXPC.bundledHelperProgramPath,
+                plistPath: CellCapHelperXPC.bundledLaunchDaemonPlistPath,
                 reason: name
             ),
             isChargingEnabled: nil,

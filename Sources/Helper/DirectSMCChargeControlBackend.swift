@@ -88,8 +88,8 @@ actor DirectSMCChargeControlBackend: ChargeControlBackend {
         let helperBaseStatus = HelperInstallStatus(
             state: .xpcReachable,
             serviceName: CellCapHelperXPC.serviceName,
-            helperPath: CellCapHelperXPC.installedBinaryPath,
-            plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+            helperPath: CellCapHelperXPC.bundledHelperProgramPath,
+            plistPath: CellCapHelperXPC.bundledLaunchDaemonPlistPath,
             helperVersion: expectedVersion,
             expectedVersion: expectedVersion,
             reason: "helper XPC에 도달했습니다.",

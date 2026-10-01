@@ -39,8 +39,8 @@ enum MenuBarPreviewFactory {
                 helperInstallStatus: HelperInstallStatus(
                     state: .xpcReachable,
                     serviceName: CellCapHelperXPC.serviceName,
-                    helperPath: CellCapHelperXPC.installedBinaryPath,
-                    plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                    helperPath: CellCapHelperXPC.bundledHelperProgramPath,
+                    plistPath: CellCapHelperXPC.bundledLaunchDaemonPlistPath,
                     helperVersion: CellCapHelperXPC.contractVersion,
                     expectedVersion: CellCapHelperXPC.contractVersion,
                     reason: "개발용 helper가 root로 실행 중입니다."

@@ -16,6 +16,13 @@ final class MenuBarViewModel: ObservableObject {
         }
     }
 
+    enum HelperAction: Equatable {
+        case install
+        case openApprovalSettings
+        case reinstall
+        case remove
+    }
+
     @Published private(set) var appState: AppState
     @Published private(set) var transitionReason: ChargeTransitionReason
     @Published private(set) var capabilityReport: CapabilityReport
@@ -25,12 +32,19 @@ final class MenuBarViewModel: ObservableObject {
     @Published private(set) var launchAtLoginStatusText: String
     @Published private(set) var launchAtLoginErrorText: String?
     @Published var overrideDurationMinutes: Double
+    @Published private(set) var helperActionMessage: String?
+    @Published private(set) var isHelperActionRunning = false
+    @Published var isForceHelperRemovalConfirmationPresented = false
 
     private let policyEngine: PolicyEngine
     private let capabilityChecker: any CapabilityChecking
     private let controlAvailabilityResolver: any ControlAvailabilityResolving
     private let launchAtLoginManager: any LaunchAtLoginManaging
     private let runtimeService: (any AppRuntimeServicing)?
+    private let helperServiceManager: (any HelperServiceManaging)?
+    private var installsAfterForcedRemoval = false
+    /// 작업 결과 문구가 가리키는 설치 상태. 이후 상태가 바뀌면 오래된 문구를 지운다.
+    private var helperActionMessageState: HelperInstallState?
     private let now: @Sendable () -> Date
     private var updatesTask: Task<Void, Never>?
 
@@ -44,6 +58,7 @@ final class MenuBarViewModel: ObservableObject {
         controlAvailabilityResolver: any ControlAvailabilityResolving = ControlAvailabilityResolver(),
         launchAtLoginManager: any LaunchAtLoginManaging = DisabledLaunchAtLoginManager(),
         runtimeService: (any AppRuntimeServicing)? = nil,
+        helperServiceManager: (any HelperServiceManaging)? = nil,
         now: @escaping @Sendable () -> Date = Date.init
     ) {
         self.appState = appState
@@ -53,6 +68,7 @@ final class MenuBarViewModel: ObservableObject {
         self.controlAvailabilityResolver = controlAvailabilityResolver
         self.launchAtLoginManager = launchAtLoginManager
         self.runtimeService = runtimeService
+        self.helperServiceManager = helperServiceManager
         self.now = now
 
         let seededReason = transitionReason ?? policyEngine.evaluate(
@@ -75,7 +91,8 @@ final class MenuBarViewModel: ObservableObject {
 
     convenience init(
         service: any AppRuntimeServicing,
-        launchAtLoginManager: any LaunchAtLoginManaging = DisabledLaunchAtLoginManager()
+        launchAtLoginManager: any LaunchAtLoginManaging = DisabledLaunchAtLoginManager(),
+        helperServiceManager: (any HelperServiceManaging)? = nil
     ) {
         self.init(
             appState: AppState(
@@ -93,7 +110,8 @@ final class MenuBarViewModel: ObservableObject {
             transitionReason: .missingBattery,
             capabilityReport: CapabilityChecker().evaluate(snapshot: nil),
             launchAtLoginManager: launchAtLoginManager,
-            runtimeService: service
+            runtimeService: service,
+            helperServiceManager: helperServiceManager
         )
     }
 
@@ -246,6 +264,87 @@ final class MenuBarViewModel: ObservableObject {
         )
     }
 
+    var availableHelperActions: [HelperAction] {
+        guard helperServiceManager != nil else { return [] }
+        return presentation.availableHelperActions
+    }
+
+    func helperActionTitle(for action: HelperAction) -> String {
+        presentation.helperActionTitle(for: action)
+    }
+
+    func performHelperAction(_ action: HelperAction) {
+        guard let helperServiceManager, !isHelperActionRunning else { return }
+
+        if action == .openApprovalSettings {
+            helperServiceManager.openApprovalSettings()
+            return
+        }
+
+        runHelperAction {
+            switch action {
+            case .install:
+                return await helperServiceManager.install()
+            case .remove, .reinstall:
+                let removal = await helperServiceManager.remove(force: false)
+                guard action == .reinstall, case .completed = removal else {
+                    if case .releaseFailed = removal {
+                        await MainActor.run { self.installsAfterForcedRemoval = action == .reinstall }
+                    }
+                    return removal
+                }
+                return await helperServiceManager.install()
+            case .openApprovalSettings:
+                return nil
+            }
+        }
+    }
+
+    func confirmForcedHelperRemoval() {
+        guard let helperServiceManager else { return }
+        let installsAfterRemoval = installsAfterForcedRemoval
+        installsAfterForcedRemoval = false
+
+        runHelperAction {
+            let removal = await helperServiceManager.remove(force: true)
+            guard installsAfterRemoval, case .completed = removal else { return removal }
+            return await helperServiceManager.install()
+        }
+    }
+
+    private func clearStaleHelperActionMessage() {
+        guard let messageState = helperActionMessageState,
+              effectiveHelperInstallStatus?.state != messageState else { return }
+        helperActionMessage = nil
+        helperActionMessageState = nil
+    }
+
+    func cancelForcedHelperRemoval() {
+        installsAfterForcedRemoval = false
+    }
+
+    private func runHelperAction(_ operation: @escaping @Sendable () async -> HelperServiceActionResult?) {
+        isHelperActionRunning = true
+        helperActionMessage = nil
+        helperActionMessageState = nil
+
+        Task {
+            let result = await operation()
+            await MainActor.run {
+                self.isHelperActionRunning = false
+                self.helperActionMessage = result?.message
+                if case .releaseFailed = result {
+                    self.isForceHelperRemovalConfirmationPresented = true
+                }
+            }
+            // 설치/제거 결과가 바로 화면과 제어 가능 여부에 반영되도록 캐시를 우회해 다시 동기화한다.
+            await runtimeService?.refresh(trigger: .manualRefresh)
+            await MainActor.run {
+                self.helperActionMessageState = self.effectiveHelperInstallStatus?.state
+            }
+        }
+    }
+
     func recomputeState() {
         guard let runtimeService else {
             apply(policy: appState.policy)
@@ -379,6 +478,7 @@ final class MenuBarViewModel: ObservableObject {
                     self.transitionReason = update.transitionReason
                     self.capabilityReport = update.capabilityReport
                     self.diagnosticsSummary = update.diagnosticsSummary
+                    self.clearStaleHelperActionMessage()
                 }
             }
         }

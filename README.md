@@ -19,13 +19,12 @@ SMC 충전 키가 있는 펌웨어는 직접 AppleSMC backend를, 키가 제거�
 - 배터리/전원 상태 관측
 - 정책 기반 상태 계산
 - XPC 기반 Helper 통신
-- 개발용 helper 설치/재시작/제거 스크립트
+- 앱 설정(고급 정보)에서 helper 설치/승인 안내/제거 (SMAppService)
 - 단위 테스트와 CI
 
 ### 아직 안 되는 것
 - 일반 사용자를 위한 설치 패키지
-- 자동 helper 설치/승인
-- 로그인 자동 실행
+- Developer ID 서명/공증 (현재는 자체 서명 인증서)
 - 자동 업데이트
 - 제품 수준 복구 UI
 
@@ -34,7 +33,8 @@ SMC 충전 키가 있는 펌웨어는 직접 AppleSMC backend를, 키가 제거�
 ## 지원 환경
 - Apple Silicon Mac
 - macOS 26 이상
-- root 권한으로 실행되는 privileged helper를 허용할 수 있는 개발 환경
+- 시스템 설정에서 백그라운드 helper 실행을 허용할 수 있는 환경
+- 코드 서명 인증서 `CellCap Dev` (키체인 접근 > 인증서 지원 > 인증서 생성, 자체 서명 루트, 코드 서명)
 
 지원 환경이 아니거나 Helper가 준비되지 않으면 앱은 충전 제어를 강행하지 않고 관측 모드로 동작합니다.
 
@@ -45,24 +45,23 @@ SMC 충전 키가 있는 펌웨어는 직접 AppleSMC backend를, 키가 제거�
 swift build
 ```
 
-### 2. 개발용 helper 설치
+### 2. 앱 번들 빌드와 설치
 
 ```bash
-sudo BuildSupport/dev/install_helper.sh
-BuildSupport/dev/helper_status.sh
+BuildSupport/dev/build_install_app.sh
 ```
 
-### 3. 앱 실행
-- Xcode에서 `CellCapApp` 실행
-- 또는 필요 시 Xcode 프로젝트 생성:
+helper를 포함한 `CellCap.app`을 `CellCap Dev` 인증서로 서명해 `/Applications`에 설치하고 실행합니다.
+소스 파일을 추가/삭제했다면 먼저 `ruby BuildSupport/generate_xcodeproj.rb`로 Xcode 프로젝트를 다시 생성합니다.
 
-```bash
-ruby BuildSupport/generate_xcodeproj.rb
-```
+### 3. helper 설치
+1. 메뉴 막대의 CellCap > 고급 정보에서 `Helper 설치`를 누릅니다.
+2. 시스템 설정 > 일반 > 로그인 항목 및 확장 프로그램 > 백그라운드에서 허용에서 CellCap을 켭니다.
+3. 고급 정보의 설치 상태가 `XPC 연결 확인`으로 바뀌는지 확인합니다.
 
-로그인 자동 실행을 실험하려면 앱 번들이 코드 서명된 상태여야 합니다.
-현재 생성 스크립트는 `AppUI` 타깃에 macOS 로컬 개발 서명(`Sign to Run Locally`)이 가능하도록 설정합니다.
-설치된 앱이 ad hoc 무서명 상태로 배포되면 로그인 자동 실행 등록이 실패할 수 있습니다.
+helper 바이너리가 바뀐 빌드를 설치하면 고급 정보에 `버전 불일치` 또는 `시스템 승인 필요`가 표시됩니다.
+`다시 설치`를 누르고 시스템 설정에서 CellCap을 다시 허용합니다(자체 서명은 바이너리가 바뀔 때마다 재승인이 필요).
+`swift run CellCapApp`처럼 앱 번들 밖에서 실행하면 helper를 설치하거나 연결할 수 없습니다.
 
 ### 4. 앱에서 확인할 것
 - `Helper 설치`
@@ -72,20 +71,18 @@ ruby BuildSupport/generate_xcodeproj.rb
 
 ## 개발용 helper 스크립트
 ```bash
-sudo BuildSupport/dev/install_helper.sh
-BuildSupport/dev/helper_status.sh
-sudo BuildSupport/dev/restart_helper.sh
-sudo BuildSupport/dev/uninstall_helper.sh
+BuildSupport/dev/build_install_app.sh      # 앱(helper 포함) 빌드·서명·설치
+BuildSupport/dev/helper_status.sh          # launchd/백그라운드 항목 상태
+sudo BuildSupport/dev/uninstall_helper.sh  # 이전 방식 설치 제거 또는 helper 강제 중지 + 충전 한도 복원
 ```
 
-기본 경로:
-- helper 바이너리: `/Library/PrivilegedHelperTools/com.shin.cellcap.helper`
-- launchd plist: `/Library/LaunchDaemons/com.shin.cellcap.helper.plist`
-- stdout 로그: `/Library/Logs/CellCap/com.shin.cellcap.helper.stdout.log`
-- stderr 로그: `/Library/Logs/CellCap/com.shin.cellcap.helper.stderr.log`
+helper 위치:
+- 실행 파일: `/Applications/CellCap.app/Contents/MacOS/CellCapHelper`
+- LaunchDaemon plist: `/Applications/CellCap.app/Contents/Library/LaunchDaemons/com.shin.cellcap.helper.plist`
+- 로그: `/usr/bin/log show --last 10m --predicate 'process == "CellCapHelper"'`
 
-`install_helper.sh`는 SwiftPM 산출물의 `CellCapHelper`를 우선 찾습니다.
-필요하면 `CELLCAP_HELPER_BINARY` 환경 변수나 첫 번째 인자로 경로를 직접 넘길 수 있습니다.
+이전 방식(`/Library/PrivilegedHelperTools`) 설치가 남아 있으면 앱이 `이전 설치 남음`으로 표시하고 설치를 막습니다.
+`sudo BuildSupport/dev/uninstall_helper.sh`로 지운 뒤 새로고침합니다.
 
 ## 검증
 기본 검증 명령:
@@ -103,10 +100,12 @@ Helper 상태나 launchd 등록이 의심되면 아래 명령을 먼저 확인�
 
 ```bash
 BuildSupport/dev/helper_status.sh
-launchctl print system/com.shin.cellcap.helper
-tail -n 100 /Library/Logs/CellCap/com.shin.cellcap.helper.stdout.log
-tail -n 100 /Library/Logs/CellCap/com.shin.cellcap.helper.stderr.log
+sudo launchctl print system/com.shin.cellcap.helper
+/usr/bin/log show --last 10m --style compact | grep -i cellcap.helper
 ```
+
+`Launch Constraint Violation`이나 `OS_REASON_CODESIGNING`이 보이면 서명이 바뀐 helper입니다. 고급 정보에서 `다시 설치` 후 시스템 설정에서 다시 허용합니다.
+`Disallowing com.shin.cellcap.helper because no eligible provisioning profiles found` 로그는 helper에 entitlement가 없어 생기는 무해한 로그입니다.
 
 실기기 점검에서는 아래 흐름을 우선 봅니다.
 - helper가 정상 설치되고 launchd에 등록되는지
@@ -121,7 +120,7 @@ Sources/AppUI     SwiftUI 화면과 표시용 상태 해석
 Sources/Core      정책 계산, 런타임 동기화, 진단, 관측, XPC 클라이언트
 Sources/Shared    AppUI/Core/Helper 공용 계약과 모델
 Sources/Helper    privileged helper와 충전 제어 backend(SMC / macOS 충전 한도)
-BuildSupport/dev  helper 설치/상태/재시작/제거 스크립트
+BuildSupport/dev  앱 빌드·설치, helper 상태/제거 스크립트, 앱 번들 내장 LaunchDaemon plist
 Tests/CoreTests   Core/Helper 회귀 테스트
 Tests/AppUITests  AppUI 순수 로직 테스트
 ```
@@ -129,4 +128,5 @@ Tests/AppUITests  AppUI 순수 로직 테스트
 ## 추가 문서
 - 개발/유지보수 규칙: [AGENTS.md](./AGENTS.md)
 - 런타임/Helper 경계 결정: [docs/adr/0001-runtime-and-helper-boundaries.md](./docs/adr/0001-runtime-and-helper-boundaries.md)
+- 앱 내장 helper 설치(SMAppService): [docs/adr/0003-in-app-helper-installation.md](./docs/adr/0003-in-app-helper-installation.md)
 - 공개 API 검토 메모: [03_공개API_충전제어_검토.md](./03_%EA%B3%B5%EA%B0%9CAPI_%EC%B6%A9%EC%A0%84%EC%A0%9C%EC%96%B4_%EA%B2%80%ED%86%A0.md)

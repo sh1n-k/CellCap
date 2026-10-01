@@ -105,6 +105,10 @@ struct MenuBarPresentation: MenuBarPresenting {
             switch helperInstallStatus.state {
             case .notInstalled:
                 return "helper 미설치"
+            case .requiresApproval:
+                return "helper 승인 대기"
+            case .legacyInstalled:
+                return "이전 방식 helper 감지"
             case .installedButNotBootstrapped:
                 return "helper 미기동"
             case .bootstrapped:
@@ -147,6 +151,10 @@ struct MenuBarPresentation: MenuBarPresenting {
         switch helperInstallStatus.state {
         case .notInstalled:
             return "미설치"
+        case .requiresApproval:
+            return "시스템 승인 필요"
+        case .legacyInstalled:
+            return "이전 설치 남음"
         case .installedButNotBootstrapped:
             return "설치됨, 미기동"
         case .bootstrapped:
@@ -157,6 +165,37 @@ struct MenuBarPresentation: MenuBarPresenting {
             return "권한 불일치"
         case .versionMismatch:
             return "버전 불일치"
+        }
+    }
+
+    var availableHelperActions: [MenuBarViewModel.HelperAction] {
+        guard let helperInstallStatus else { return [] }
+
+        switch helperInstallStatus.state {
+        case .notInstalled:
+            return [.install]
+        case .requiresApproval:
+            return [.openApprovalSettings, .remove]
+        case .legacyInstalled:
+            // 이전 방식 helper는 root 권한으로만 지울 수 있어 앱에서 처리하지 않고 안내만 한다.
+            return []
+        case .installedButNotBootstrapped, .permissionMismatch, .versionMismatch:
+            return [.reinstall, .remove]
+        case .bootstrapped, .xpcReachable:
+            return [.remove]
+        }
+    }
+
+    func helperActionTitle(for action: MenuBarViewModel.HelperAction) -> String {
+        switch action {
+        case .install:
+            return "Helper 설치"
+        case .openApprovalSettings:
+            return "시스템 설정 열기"
+        case .reinstall:
+            return "다시 설치"
+        case .remove:
+            return helperInstallStatus?.state == .requiresApproval ? "설치 취소" : "Helper 제거"
         }
     }
 

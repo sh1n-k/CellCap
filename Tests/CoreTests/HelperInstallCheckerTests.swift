@@ -3,32 +3,66 @@ import Foundation
 import Shared
 import Testing
 
-@Test
-func helperInstallCheckerReturnsNotInstalledWhenArtifactsAreMissing() async {
-    let checker = SystemHelperInstallChecker(
-        fileSystem: MockFileSystem(existingFiles: []),
-        commandExecutor: MockCommandExecutor(result: .init(exitCode: 113, standardOutput: "", standardError: "missing"))
+private let bundleURL = URL(fileURLWithPath: "/Applications/CellCap.app")
+private let bundledArtifacts = [
+    bundleURL.appendingPathComponent(CellCapHelperXPC.bundledHelperProgramPath).path,
+    bundleURL.appendingPathComponent(CellCapHelperXPC.bundledLaunchDaemonPlistPath).path
+]
+
+private func makeChecker(
+    files: [String] = bundledArtifacts,
+    registration: HelperDaemonRegistrationStatus = .enabled,
+    launchctl: CommandExecutionResult = .init(exitCode: 0, standardOutput: "service = {\n}", standardError: ""),
+    bundle: URL = bundleURL
+) -> SystemHelperInstallChecker {
+    SystemHelperInstallChecker(
+        fileSystem: MockFileSystem(existingFiles: files),
+        commandExecutor: MockCommandExecutor(result: launchctl),
+        daemon: MockHelperDaemon(bundleURL: bundle, status: registration)
     )
+}
+
+@Test
+func helperInstallCheckerReportsLegacyInstallationBeforeRegistrationState() async {
+    let checker = makeChecker(files: bundledArtifacts + [CellCapHelperXPC.legacyLaunchDaemonPlistPath])
+
+    let status = await checker.currentStatus(now: Date(timeIntervalSince1970: 1_000))
+
+    #expect(status.state == .legacyInstalled)
+    #expect(status.reason.contains("uninstall_helper.sh"))
+}
+
+@Test
+func helperInstallCheckerReturnsNotInstalledOutsideAppBundle() async {
+    let checker = makeChecker(files: [], bundle: URL(fileURLWithPath: "/tmp/.build/debug"))
 
     let status = await checker.currentStatus(now: Date(timeIntervalSince1970: 1_000))
 
     #expect(status.state == .notInstalled)
-    #expect(status.reason.contains("설치 누락"))
+    #expect(status.reason.contains("build_install_app.sh"))
+}
+
+@Test
+func helperInstallCheckerMapsRegistrationStatus() async {
+    let missingJob = CommandExecutionResult(exitCode: 113, standardOutput: "", standardError: "Could not find service")
+    let notRegistered = await makeChecker(registration: .notRegistered, launchctl: missingJob).currentStatus(now: .now)
+    let requiresApproval = await makeChecker(registration: .requiresApproval).currentStatus(now: .now)
+    // 자체 서명 helper가 바뀌어 백그라운드 허용이 꺼지면 SMAppService는 미등록으로 보고하지만 launchd job은 남는다.
+    let disallowedAfterRebuild = await makeChecker(registration: .notRegistered).currentStatus(now: .now)
+
+    #expect(notRegistered.state == .notInstalled)
+    #expect(requiresApproval.state == .requiresApproval)
+    #expect(requiresApproval.installationSupport == .readOnlyFallback)
+    #expect(disallowedAfterRebuild.state == .requiresApproval)
 }
 
 @Test
 func helperInstallCheckerReturnsInstalledButNotBootstrappedWhenLaunchctlFails() async {
-    let checker = SystemHelperInstallChecker(
-        fileSystem: MockFileSystem(existingFiles: [
-            CellCapHelperXPC.installedBinaryPath,
-            CellCapHelperXPC.launchDaemonPlistPath
-        ]),
-        commandExecutor: MockCommandExecutor(
-            result: .init(
-                exitCode: 3,
-                standardOutput: "",
-                standardError: "Could not find service \"com.shin.cellcap.helper\" in domain for system"
-            )
+    let checker = makeChecker(
+        launchctl: .init(
+            exitCode: 113,
+            standardOutput: "",
+            standardError: "Could not find service \"com.shin.cellcap.helper\" in domain for system"
         )
     )
 
@@ -39,21 +73,12 @@ func helperInstallCheckerReturnsInstalledButNotBootstrappedWhenLaunchctlFails() 
 }
 
 @Test
-func helperInstallCheckerReturnsBootstrappedWhenLaunchctlSucceeds() async {
-    let checker = SystemHelperInstallChecker(
-        fileSystem: MockFileSystem(existingFiles: [
-            CellCapHelperXPC.installedBinaryPath,
-            CellCapHelperXPC.launchDaemonPlistPath
-        ]),
-        commandExecutor: MockCommandExecutor(
-            result: .init(exitCode: 0, standardOutput: "service = {\n}", standardError: "")
-        )
-    )
-
-    let status = await checker.currentStatus(now: Date(timeIntervalSince1970: 1_000))
+func helperInstallCheckerReturnsBootstrappedWhenRegisteredAndLoaded() async {
+    let status = await makeChecker().currentStatus(now: Date(timeIntervalSince1970: 1_000))
 
     #expect(status.state == .bootstrapped)
     #expect(status.expectedVersion == CellCapHelperXPC.contractVersion)
+    #expect(status.helperPath == "/Applications/CellCap.app/Contents/MacOS/CellCapHelper")
 }
 
 @Test
@@ -62,11 +87,9 @@ func helperInstallCheckerCachesLaunchctlResultWithinTTL() async {
         result: .init(exitCode: 0, standardOutput: "service = {\n}", standardError: "")
     )
     let checker = SystemHelperInstallChecker(
-        fileSystem: MockFileSystem(existingFiles: [
-            CellCapHelperXPC.installedBinaryPath,
-            CellCapHelperXPC.launchDaemonPlistPath
-        ]),
+        fileSystem: MockFileSystem(existingFiles: bundledArtifacts),
         commandExecutor: executor,
+        daemon: MockHelperDaemon(bundleURL: bundleURL, status: .enabled),
         cacheTTL: 100
     )
 

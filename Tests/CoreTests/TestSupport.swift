@@ -84,3 +84,58 @@ extension SMCBridgeStatus {
         batteryChargePercent: 82
     )
 }
+
+/// SMAppService 대신 쓰는 helper 등록 mock. register/unregister 뒤 상태를 지정한 값으로 바꾼다.
+final class MockHelperDaemon: HelperDaemonServicing, @unchecked Sendable {
+    enum Call: Equatable {
+        case register
+        case unregister
+        case openApprovalSettings
+    }
+
+    let bundleURL: URL
+    private let lock = NSLock()
+    private var status: HelperDaemonRegistrationStatus
+    private var calls: [Call] = []
+    private let statusAfterRegister: HelperDaemonRegistrationStatus
+    private let registerError: (any Error)?
+
+    init(
+        bundleURL: URL = URL(fileURLWithPath: "/Applications/CellCap.app"),
+        status: HelperDaemonRegistrationStatus,
+        statusAfterRegister: HelperDaemonRegistrationStatus = .enabled,
+        registerError: (any Error)? = nil
+    ) {
+        self.bundleURL = bundleURL
+        self.status = status
+        self.statusAfterRegister = statusAfterRegister
+        self.registerError = registerError
+    }
+
+    func registrationStatus() -> HelperDaemonRegistrationStatus {
+        lock.withLock { status }
+    }
+
+    func register() throws {
+        try lock.withLock {
+            calls.append(.register)
+            status = statusAfterRegister
+            if let registerError { throw registerError }
+        }
+    }
+
+    func unregister() async throws {
+        lock.withLock {
+            calls.append(.unregister)
+            status = .notRegistered
+        }
+    }
+
+    func openApprovalSettings() {
+        lock.withLock { calls.append(.openApprovalSettings) }
+    }
+
+    func recordedCalls() -> [Call] {
+        lock.withLock { calls }
+    }
+}

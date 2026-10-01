@@ -120,7 +120,7 @@ configure_build_settings(shared_target, bundle_id: "com.shin.cellcap.shared")
 configure_build_settings(system_support_target, bundle_id: "com.shin.cellcap.systemsupport")
 configure_build_settings(core_target, bundle_id: "com.shin.cellcap.core")
 configure_build_settings(app_target, bundle_id: "com.shin.cellcap.app", enable_code_signing: true)
-configure_build_settings(helper_target, generate_info_plist: false)
+configure_build_settings(helper_target, generate_info_plist: false, enable_code_signing: true)
 configure_build_settings(tests_target, bundle_id: "com.shin.cellcap.tests")
 
 smc_bridge_target.build_configurations.each do |configuration|
@@ -167,6 +167,16 @@ end
 
 helper_target.build_configurations.each do |configuration|
   configuration.build_settings["PRODUCT_NAME"] = "CellCapHelper"
+  # SMAppService daemon은 앱 번들 안의 helper를 고정 식별자로 서명해야 하고,
+  # base entitlement(com.apple.application-identifier 등)가 들어가면 launchd launch constraint에 걸릴 수 있다.
+  configuration.build_settings["OTHER_CODE_SIGN_FLAGS"] = "-i com.shin.cellcap.helper"
+  configuration.build_settings["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = "NO"
+  configuration.build_settings["ENTITLEMENTS_REQUIRED"] = "NO"
+  configuration.build_settings["SKIP_INSTALL"] = "YES"
+  configuration.build_settings["SWIFT_INCLUDE_PATHS"] = [
+    "$(inherited)",
+    "$(SRCROOT)/Sources/CellCapSMCBridge/include"
+  ]
   configuration.build_settings["LD_RUNPATH_SEARCH_PATHS"] = [
     "$(inherited)",
     "@executable_path/../Frameworks",
@@ -208,7 +218,6 @@ add_dependency(target: app_target, dependency: shared_target)
 add_dependency(target: app_target, dependency: system_support_target)
 add_dependency(target: app_target, dependency: core_target)
 add_dependency(target: helper_target, dependency: smc_bridge_target)
-add_dependency(target: helper_target, dependency: core_target)
 add_dependency(target: helper_target, dependency: shared_target)
 add_dependency(target: helper_target, dependency: system_support_target)
 add_dependency(target: tests_target, dependency: shared_target)
@@ -222,6 +231,24 @@ embed_frameworks_phase.symbol_dst_subfolder_spec = :frameworks
   build_file = embed_frameworks_phase.add_file_reference(framework_target.product_reference, true)
   build_file.settings = { "ATTRIBUTES" => ["CodeSignOnCopy", "RemoveHeadersOnCopy"] }
 end
+
+# SMAppService.daemon(plistName:)이 찾는 위치에 helper와 LaunchDaemon plist를 넣는다.
+# helper는 자체 target에서 이미 서명했으므로 복사 단계에서 다시 서명하지 않는다.
+app_target.add_dependency(helper_target)
+embed_helper_phase = app_target.new_copy_files_build_phase("Embed Helper Tool")
+embed_helper_phase.symbol_dst_subfolder_spec = :executables
+embed_helper_phase.add_file_reference(helper_target.product_reference, true)
+
+launch_daemon_plist = "BuildSupport/dev/LaunchDaemons/com.shin.cellcap.helper.plist"
+embed_plist_phase = app_target.new_shell_script_build_phase("Embed Helper LaunchDaemon plist")
+embed_plist_phase.input_paths = ["$(SRCROOT)/#{launch_daemon_plist}"]
+embed_plist_phase.output_paths = ["$(TARGET_BUILD_DIR)/$(CONTENTS_FOLDER_PATH)/Library/LaunchDaemons/com.shin.cellcap.helper.plist"]
+embed_plist_phase.shell_script = <<~SCRIPT
+  set -e
+  DEST="$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/Library/LaunchDaemons"
+  mkdir -p "$DEST"
+  cp "$SRCROOT/#{launch_daemon_plist}" "$DEST/com.shin.cellcap.helper.plist"
+SCRIPT
 
 project.sort
 project.save

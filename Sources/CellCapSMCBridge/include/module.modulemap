@@ -1,0 +1,4 @@
+module CellCapSMCBridge {
+    header "CellCapSMCBridge.h"
+    export *
+}

@@ -75,7 +75,9 @@ if [[ -z "${VERSION}" ]]; then
 fi
 
 APP_BUNDLE="${DERIVED_DATA_PATH}/Build/Products/${CONFIGURATION}/${APP_BUNDLE_NAME}"
-HELPER_BINARY=""
+# helper는 앱 번들에 내장되어 SMAppService로 등록된다. 서명 인증서가 바뀌면 사용자가 다시 승인해야 하므로
+# 개발 설치(build_install_app.sh)와 같은 고정 인증서로 서명한다.
+SIGN_IDENTITY="${SIGN_IDENTITY:-CellCap Dev}"
 
 build_target() {
   local scheme="$1"
@@ -85,47 +87,10 @@ build_target() {
     -scheme "${scheme}" \
     -configuration "${CONFIGURATION}" \
     -derivedDataPath "${DERIVED_DATA_PATH}" \
-    build
-}
-
-build_helper_binary() {
-  local swift_configuration
-
-  swift_configuration="$(echo "${CONFIGURATION}" | tr '[:upper:]' '[:lower:]')"
-  case "${swift_configuration}" in
-    release|debug)
-      ;;
-    *)
-      echo "swift build는 ${CONFIGURATION} 설정을 지원하지 않습니다. Debug 또는 Release만 사용하세요."
-      exit 1
-      ;;
-  esac
-
-  swift build -c "${swift_configuration}" --product "${HELPER_PRODUCT_NAME}"
-}
-
-find_helper_binary() {
-  local -a candidates=(
-    "${ROOT_DIR}/.build/arm64-apple-macosx/${CONFIGURATION:l}/${HELPER_PRODUCT_NAME}"
-    "${ROOT_DIR}/.build/${CONFIGURATION:l}/${HELPER_PRODUCT_NAME}"
-    "${DERIVED_DATA_PATH}/Build/Products/${CONFIGURATION}/${HELPER_PRODUCT_NAME}"
-  )
-
-  local candidate
-  for candidate in "${candidates[@]}"; do
-    if [[ -x "${candidate}" ]]; then
-      echo "${candidate}"
-      return 0
-    fi
-  done
-
-  candidate="$(find "${ROOT_DIR}/.build" -type f -path "*/${CONFIGURATION:l}/${HELPER_PRODUCT_NAME}" 2>/dev/null | head -n 1 || true)"
-  if [[ -n "${candidate}" && -x "${candidate}" ]]; then
-    echo "${candidate}"
-    return 0
-  fi
-
-  return 1
+    CODE_SIGN_STYLE=Manual \
+    CODE_SIGN_IDENTITY="${SIGN_IDENTITY}" \
+    DEVELOPMENT_TEAM= \
+    clean build
 }
 
 regenerate_project() {
@@ -154,34 +119,11 @@ create_component_plist() {
     "${plist_path}"
 }
 
-render_launchd_plist() {
-  local destination="$1"
-  local template_path="${ROOT_DIR}/BuildSupport/dev/${SERVICE_NAME}.plist.template"
-
-  if [[ ! -f "${template_path}" ]]; then
-    echo "launchd plist 템플릿이 없습니다: ${template_path}"
-    exit 1
-  fi
-
-  sed \
-    -e "s#__HELPER_PATH__#${INSTALL_PATH}#g" \
-    -e "s#__STDOUT_PATH__#${STDOUT_LOG}#g" \
-    -e "s#__STDERR_PATH__#${STDERR_LOG}#g" \
-    "${template_path}" > "${destination}"
-}
-
 create_staging_root() {
   local destination_root="$1"
 
-  mkdir -p \
-    "${destination_root}/Applications" \
-    "${destination_root}/Library/PrivilegedHelperTools" \
-    "${destination_root}/Library/LaunchDaemons"
-
+  mkdir -p "${destination_root}/Applications"
   ditto --norsrc --noextattr --noqtn "${APP_BUNDLE}" "${destination_root}${APP_INSTALL_PATH}"
-  install -m 755 "${HELPER_BINARY}" "${destination_root}${INSTALL_PATH}"
-  render_launchd_plist "${destination_root}${PLIST_PATH}"
-  chmod 644 "${destination_root}${PLIST_PATH}"
 
   xattr -cr "${destination_root}" >/dev/null 2>&1 || true
   find "${destination_root}" -name '._*' -delete
@@ -199,7 +141,6 @@ if (( ! SKIP_BUILD )); then
   fi
 
   build_target "AppUI"
-  build_helper_binary
 fi
 
 if [[ ! -d "${APP_BUNDLE}" ]]; then
@@ -207,15 +148,11 @@ if [[ ! -d "${APP_BUNDLE}" ]]; then
   exit 1
 fi
 
-HELPER_BINARY="$(find_helper_binary)" || {
-  echo "helper 바이너리를 찾지 못했습니다."
-  exit 1
-}
-
-if [[ ! -x "${HELPER_BINARY}" ]]; then
-  echo "helper 바이너리를 찾지 못했습니다: ${HELPER_BINARY}"
+if [[ ! -x "${APP_BUNDLE}/${HELPER_BUNDLE_PROGRAM_PATH}" || ! -f "${APP_BUNDLE}/${HELPER_BUNDLE_PLIST_PATH}" ]]; then
+  echo "앱 번들에 helper 또는 LaunchDaemon plist가 없습니다: ${APP_BUNDLE}"
   exit 1
 fi
+codesign --verify --deep --strict "${APP_BUNDLE}"
 
 WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/cellcap-pkg.XXXXXX")"
 trap 'rm -rf "${WORK_DIR}"' EXIT

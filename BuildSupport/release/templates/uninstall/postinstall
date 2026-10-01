@@ -134,12 +134,7 @@ forget_receipts() {
   nohup /bin/zsh -c "sleep 2; pkgutil --forget '${UNINSTALL_PACKAGE_IDENTIFIER}' >/dev/null 2>&1 || true" >/dev/null 2>&1 &
 }
 
-launchctl bootout "system/${SERVICE_NAME}" >/dev/null 2>&1 || true
-launchctl bootout system "${PLIST_PATH}" >/dev/null 2>&1 || true
-
-rm -f "${PLIST_PATH}"
-rm -f "${INSTALL_PATH}"
-rm -rf "${LOG_DIR}"
+stop_helper_and_remove_legacy_install
 restore_charge_limit_baseline || true
 
 remove_cellcap_apps

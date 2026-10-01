@@ -36,9 +36,19 @@ import Foundation
 
 public enum CellCapHelperXPC {
     public static let serviceName = "com.shin.cellcap.helper"
-    public static let contractVersion = "dev-mcl-v2"
-    public static let installedBinaryPath = "/Library/PrivilegedHelperTools/com.shin.cellcap.helper"
-    public static let launchDaemonPlistPath = "/Library/LaunchDaemons/com.shin.cellcap.helper.plist"
+    /// helper가 XPC 연결을 허용하는 앱의 서명 식별자. release_common.sh의 APP_BUNDLE_IDENTIFIER와 같은 값을 유지한다.
+    public static let clientBundleIdentifier = "com.shin.cellcap.app"
+    public static let contractVersion = "dev-smapp-v1"
+    /// SMAppService.daemon(plistName:)으로 등록하는 앱 번들 내장 LaunchDaemon plist 이름과 번들 기준 경로.
+    public static let launchDaemonPlistName = "com.shin.cellcap.helper.plist"
+    public static let bundledLaunchDaemonPlistPath = "Contents/Library/LaunchDaemons/com.shin.cellcap.helper.plist"
+    public static let bundledHelperProgramPath = "Contents/MacOS/CellCapHelper"
+    /// 시스템 설정의 백그라운드 허용 목록에서는 helper가 CellCap 항목 아래로 표시된다.
+    public static let backgroundApprovalGuidance =
+        "시스템 설정 > 일반 > 로그인 항목 및 확장 프로그램 > 백그라운드에서 허용에서 CellCap을 켜세요. 이미 켜져 있으면 껐다가 다시 켜세요."
+    /// sudo 스크립트나 pkg로 설치하던 이전 방식의 경로. 남아 있으면 앱 내장 helper 등록과 충돌하므로 감지에만 쓴다.
+    public static let legacyInstalledBinaryPath = "/Library/PrivilegedHelperTools/com.shin.cellcap.helper"
+    public static let legacyLaunchDaemonPlistPath = "/Library/LaunchDaemons/com.shin.cellcap.helper.plist"
     /// helper가 macOS 충전 한도를 처음 바꾸기 전의 사용자 값을 보관하는 파일. uninstall 스크립트가 이 값으로 복원한다.
     public static let chargeLimitBaselinePath = "/Library/Application Support/CellCap/charge-limit-baseline.plist"
 

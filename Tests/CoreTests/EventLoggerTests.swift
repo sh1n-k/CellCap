@@ -27,8 +27,8 @@ func eventLoggerBuildsDiagnosticsSummaryFromStructuredEvents() async {
             helperInstallStatus: HelperInstallStatus(
                 state: .bootstrapped,
                 serviceName: CellCapHelperXPC.serviceName,
-                helperPath: CellCapHelperXPC.installedBinaryPath,
-                plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+                helperPath: CellCapHelperXPC.bundledHelperProgramPath,
+                plistPath: CellCapHelperXPC.bundledLaunchDaemonPlistPath,
                 helperVersion: CellCapHelperXPC.contractVersion,
                 expectedVersion: CellCapHelperXPC.contractVersion,
                 reason: "launchd에 helper가 등록되어 있습니다."

@@ -15,7 +15,8 @@
 - 정책 계산과 상태 전이는 `Sources/Core/Policy`, `Sources/Core/StateMachine`에 둔다.
 - 런타임 동기화 순서, safety gate, helper 제어 적용은 `Sources/Core/Runtime`에 둔다.
 - XPC 계약, helper 경로, contract version은 `Sources/Shared/XPC`에 둔다.
-- helper 설치/상태 확인 shell 스크립트는 `BuildSupport/dev`에만 둔다.
+- helper 설치/상태 확인 shell 스크립트와 앱 번들 내장 LaunchDaemon plist는 `BuildSupport/dev`에만 둔다.
+- SMAppService 등록/해제와 설치 상태 판단은 `Sources/Core/XPC`에 두고, AppUI는 그 결과만 표시한다.
 
 ## 금지 패턴
 - helper 서비스명, 설치 경로, 로그 경로, contract version 상수를 임의 위치에 추가하지 않는다.
@@ -33,9 +34,12 @@
 
 ## 위험 작업
 - 다음 변경은 별도 검토 대상으로 취급한다.
-- helper 설치/제거 스크립트
+- helper 설치/제거 스크립트와 배포 pkg 스크립트
 - `Sources/Helper/DirectSMCChargeControlBackend.swift`
 - XPC 계약과 DTO
+- `Sources/Helper/ClientCodeSigningRequirement.swift`, `CellCapHelperListener.swift` (root helper 접근 제어)
+- `BuildSupport/generate_xcodeproj.rb`의 helper 서명/번들 설정과 `BuildSupport/dev/LaunchDaemons/` plist
+- helper 바이너리가 바뀌는 변경은 실기기에서 `다시 설치` → 시스템 설정 재허용까지 확인한다.
 
 ## 구현 기본 원칙
 - 기능보다 구조와 책임 경계를 먼저 고정한다.

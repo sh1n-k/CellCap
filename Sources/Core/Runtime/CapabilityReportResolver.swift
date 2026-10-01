@@ -125,7 +125,8 @@ struct CapabilityReportResolver: CapabilityReportResolving {
             helperPath: local.helperPath,
             plistPath: local.plistPath,
             helperVersion: remote.helperVersion,
-            expectedVersion: remote.expectedVersion ?? local.expectedVersion,
+            // helper는 자신이 빌드된 계약 버전을 expected로도 보내므로, 기대 버전은 앱 쪽 값을 우선한다.
+            expectedVersion: local.expectedVersion ?? remote.expectedVersion,
             reason: remote.reason,
             checkedAt: remote.checkedAt
         )

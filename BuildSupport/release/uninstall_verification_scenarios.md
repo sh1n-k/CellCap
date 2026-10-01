@@ -32,14 +32,15 @@ defaults read com.shin.cellcap.app >/tmp/cellcap-defaults-before.txt 2>&1 || tru
 sudo installer -pkg "${INSTALL_PKG}" -target /
 
 test -d /Applications/CellCap.app
-test -f /Library/LaunchDaemons/com.shin.cellcap.helper.plist
-test -x /Library/PrivilegedHelperTools/com.shin.cellcap.helper
-test -d /Library/Logs/CellCap
+test -x /Applications/CellCap.app/Contents/MacOS/CellCapHelper
+test -f /Applications/CellCap.app/Contents/Library/LaunchDaemons/com.shin.cellcap.helper.plist
 pkgutil --pkgs | grep '^com\.shin\.cellcap\.pkg$'
 
 open /Applications/CellCap.app
 ```
 
+앱의 고급 정보에서 helper를 설치하고 시스템 설정에서 허용한다. 충전 제어를 켜서 원래 충전 한도 기록
+(`/Library/Application Support/CellCap/charge-limit-baseline.plist`)이 생긴 상태로 둔다.
 앱에서 로그인 자동 실행을 켠 상태로 둔다.
 
 ```bash
@@ -53,17 +54,16 @@ sleep 5
 기대 결과:
 
 ```bash
-test ! -e /Library/LaunchDaemons/com.shin.cellcap.helper.plist
-test ! -e /Library/PrivilegedHelperTools/com.shin.cellcap.helper
 test ! -e /Applications/CellCap.app
-test ! -e /Library/Logs/CellCap
+test ! -e "/Library/Application Support/CellCap/charge-limit-baseline.plist"
 ! pkgutil --pkgs | grep -q '^com\.shin\.cellcap\.pkg$'
 ! pkgutil --pkgs | grep -q '^com\.shin\.cellcap\.uninstall$'
 ! defaults read com.shin.cellcap.app >/dev/null 2>&1
 ! launchctl print system/com.shin.cellcap.helper >/dev/null 2>&1
 ```
 
-시스템 설정의 로그인 항목 목록에서 CellCap이 남아 있지 않아야 한다.
+시스템 설정의 로그인 항목과 백그라운드 허용 목록에서 CellCap이 남아 있지 않아야 하고,
+시스템 설정 > 배터리의 충전 한도가 CellCap 설치 전 값으로 돌아와야 한다.
 
 ## 시나리오 2: idempotency
 
@@ -73,10 +73,8 @@ test ! -e /Library/Logs/CellCap
 sudo installer -pkg "${UNINSTALL_PKG}" -target /
 sleep 5
 
-test ! -e /Library/LaunchDaemons/com.shin.cellcap.helper.plist
-test ! -e /Library/PrivilegedHelperTools/com.shin.cellcap.helper
 test ! -e /Applications/CellCap.app
-test ! -e /Library/Logs/CellCap
+test ! -e "/Library/Application Support/CellCap/charge-limit-baseline.plist"
 ! pkgutil --pkgs | grep -q '^com\.shin\.cellcap\.pkg$'
 ! pkgutil --pkgs | grep -q '^com\.shin\.cellcap\.uninstall$'
 ! defaults read com.shin.cellcap.app >/dev/null 2>&1
@@ -151,10 +149,9 @@ sfltool dumpbtm | grep -i CellCap || true
 | 항목 | 확인 방법 | 통과 기준 |
 | --- | --- | --- |
 | helper launchd 등록 | `launchctl print system/com.shin.cellcap.helper` | 명령이 실패하거나 서비스를 찾지 못한다. |
-| helper plist | `test ! -e /Library/LaunchDaemons/com.shin.cellcap.helper.plist` | 파일이 없다. |
-| helper binary | `test ! -e /Library/PrivilegedHelperTools/com.shin.cellcap.helper` | 파일이 없다. |
+| 충전 한도 복원 | `test ! -e "/Library/Application Support/CellCap/charge-limit-baseline.plist"`, 시스템 설정 > 배터리 | 기록 파일이 없고 한도가 설치 전 값이다. |
+| 백그라운드 항목 | `sfltool dumpbtm \| grep -A6 'Name: CellCapHelper'` | 매칭 결과가 없다. |
 | 기본 앱 위치 | `test ! -e /Applications/CellCap.app` | 앱 번들이 없다. |
-| helper 로그 | `test ! -e /Library/Logs/CellCap` | 로그 디렉터리가 없다. |
 | install receipt | `pkgutil --pkgs \| grep '^com\.shin\.cellcap\.pkg$'` | 매칭 결과가 없다. |
 | uninstall receipt | `pkgutil --pkgs \| grep '^com\.shin\.cellcap\.uninstall$'` | 매칭 결과가 없다. |
 | UserDefaults | `defaults read com.shin.cellcap.app` | domain을 읽을 수 없다. |

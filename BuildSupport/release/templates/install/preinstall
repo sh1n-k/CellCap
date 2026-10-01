@@ -4,5 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "${SCRIPT_DIR}/helper_common.sh"
 
-launchctl bootout "system/${SERVICE_NAME}" >/dev/null 2>&1 || true
-launchctl bootout system "${PLIST_PATH}" >/dev/null 2>&1 || true
+# 앱 교체 전에 실행 중인 helper를 내리고 이전 방식 설치를 정리한다.
+# 새 helper는 사용자가 앱의 고급 정보에서 설치/승인하므로, 그 전까지는 충전 한도를 원래 값으로 둔다.
+stop_helper_and_remove_legacy_install
+restore_charge_limit_baseline || true

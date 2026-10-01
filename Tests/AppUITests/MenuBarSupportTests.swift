@@ -155,8 +155,8 @@ func controlAvailabilityResolverDisablesControlWhenHelperInstallIsNotReady() {
         helperInstallStatus: HelperInstallStatus(
             state: .notInstalled,
             serviceName: CellCapHelperXPC.serviceName,
-            helperPath: CellCapHelperXPC.installedBinaryPath,
-            plistPath: CellCapHelperXPC.launchDaemonPlistPath,
+            helperPath: CellCapHelperXPC.bundledHelperProgramPath,
+            plistPath: CellCapHelperXPC.bundledLaunchDaemonPlistPath,
             expectedVersion: CellCapHelperXPC.contractVersion,
             reason: "helper 미설치"
         )
@@ -392,4 +392,88 @@ private actor MockRuntimeService: AppRuntimeServicing {
     func recentDiagnosticEvents(limit: Int?) async -> [DiagnosticEvent] {
         []
     }
+}
+
+@MainActor
+@Test
+func viewModelOffersHelperActionsByInstallState() {
+    func actions(for state: HelperInstallState, manager: (any HelperServiceManaging)? = StubHelperServiceManager()) -> [MenuBarViewModel.HelperAction] {
+        MenuBarViewModel(
+            appState: AppState(
+                battery: nil,
+                policy: ChargePolicy(),
+                controllerStatus: ControllerStatus(mode: .readOnly, helperConnection: .disconnected, isChargingEnabled: nil),
+                chargeState: .suspended
+            ),
+            capabilityReport: CapabilityReport(
+                statuses: [],
+                recommendedControllerMode: .readOnly,
+                helperInstallStatus: HelperInstallStatus(
+                    state: state,
+                    serviceName: CellCapHelperXPC.serviceName,
+                    helperPath: CellCapHelperXPC.bundledHelperProgramPath,
+                    plistPath: CellCapHelperXPC.bundledLaunchDaemonPlistPath,
+                    reason: "test"
+                )
+            ),
+            helperServiceManager: manager
+        ).availableHelperActions
+    }
+
+    #expect(actions(for: .notInstalled) == [.install])
+    #expect(actions(for: .requiresApproval) == [.openApprovalSettings, .remove])
+    #expect(actions(for: .legacyInstalled).isEmpty)
+    #expect(actions(for: .installedButNotBootstrapped) == [.reinstall, .remove])
+    #expect(actions(for: .bootstrapped) == [.remove])
+    // 앱 번들 밖 실행(swift run)에서는 manager가 없으므로 설치 기능을 열지 않는다.
+    #expect(actions(for: .notInstalled, manager: nil).isEmpty)
+}
+
+@MainActor
+@Test
+func viewModelAsksBeforeForcedHelperRemoval() async {
+    let manager = StubHelperServiceManager(removeResults: [.releaseFailed("해제 실패"), .completed("helper를 제거했습니다.")])
+    let viewModel = MenuBarViewModel(
+        appState: AppState(
+            battery: nil,
+            policy: ChargePolicy(),
+            controllerStatus: ControllerStatus(mode: .readOnly, helperConnection: .connected, isChargingEnabled: nil),
+            chargeState: .suspended
+        ),
+        helperServiceManager: manager
+    )
+
+    viewModel.performHelperAction(.remove)
+    for _ in 0..<50 where !viewModel.isForceHelperRemovalConfirmationPresented {
+        try? await Task.sleep(for: .milliseconds(10))
+    }
+    #expect(viewModel.isForceHelperRemovalConfirmationPresented)
+    #expect(viewModel.helperActionMessage == "해제 실패")
+
+    viewModel.confirmForcedHelperRemoval()
+    for _ in 0..<50 where viewModel.helperActionMessage != "helper를 제거했습니다." {
+        try? await Task.sleep(for: .milliseconds(10))
+    }
+    #expect(viewModel.helperActionMessage == "helper를 제거했습니다.")
+    #expect(await manager.removeForceFlags() == [false, true])
+}
+
+private actor StubHelperServiceManager: HelperServiceManaging {
+    private var removeResults: [HelperServiceActionResult]
+    private var forceFlags: [Bool] = []
+
+    init(removeResults: [HelperServiceActionResult] = []) {
+        self.removeResults = removeResults
+    }
+
+    func install() async -> HelperServiceActionResult { .completed("installed") }
+
+    func remove(force: Bool) async -> HelperServiceActionResult {
+        forceFlags.append(force)
+        return removeResults.isEmpty ? .completed("removed") : removeResults.removeFirst()
+    }
+
+    nonisolated func openApprovalSettings() {}
+
+    func removeForceFlags() -> [Bool] { forceFlags }
 }
