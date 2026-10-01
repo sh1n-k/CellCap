@@ -46,7 +46,6 @@
 		5884512493C796097E27F2CF /* CellCapSMCBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = B3F2549AB5DA2DEA42DCEE08 /* CellCapSMCBridge.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5B70F97021A7384C4935E320 /* SelfTestPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB04F5E641A81F6606AA6813 /* SelfTestPolicy.swift */; };
 		5E48920DDB1FEA484402E406 /* ChargeControlBackendSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20293E96B421EE83C970419F /* ChargeControlBackendSelector.swift */; };
-		5E98B0151201E780ADE0053C /* MockChargeControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D11726E4D2B241B5AF856E5 /* MockChargeControllerTests.swift */; };
 		632DA746CCFB4A5404B7A1E0 /* DiagnosticsSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE601B4CFAC8DBF6C61E7B4 /* DiagnosticsSummary.swift */; };
 		70815456B0AEC5370EB19D6B /* ControllerCommandApplier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DF25B8813BF4D81718E77F2 /* ControllerCommandApplier.swift */; };
 		70A9F2C126DB8565DFAA5625 /* EventLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E799A11CA2C158582801541 /* EventLogger.swift */; };
@@ -77,7 +76,6 @@
 		C67EA685376CB3430C039A98 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 895B4872E221FE0C0B10D945 /* RootView.swift */; };
 		C69F284CBC9322CF06689991 /* HelperInstallChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7A68536C16F056FBE428BC /* HelperInstallChecker.swift */; };
 		CF23FD02BD20B2B73D731205 /* HelperServiceManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C21F44414C2C89DE764E124 /* HelperServiceManagerTests.swift */; };
-		D04DEB0B18B095FAA8657111 /* MockChargeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C60DCEDA96527844A1BEC5CC /* MockChargeController.swift */; };
 		D160252EFC56249243951B01 /* SystemSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5597FBA9CBEDCE3DC71C4ED /* SystemSupport.framework */; };
 		D6EF95AE162397B1325544C3 /* ControlAvailabilityResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 410D734A2CFCDD5DB16496B8 /* ControlAvailabilityResolver.swift */; };
 		D79D2F402951F94CED1BDD63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CDFA2D7747B4E772D03415B5 /* Assets.xcassets */; };
@@ -245,13 +243,11 @@
 		1600047DB7E48A3E3C375C83 /* ManagedChargeLimitBackend.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ManagedChargeLimitBackend.swift; sourceTree = "<group>"; };
 		18E04313C81EBDF1E6B9D419 /* AppState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppState.swift; path = Models/AppState.swift; sourceTree = "<group>"; };
 		1A92D77544A0A86A2CAA439F /* ChargePolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargePolicyTests.swift; sourceTree = "<group>"; };
-		1B0CDF1AEB8890E4194D784A /* 01_기획서.md */ = {isa = PBXFileReference; includeInIndex = 1; name = "01_기획서.md"; path = "../01_기획서.md"; sourceTree = "<group>"; };
 		1B5B3A35D466F5527FAD198F /* HelperServiceManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HelperServiceManager.swift; path = XPC/HelperServiceManager.swift; sourceTree = "<group>"; };
 		1DF2584630487BAC02184322 /* TestSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TestSupport.swift; sourceTree = "<group>"; };
 		20293E96B421EE83C970419F /* ChargeControlBackendSelector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargeControlBackendSelector.swift; sourceTree = "<group>"; };
 		21B49F6AA4B1901F2A5AE024 /* DirectSMCChargeControlBackendTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DirectSMCChargeControlBackendTests.swift; sourceTree = "<group>"; };
 		24B12AC86A39D5382298734D /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; name = README.md; path = ../README.md; sourceTree = "<group>"; };
-		25218807C90261157041A7E9 /* 02_Prompts.md */ = {isa = PBXFileReference; includeInIndex = 1; name = 02_Prompts.md; path = ../02_Prompts.md; sourceTree = "<group>"; };
 		260A9EE3329A8E8AA763069A /* HelperXPCDTOsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelperXPCDTOsTests.swift; sourceTree = "<group>"; };
 		269A998E79ECA64923DA3630 /* CoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		277138D2AC50FE2E14D7FC7A /* CapabilityStatusListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CapabilityStatusListView.swift; path = Views/CapabilityStatusListView.swift; sourceTree = "<group>"; };
@@ -276,11 +272,9 @@
 		61D27113B259F7832D104609 /* PowerSourceNotificationObserver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PowerSourceNotificationObserver.swift; sourceTree = "<group>"; };
 		6C7762E85277F5B81C35F090 /* MenuBarLabelView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MenuBarLabelView.swift; path = Views/MenuBarLabelView.swift; sourceTree = "<group>"; };
 		6CD2B4B1DE5D1B155C7D37D7 /* main.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		6D11726E4D2B241B5AF856E5 /* MockChargeControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MockChargeControllerTests.swift; sourceTree = "<group>"; };
 		6E9553E13B83ECC6A9043D7D /* ClientCodeSigningRequirementTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClientCodeSigningRequirementTests.swift; sourceTree = "<group>"; };
 		78FDA1760DC50893F31C30CF /* DirectSMCChargeControlBackend.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DirectSMCChargeControlBackend.swift; sourceTree = "<group>"; };
 		79771DCC8F26F8407173C679 /* CapabilityReportResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CapabilityReportResolver.swift; path = Runtime/CapabilityReportResolver.swift; sourceTree = "<group>"; };
-		7A29074FC027CB7385EA498F /* 03_공개API_충전제어_검토.md */ = {isa = PBXFileReference; includeInIndex = 1; name = "03_공개API_충전제어_검토.md"; path = "../03_공개API_충전제어_검토.md"; sourceTree = "<group>"; };
 		7C92EA6D3AF308A67CAC6FE8 /* BatterySnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BatterySnapshot.swift; path = Models/BatterySnapshot.swift; sourceTree = "<group>"; };
 		87B1A0DE235A6DFC1DFB595E /* AppRuntimeTrigger+Debug.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "AppRuntimeTrigger+Debug.swift"; path = "Runtime/AppRuntimeTrigger+Debug.swift"; sourceTree = "<group>"; };
 		895B4872E221FE0C0B10D945 /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -305,7 +299,6 @@
 		BAF3EA1AE0CEF1B468B73D1E /* UninstallCleanupCommand.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UninstallCleanupCommand.swift; sourceTree = "<group>"; };
 		BF476152F87A26F5F4A240ED /* ChargeStateMachineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargeStateMachineTests.swift; sourceTree = "<group>"; };
 		C4792425996679CE08B9F57A /* CapabilityChecker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CapabilityChecker.swift; sourceTree = "<group>"; };
-		C60DCEDA96527844A1BEC5CC /* MockChargeController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MockChargeController.swift; path = Controllers/MockChargeController.swift; sourceTree = "<group>"; };
 		C75A0EF2B0BBEEE130B5BA0E /* HelperInstallStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HelperInstallStatus.swift; path = Models/HelperInstallStatus.swift; sourceTree = "<group>"; };
 		C784BA64D02FD510BFE2D02C /* ChargePolicyStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargePolicyStoreTests.swift; sourceTree = "<group>"; };
 		CB04F5E641A81F6606AA6813 /* SelfTestPolicy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SelfTestPolicy.swift; path = Runtime/SelfTestPolicy.swift; sourceTree = "<group>"; };
@@ -465,7 +458,6 @@
 				5A7A68536C16F056FBE428BC /* HelperInstallChecker.swift */,
 				1B5B3A35D466F5527FAD198F /* HelperServiceManager.swift */,
 				CB3E9515A25A82265AE48102 /* HelperXPCClient.swift */,
-				C60DCEDA96527844A1BEC5CC /* MockChargeController.swift */,
 				4D9F45F15AF7E5B7307CB01D /* PolicyEngine.swift */,
 				B676462CB42ECCD9265F1099 /* RuntimeSafetyGate.swift */,
 				CB04F5E641A81F6606AA6813 /* SelfTestPolicy.swift */,
@@ -523,9 +515,6 @@
 		6234C569EA9AFC7AAF9FB655 /* Docs */ = {
 			isa = PBXGroup;
 			children = (
-				1B0CDF1AEB8890E4194D784A /* 01_기획서.md */,
-				25218807C90261157041A7E9 /* 02_Prompts.md */,
-				7A29074FC027CB7385EA498F /* 03_공개API_충전제어_검토.md */,
 				24B12AC86A39D5382298734D /* README.md */,
 			);
 			name = Docs;
@@ -583,7 +572,6 @@
 				2C21F44414C2C89DE764E124 /* HelperServiceManagerTests.swift */,
 				260A9EE3329A8E8AA763069A /* HelperXPCDTOsTests.swift */,
 				F0804E3947BB46F218C7D928 /* ManagedChargeLimitBackendTests.swift */,
-				6D11726E4D2B241B5AF856E5 /* MockChargeControllerTests.swift */,
 				333C92A78C893D19523125F6 /* PolicyEngineTests.swift */,
 				1DF2584630487BAC02184322 /* TestSupport.swift */,
 				E068E9B10E3E22B29BDCD12E /* XPCChargeControllerTests.swift */,
@@ -902,7 +890,6 @@
 				CF23FD02BD20B2B73D731205 /* HelperServiceManagerTests.swift in Sources */,
 				17F3B5D936994CB29E06296C /* HelperXPCDTOsTests.swift in Sources */,
 				0099B3B6222B78EBB611A584 /* ManagedChargeLimitBackendTests.swift in Sources */,
-				5E98B0151201E780ADE0053C /* MockChargeControllerTests.swift in Sources */,
 				7D03D466279D0E813A521C17 /* PolicyEngineTests.swift in Sources */,
 				49C16570D0FF1C9DFF960FA2 /* TestSupport.swift in Sources */,
 				DCE48E0A0875F184845533D0 /* XPCChargeControllerTests.swift in Sources */,
@@ -926,7 +913,6 @@
 				C69F284CBC9322CF06689991 /* HelperInstallChecker.swift in Sources */,
 				49E4162283BBEE4CDD902D5D /* HelperServiceManager.swift in Sources */,
 				B36A6E6727E692D1F13C5EB7 /* HelperXPCClient.swift in Sources */,
-				D04DEB0B18B095FAA8657111 /* MockChargeController.swift in Sources */,
 				091E2618B2BBEA0DE9D61927 /* PolicyEngine.swift in Sources */,
 				8384B4EC672922D79DF87828 /* RuntimeSafetyGate.swift in Sources */,
 				5B70F97021A7384C4935E320 /* SelfTestPolicy.swift in Sources */,

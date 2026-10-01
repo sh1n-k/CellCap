@@ -132,22 +132,6 @@ private final class CountingCommandExecutor: CommandExecuting, @unchecked Sendab
     }
 }
 
-private struct MockFileSystem: FileSystemInspecting {
-    let existingFiles: Set<String>
-
-    init(existingFiles: [String]) {
-        self.existingFiles = Set(existingFiles)
-    }
-
-    func fileExists(atPath path: String) -> Bool {
-        existingFiles.contains(path)
-    }
-
-    func isExecutableFile(atPath path: String) -> Bool {
-        existingFiles.contains(path)
-    }
-}
-
 private struct MockCommandExecutor: CommandExecuting {
     let result: CommandExecutionResult
 

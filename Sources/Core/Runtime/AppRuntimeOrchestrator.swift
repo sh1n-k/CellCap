@@ -53,10 +53,10 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
     private let policyEngine: PolicyEngine
     private let dateProvider: any DateProviding
     private let eventLogger: any EventLogging
-    private let capabilityReportResolver: any CapabilityReportResolving
-    private let runtimeSafetyGate: any RuntimeSafetyGating
-    private let controllerCommandApplier: any ControllerCommandApplying
-    private let selfTestPolicy: any SelfTestPolicying
+    private let capabilityReportResolver: CapabilityReportResolver
+    private let runtimeSafetyGate: RuntimeSafetyGate
+    private let controllerCommandApplier: ControllerCommandApplier
+    private let selfTestPolicy: SelfTestPolicy
 
     private var currentUpdate: AppRuntimeUpdate
     private var latestSystemSnapshot: BatterySnapshot?

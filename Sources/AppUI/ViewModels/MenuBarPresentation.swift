@@ -1,33 +1,7 @@
 import Foundation
 import Shared
 
-protocol MenuBarPresenting {
-    var batteryPercentText: String { get }
-    var chargeStateTitle: String { get }
-    var summarySentence: String { get }
-    var powerStatusText: String { get }
-    var helperStatusText: String { get }
-    var controllerModeLabel: String { get }
-    var helperInstallStateText: String { get }
-    var helperInstallReasonText: String? { get }
-    var compactHelperSummaryText: String { get }
-    var temporaryOverrideSummaryText: String { get }
-    var temporaryOverrideRemainingText: String? { get }
-    var temporaryOverrideProgress: Double? { get }
-    var advancedSectionStatusText: String { get }
-    var controlNoticeTitle: String { get }
-    var temporaryOverrideNoticeTitle: String { get }
-    var isReadOnlyPresentation: Bool { get }
-    var selectedOverrideDurationLabel: String { get }
-    var menuBarSymbolName: String { get }
-    var menuBarAccessibilityLabel: String { get }
-    var diagnosticsSummaryText: String { get }
-    var capabilityCountSummary: String { get }
-    func capabilityLabel(for support: CapabilitySupport) -> String
-    func capabilityTitle(for key: CapabilityKey) -> String
-}
-
-struct MenuBarPresentation: MenuBarPresenting {
+struct MenuBarPresentation {
     let appState: AppState
     let capabilityReport: CapabilityReport
     let diagnosticsSummary: DiagnosticsSummary?
@@ -399,12 +373,4 @@ struct MenuBarPresentation: MenuBarPresenting {
     private var isTemporaryOverrideActive: Bool {
         appState.policy.isTemporaryOverrideActive(at: now)
     }
-
-    private static let timeFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateStyle = .none
-        formatter.timeStyle = .short
-        return formatter
-    }()
 }

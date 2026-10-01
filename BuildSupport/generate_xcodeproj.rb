@@ -21,9 +21,6 @@ sources_group = project.main_group.new_group("Sources", "Sources")
 tests_group = project.main_group.new_group("Tests", "Tests")
 docs_group = project.main_group.new_group("Docs")
 docs_group.new_file("../README.md")
-docs_group.new_file("../01_기획서.md")
-docs_group.new_file("../02_Prompts.md")
-docs_group.new_file("../03_공개API_충전제어_검토.md")
 
 def configure_build_settings(target, bundle_id: nil, generate_info_plist: true, enable_code_signing: false)
   target.build_configurations.each do |configuration|

@@ -18,21 +18,13 @@ public struct ChargeStateResolution: Sendable, Equatable {
 }
 
 public struct ChargeStateResolver: Sendable {
-    public typealias SnapshotSelectionHook = @Sendable ([BatterySnapshot]) -> BatterySnapshot?
-
-    private let selectSnapshot: SnapshotSelectionHook
-
-    public init(
-        selectSnapshot: @escaping SnapshotSelectionHook = Self.selectPreferredSnapshot(from:)
-    ) {
-        self.selectSnapshot = selectSnapshot
-    }
+    public init() {}
 
     public func resolve(
         context: ChargeStateContext,
         effectivePolicy: EffectiveChargePolicy
     ) -> ChargeStateResolution {
-        let selectedBattery = selectSnapshot(context.snapshotCandidates)
+        let selectedBattery = Self.selectPreferredSnapshot(from: context.snapshotCandidates)
 
         guard let battery = selectedBattery, battery.isBatteryPresent else {
             return ChargeStateResolution(

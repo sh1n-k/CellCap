@@ -2,16 +2,7 @@ import Foundation
 import Shared
 import SystemSupport
 
-protocol CapabilityReportResolving: Sendable {
-    func resolve(
-        snapshot: BatterySnapshot?,
-        controllerStatus: ControllerStatus,
-        trigger: AppRuntimeTrigger,
-        helperInstallStatus: HelperInstallStatus
-    ) async -> CapabilityReport
-}
-
-struct CapabilityReportResolver: CapabilityReportResolving {
+struct CapabilityReportResolver: Sendable {
     private let capabilityChecker: any CapabilityChecking
     private let capabilityProber: (any HelperCapabilityProbing)?
     private let eventLogger: any EventLogging

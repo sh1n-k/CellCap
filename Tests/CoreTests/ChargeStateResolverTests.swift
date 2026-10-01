@@ -158,51 +158,6 @@ func resolverPrefersLatestSnapshotWithinSameSourceRank() {
 }
 
 @Test
-func resolverCanUseCustomSnapshotHook() {
-    let resolver = ChargeStateResolver { snapshots in
-        snapshots.first { $0.source == .cached }
-    }
-    let effectivePolicy = EffectiveChargePolicy(
-        upperLimit: 80,
-        rechargeThreshold: 75,
-        temporaryOverrideUntil: nil,
-        isTemporaryOverrideActive: false,
-        isControlEnabled: true
-    )
-    let systemSnapshot = BatterySnapshot(
-        chargePercent: 82,
-        isPowerConnected: true,
-        isCharging: false,
-        observedAt: Date(timeIntervalSince1970: 100),
-        source: .system
-    )
-    let cachedSnapshot = BatterySnapshot(
-        chargePercent: 60,
-        isPowerConnected: true,
-        isCharging: false,
-        observedAt: Date(timeIntervalSince1970: 50),
-        source: .cached
-    )
-
-    let resolution = resolver.resolve(
-        context: ChargeStateContext(
-            battery: nil,
-            batterySnapshots: [systemSnapshot, cachedSnapshot],
-            policy: ChargePolicy(),
-            controllerStatus: ControllerStatus(
-                mode: .fullControl,
-                helperConnection: .connected
-            ),
-            now: Date(timeIntervalSince1970: 1_000)
-        ),
-        effectivePolicy: effectivePolicy
-    )
-
-    #expect(resolution.selectedBattery == cachedSnapshot)
-    #expect(resolution.state == .charging)
-}
-
-@Test
 func resolverSuspendsWhenBatteryIsMissing() {
     let resolver = ChargeStateResolver()
     let effectivePolicy = EffectiveChargePolicy(

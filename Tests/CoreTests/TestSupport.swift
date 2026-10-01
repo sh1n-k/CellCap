@@ -139,3 +139,84 @@ final class MockHelperDaemon: HelperDaemonServicing, @unchecked Sendable {
         lock.withLock { calls }
     }
 }
+
+actor MockChargeController: ChargeController {
+    enum Command: Equatable, Sendable {
+        case setChargingEnabled(Bool)
+        case setTemporaryOverride(Date?)
+        case releaseControl
+    }
+
+    private var status: ControllerStatus
+    private let selfTestResult: ControllerSelfTestResult
+    private var commands: [Command] = []
+    private var selfTestRequests = 0
+
+    init(
+        initialStatus: ControllerStatus = ControllerStatus(
+            mode: .readOnly,
+            helperConnection: .unavailable,
+            isChargingEnabled: nil,
+            temporaryOverrideUntil: nil,
+            lastErrorDescription: "Mock controller not configured."
+        ),
+        selfTestResult: ControllerSelfTestResult = ControllerSelfTestResult(
+            outcome: .degraded,
+            message: "Mock self-test placeholder."
+        )
+    ) {
+        self.status = initialStatus
+        self.selfTestResult = selfTestResult
+    }
+
+    func setChargingEnabled(_ enabled: Bool) async throws {
+        commands.append(.setChargingEnabled(enabled))
+        status.isChargingEnabled = enabled
+        status.lastErrorDescription = nil
+    }
+
+    func setTemporaryOverride(until: Date?) async throws {
+        commands.append(.setTemporaryOverride(until))
+        status.temporaryOverrideUntil = until
+        status.lastErrorDescription = nil
+    }
+
+    func releaseControl() async throws {
+        commands.append(.releaseControl)
+        status.isChargingEnabled = true
+        status.lastErrorDescription = nil
+    }
+
+    func getControllerStatus() async -> ControllerStatus {
+        status
+    }
+
+    func selfTest() async -> ControllerSelfTestResult {
+        selfTestRequests += 1
+        return selfTestResult
+    }
+
+    func recordedCommands() -> [Command] {
+        commands
+    }
+
+    func selfTestRequestCount() -> Int {
+        selfTestRequests
+    }
+}
+
+struct MockFileSystem: FileSystemInspecting {
+    let existingFiles: Set<String>
+
+    init(existingFiles: [String]) {
+        self.existingFiles = Set(existingFiles)
+    }
+
+    func fileExists(atPath path: String) -> Bool {
+        existingFiles.contains(path)
+    }
+
+    func isExecutableFile(atPath path: String) -> Bool {
+        existingFiles.contains(path)
+    }
+}

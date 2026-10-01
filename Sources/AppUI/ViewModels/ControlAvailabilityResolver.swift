@@ -1,28 +1,6 @@
 import Shared
 
-protocol ControlAvailabilityResolving {
-    func effectiveHelperInstallStatus(
-        appState: AppState,
-        capabilityReport: CapabilityReport
-    ) -> HelperInstallStatus?
-
-    func controlAvailability(
-        appState: AppState,
-        capabilityReport: CapabilityReport
-    ) -> MenuBarViewModel.ControlAvailability
-
-    func temporaryOverrideAvailability(
-        appState: AppState,
-        capabilityReport: CapabilityReport
-    ) -> MenuBarViewModel.ControlAvailability
-
-    func shouldAutoExpandAdvancedSection(
-        appState: AppState,
-        capabilityReport: CapabilityReport
-    ) -> Bool
-}
-
-struct ControlAvailabilityResolver: ControlAvailabilityResolving {
+struct ControlAvailabilityResolver {
     func effectiveHelperInstallStatus(
         appState: AppState,
         capabilityReport: CapabilityReport

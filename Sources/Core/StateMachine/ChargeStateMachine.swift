@@ -56,23 +56,3 @@ public struct ChargeTransition: Sendable, Equatable {
         self.reason = reason
     }
 }
-
-public struct ChargeStateMachine: Sendable {
-    private let policyEngine: PolicyEngine
-
-    public init(policyEngine: PolicyEngine = PolicyEngine()) {
-        self.policyEngine = policyEngine
-    }
-
-    public func transition(
-        from previous: ChargeState,
-        context: ChargeStateContext
-    ) -> ChargeTransition {
-        policyEngine.evaluate(context: context, from: previous).transition
-    }
-
-    public func resolve(context: ChargeStateContext) -> (state: ChargeState, reason: ChargeTransitionReason) {
-        let evaluation = policyEngine.evaluate(context: context, from: .waitingForRecharge)
-        return (evaluation.resolution.state, evaluation.resolution.reason)
-    }
-}

@@ -1,15 +1,7 @@
 import Foundation
 import Shared
 
-protocol SelfTestPolicying: Sendable {
-    func performIfNeeded(
-        trigger: AppRuntimeTrigger,
-        helperInstallStatus: HelperInstallStatus,
-        controllerStatus: ControllerStatus
-    ) async -> ControllerSelfTestResult?
-}
-
-struct SelfTestPolicy: SelfTestPolicying {
+struct SelfTestPolicy: Sendable {
     private let controller: any ChargeController
     private let eventLogger: any EventLogging
 

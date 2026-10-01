@@ -122,8 +122,4 @@ extension MenuBarViewModel {
     static func previewErrorReadOnly() -> MenuBarViewModel {
         MenuBarPreviewFactory.makeErrorReadOnly()
     }
-
-    static func previewMonitoringOnly() -> MenuBarViewModel {
-        MenuBarPreviewFactory.makeMonitoringOnly()
-    }
 }

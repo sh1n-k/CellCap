@@ -1,16 +1,7 @@
 import Foundation
 import Shared
 
-protocol RuntimeSafetyGating: Sendable {
-    func apply(
-        controllerStatus: ControllerStatus,
-        capabilityReport: CapabilityReport,
-        selfTestResult: ControllerSelfTestResult?,
-        now: Date
-    ) -> (controllerStatus: ControllerStatus, capabilityReport: CapabilityReport)
-}
-
-struct RuntimeSafetyGate: RuntimeSafetyGating {
+struct RuntimeSafetyGate: Sendable {
     func apply(
         controllerStatus: ControllerStatus,
         capabilityReport: CapabilityReport,

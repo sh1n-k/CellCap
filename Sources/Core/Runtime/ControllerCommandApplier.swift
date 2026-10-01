@@ -1,16 +1,7 @@
 import Foundation
 import Shared
 
-protocol ControllerCommandApplying: Sendable {
-    func applyIfNeeded(
-        controllerStatus: ControllerStatus,
-        capabilityReport: CapabilityReport,
-        evaluation: PolicyEvaluation,
-        now: Date
-    ) async -> ControllerStatus
-}
-
-actor ControllerCommandApplier: ControllerCommandApplying {
+actor ControllerCommandApplier {
     private let controller: any ChargeController
     private let eventLogger: any EventLogging
     private var commandInFlight = false

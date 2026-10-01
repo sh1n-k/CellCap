@@ -5,7 +5,7 @@ import Testing
 
 @Test
 func stateMachinePrefersReadOnlyWhenHelperFails() {
-    let machine = ChargeStateMachine()
+    let engine = PolicyEngine()
     let context = ChargeStateContext(
         battery: BatterySnapshot(chargePercent: 70, isPowerConnected: true, isCharging: false),
         policy: ChargePolicy(),
@@ -17,14 +17,14 @@ func stateMachinePrefersReadOnlyWhenHelperFails() {
         now: Date(timeIntervalSince1970: 1_000)
     )
 
-    let result = machine.resolve(context: context)
+    let result = engine.evaluate(context: context, from: .waitingForRecharge).resolution
     #expect(result.state == ChargeState.errorReadOnly)
     #expect(result.reason == ChargeTransitionReason.helperFailure)
 }
 
 @Test
 func stateMachineReturnsTemporaryOverrideBeforeThresholdRules() {
-    let machine = ChargeStateMachine()
+    let engine = PolicyEngine()
     let context = ChargeStateContext(
         battery: BatterySnapshot(chargePercent: 81, isPowerConnected: true, isCharging: true),
         policy: ChargePolicy(
@@ -39,14 +39,14 @@ func stateMachineReturnsTemporaryOverrideBeforeThresholdRules() {
         now: Date(timeIntervalSince1970: 1_500)
     )
 
-    let result = machine.resolve(context: context)
+    let result = engine.evaluate(context: context, from: .waitingForRecharge).resolution
     #expect(result.state == ChargeState.temporaryOverride)
     #expect(result.reason == ChargeTransitionReason.temporaryOverride)
 }
 
 @Test
 func stateMachineReturnsChargingBelowRechargeThreshold() {
-    let machine = ChargeStateMachine()
+    let engine = PolicyEngine()
     let context = ChargeStateContext(
         battery: BatterySnapshot(chargePercent: 74, isPowerConnected: true, isCharging: false),
         policy: ChargePolicy(upperLimit: 80, rechargeThreshold: 75),
@@ -57,14 +57,14 @@ func stateMachineReturnsChargingBelowRechargeThreshold() {
         now: Date(timeIntervalSince1970: 1_000)
     )
 
-    let transition = machine.transition(from: ChargeState.waitingForRecharge, context: context)
+    let transition = engine.evaluate(context: context, from: ChargeState.waitingForRecharge).transition
     #expect(transition.current == ChargeState.charging)
     #expect(transition.reason == ChargeTransitionReason.belowRechargeThreshold)
 }
 
 @Test
 func stateMachineKeepsChargingAfterCrossingRechargeThresholdUntilUpperLimit() {
-    let machine = ChargeStateMachine()
+    let engine = PolicyEngine()
     let context = ChargeStateContext(
         battery: BatterySnapshot(chargePercent: 56, isPowerConnected: true, isCharging: true),
         policy: ChargePolicy(upperLimit: 60, rechargeThreshold: 55),
@@ -76,14 +76,14 @@ func stateMachineKeepsChargingAfterCrossingRechargeThresholdUntilUpperLimit() {
         now: Date(timeIntervalSince1970: 1_000)
     )
 
-    let transition = machine.transition(from: .charging, context: context)
+    let transition = engine.evaluate(context: context, from: .charging).transition
     #expect(transition.current == .charging)
     #expect(transition.reason == .belowRechargeThreshold)
 }
 
 @Test
 func stateMachineWaitsWithinBandAfterHoldingAtLimit() {
-    let machine = ChargeStateMachine()
+    let engine = PolicyEngine()
     let context = ChargeStateContext(
         battery: BatterySnapshot(chargePercent: 56, isPowerConnected: true, isCharging: false),
         policy: ChargePolicy(upperLimit: 60, rechargeThreshold: 55),
@@ -95,14 +95,14 @@ func stateMachineWaitsWithinBandAfterHoldingAtLimit() {
         now: Date(timeIntervalSince1970: 1_000)
     )
 
-    let transition = machine.transition(from: .holdingAtLimit, context: context)
+    let transition = engine.evaluate(context: context, from: .holdingAtLimit).transition
     #expect(transition.current == .waitingForRecharge)
     #expect(transition.reason == .waitingWithinPolicyBand)
 }
 
 @Test
 func stateMachineReturnsHoldingAtLimitWhenBatteryIsFullEnough() {
-    let machine = ChargeStateMachine()
+    let engine = PolicyEngine()
     let context = ChargeStateContext(
         battery: BatterySnapshot(chargePercent: 80, isPowerConnected: true, isCharging: false),
         policy: ChargePolicy(upperLimit: 80, rechargeThreshold: 75),
@@ -113,14 +113,14 @@ func stateMachineReturnsHoldingAtLimitWhenBatteryIsFullEnough() {
         now: Date(timeIntervalSince1970: 1_000)
     )
 
-    let result = machine.resolve(context: context)
+    let result = engine.evaluate(context: context, from: .waitingForRecharge).resolution
     #expect(result.state == ChargeState.holdingAtLimit)
     #expect(result.reason == ChargeTransitionReason.atUpperLimit)
 }
 
 @Test
 func stateMachineSuspendsWhenControlIsDisabled() {
-    let machine = ChargeStateMachine()
+    let engine = PolicyEngine()
     let context = ChargeStateContext(
         battery: BatterySnapshot(chargePercent: 70, isPowerConnected: true, isCharging: false),
         policy: ChargePolicy(isControlEnabled: false),
@@ -131,14 +131,14 @@ func stateMachineSuspendsWhenControlIsDisabled() {
         now: Date(timeIntervalSince1970: 1_000)
     )
 
-    let result = machine.resolve(context: context)
+    let result = engine.evaluate(context: context, from: .waitingForRecharge).resolution
     #expect(result.state == ChargeState.suspended)
     #expect(result.reason == ChargeTransitionReason.controlSuspended)
 }
 
 @Test
 func stateMachineSuspendsWhenControllerIsReadOnlyWithoutFailure() {
-    let machine = ChargeStateMachine()
+    let engine = PolicyEngine()
     let context = ChargeStateContext(
         battery: BatterySnapshot(chargePercent: 70, isPowerConnected: true, isCharging: false),
         policy: ChargePolicy(isControlEnabled: true),
@@ -151,7 +151,7 @@ func stateMachineSuspendsWhenControllerIsReadOnlyWithoutFailure() {
         now: Date(timeIntervalSince1970: 1_000)
     )
 
-    let result = machine.resolve(context: context)
+    let result = engine.evaluate(context: context, from: .waitingForRecharge).resolution
     #expect(result.state == ChargeState.suspended)
     #expect(result.reason == ChargeTransitionReason.controlSuspended)
 }

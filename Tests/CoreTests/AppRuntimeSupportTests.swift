@@ -6,7 +6,7 @@ import Testing
 
 @Test
 func selfTestPolicyRunsOnlyForEligibleTriggers() async {
-    let controller = SupportTestChargeController(
+    let controller = MockChargeController(
         selfTestResult: ControllerSelfTestResult(
             outcome: .passed,
             message: "ok",
@@ -141,8 +141,8 @@ func runtimeSafetyGateDowngradesUnsupportedCapabilityToMonitoringOnly() {
 
 @Test
 func controllerCommandApplierSynchronizesOverrideAndChargingState() async {
-    let controller = SupportTestChargeController(
-        statusToReturn: ControllerStatus(
+    let controller = MockChargeController(
+        initialStatus: ControllerStatus(
             mode: .fullControl,
             helperConnection: .connected,
             isChargingEnabled: false,
@@ -203,7 +203,7 @@ func controllerCommandApplierSynchronizesOverrideAndChargingState() async {
     )
 
     #expect(updated.isChargingEnabled == false)
-    let commands = await controller.commands()
+    let commands = await controller.recordedCommands()
     #expect(commands == [
         .setTemporaryOverride(Date(timeIntervalSince1970: 80)),
         .setChargingEnabled(false)
@@ -212,7 +212,7 @@ func controllerCommandApplierSynchronizesOverrideAndChargingState() async {
 
 @Test
 func controllerCommandApplierReleasesControlEvenWhenHelperReportsError() async {
-    let controller = SupportTestChargeController()
+    let controller = MockChargeController()
     let applier = ControllerCommandApplier(controller: controller, eventLogger: EventLogger())
 
     _ = await applier.applyIfNeeded(
@@ -228,13 +228,13 @@ func controllerCommandApplierReleasesControlEvenWhenHelperReportsError() async {
         now: Date(timeIntervalSince1970: 80)
     )
 
-    let commands = await controller.commands()
+    let commands = await controller.recordedCommands()
     #expect(commands == [.releaseControl])
 }
 
 @Test
 func controllerCommandApplierSkipsReleaseWhenHelperVersionDoesNotMatch() async {
-    let controller = SupportTestChargeController()
+    let controller = MockChargeController()
     let applier = ControllerCommandApplier(controller: controller, eventLogger: EventLogger())
 
     _ = await applier.applyIfNeeded(
@@ -249,13 +249,13 @@ func controllerCommandApplierSkipsReleaseWhenHelperVersionDoesNotMatch() async {
         now: Date(timeIntervalSince1970: 80)
     )
 
-    let commands = await controller.commands()
+    let commands = await controller.recordedCommands()
     #expect(commands.isEmpty)
 }
 
 @Test
 func controllerCommandApplierReleasesOncePerControlOffPeriod() async {
-    let controller = SupportTestChargeController()
+    let controller = MockChargeController()
     let applier = ControllerCommandApplier(controller: controller, eventLogger: EventLogger())
     let status = ControllerStatus(
         mode: .fullControl,
@@ -267,14 +267,14 @@ func controllerCommandApplierReleasesOncePerControlOffPeriod() async {
 
     _ = await applier.applyIfNeeded(controllerStatus: status, capabilityReport: report, evaluation: makeReleaseEvaluation(), now: Date(timeIntervalSince1970: 80))
     _ = await applier.applyIfNeeded(controllerStatus: status, capabilityReport: report, evaluation: makeReleaseEvaluation(), now: Date(timeIntervalSince1970: 81))
-    #expect(await controller.commands() == [.releaseControl])
+    #expect(await controller.recordedCommands() == [.releaseControl])
 
     var controlOn = makeReleaseEvaluation()
     controlOn.effectivePolicy.isControlEnabled = true
     controlOn.chargingCommand = .noChange
     _ = await applier.applyIfNeeded(controllerStatus: status, capabilityReport: report, evaluation: controlOn, now: Date(timeIntervalSince1970: 82))
     _ = await applier.applyIfNeeded(controllerStatus: status, capabilityReport: report, evaluation: makeReleaseEvaluation(), now: Date(timeIntervalSince1970: 83))
-    #expect(await controller.commands() == [.releaseControl, .releaseControl])
+    #expect(await controller.recordedCommands() == [.releaseControl, .releaseControl])
 }
 
 private func makeReleaseCapabilityReport(installation: CapabilitySupport) -> CapabilityReport {
@@ -305,63 +305,4 @@ private func makeReleaseEvaluation() -> PolicyEvaluation {
         transition: ChargeTransition(previous: .holdingAtLimit, current: .errorReadOnly, reason: .helperFailure),
         chargingCommand: .releaseControl
     )
-}
-
-private actor SupportTestChargeController: ChargeController {
-    enum Command: Equatable {
-        case setChargingEnabled(Bool)
-        case setTemporaryOverride(Date?)
-        case releaseControl
-    }
-
-    private let statusToReturn: ControllerStatus
-    private let selfTestResultValue: ControllerSelfTestResult
-    private var recordedCommands: [Command] = []
-    private var selfTestRequests = 0
-
-    init(
-        statusToReturn: ControllerStatus = ControllerStatus(
-            mode: .fullControl,
-            helperConnection: .connected,
-            isChargingEnabled: true,
-            checkedAt: Date(timeIntervalSince1970: 1)
-        ),
-        selfTestResult: ControllerSelfTestResult = ControllerSelfTestResult(
-            outcome: .passed,
-            message: "ok",
-            checkedAt: Date(timeIntervalSince1970: 1)
-        )
-    ) {
-        self.statusToReturn = statusToReturn
-        self.selfTestResultValue = selfTestResult
-    }
-
-    func setChargingEnabled(_ enabled: Bool) async throws {
-        recordedCommands.append(.setChargingEnabled(enabled))
-    }
-
-    func setTemporaryOverride(until: Date?) async throws {
-        recordedCommands.append(.setTemporaryOverride(until))
-    }
-
-    func releaseControl() async throws {
-        recordedCommands.append(.releaseControl)
-    }
-
-    func getControllerStatus() async -> ControllerStatus {
-        statusToReturn
-    }
-
-    func selfTest() async -> ControllerSelfTestResult {
-        selfTestRequests += 1
-        return selfTestResultValue
-    }
-
-    func commands() -> [Command] {
-        recordedCommands
-    }
-
-    func selfTestRequestCount() -> Int {
-        selfTestRequests
-    }
 }

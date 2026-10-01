@@ -10,7 +10,7 @@ func helperInstallRegistersAndReportsApprovalRequirement() async {
         statusAfterRegister: .requiresApproval,
         registerError: HelperManagerTestError.operationNotPermitted
     )
-    let manager = HelperServiceManager(controller: MockChargeController(), daemon: daemon, fileSystem: EmptyFileSystem())
+    let manager = HelperServiceManager(controller: MockChargeController(), daemon: daemon, fileSystem: MockFileSystem(existingFiles: []))
 
     let result = await manager.install()
 
@@ -25,7 +25,7 @@ func helperInstallRegistersAndReportsApprovalRequirement() async {
 func helperInstallClearsStaleRegistrationBeforeRegistering() async {
     // 이전 방식 helper 기록이나 서명이 바뀐 등록이 남아 enabled로 보이는 경우.
     let daemon = MockHelperDaemon(status: .enabled)
-    let manager = HelperServiceManager(controller: MockChargeController(), daemon: daemon, fileSystem: EmptyFileSystem())
+    let manager = HelperServiceManager(controller: MockChargeController(), daemon: daemon, fileSystem: MockFileSystem(existingFiles: []))
 
     let result = await manager.install()
 
@@ -37,7 +37,7 @@ func helperInstallClearsStaleRegistrationBeforeRegistering() async {
 func helperRemovalReleasesControlBeforeUnregistering() async {
     let controller = MockChargeController()
     let daemon = MockHelperDaemon(status: .enabled)
-    let manager = HelperServiceManager(controller: controller, daemon: daemon, fileSystem: EmptyFileSystem())
+    let manager = HelperServiceManager(controller: controller, daemon: daemon, fileSystem: MockFileSystem(existingFiles: []))
 
     let result = await manager.remove(force: false)
 
@@ -49,7 +49,7 @@ func helperRemovalReleasesControlBeforeUnregistering() async {
 @Test
 func helperRemovalStopsWhenReleaseFailsUntilForced() async {
     let daemon = MockHelperDaemon(status: .enabled)
-    let manager = HelperServiceManager(controller: FailingReleaseController(), daemon: daemon, fileSystem: EmptyFileSystem())
+    let manager = HelperServiceManager(controller: FailingReleaseController(), daemon: daemon, fileSystem: MockFileSystem(existingFiles: []))
 
     let first = await manager.remove(force: false)
     guard case .releaseFailed = first else {
@@ -67,7 +67,7 @@ func helperRemovalStopsWhenReleaseFailsUntilForced() async {
 func helperRemovalSkipsReleaseWhenHelperCannotRun() async {
     let controller = FailingReleaseController()
     let daemon = MockHelperDaemon(status: .requiresApproval)
-    let manager = HelperServiceManager(controller: controller, daemon: daemon, fileSystem: EmptyFileSystem())
+    let manager = HelperServiceManager(controller: controller, daemon: daemon, fileSystem: MockFileSystem(existingFiles: []))
 
     let result = await manager.remove(force: false)
 
@@ -81,7 +81,7 @@ func helperRemovalWarnsWhenBaselineRemains() async {
     let manager = HelperServiceManager(
         controller: MockChargeController(),
         daemon: daemon,
-        fileSystem: BaselineFileSystem()
+        fileSystem: MockFileSystem(existingFiles: [CellCapHelperXPC.chargeLimitBaselinePath])
     )
 
     let result = await manager.remove(force: false)
@@ -92,16 +92,6 @@ func helperRemovalWarnsWhenBaselineRemains() async {
 private enum HelperManagerTestError: Error {
     case operationNotPermitted
     case releaseFailed
-}
-
-private struct EmptyFileSystem: FileSystemInspecting {
-    func fileExists(atPath path: String) -> Bool { false }
-    func isExecutableFile(atPath path: String) -> Bool { false }
-}
-
-private struct BaselineFileSystem: FileSystemInspecting {
-    func fileExists(atPath path: String) -> Bool { path == CellCapHelperXPC.chargeLimitBaselinePath }
-    func isExecutableFile(atPath path: String) -> Bool { false }
 }
 
 private struct FailingReleaseController: ChargeController {

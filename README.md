@@ -129,4 +129,3 @@ Tests/AppUITests  AppUI 순수 로직 테스트
 - 개발/유지보수 규칙: [AGENTS.md](./AGENTS.md)
 - 런타임/Helper 경계 결정: [docs/adr/0001-runtime-and-helper-boundaries.md](./docs/adr/0001-runtime-and-helper-boundaries.md)
 - 앱 내장 helper 설치(SMAppService): [docs/adr/0003-in-app-helper-installation.md](./docs/adr/0003-in-app-helper-installation.md)
-- 공개 API 검토 메모: [03_공개API_충전제어_검토.md](./03_%EA%B3%B5%EA%B0%9CAPI_%EC%B6%A9%EC%A0%84%EC%A0%9C%EC%96%B4_%EA%B2%80%ED%86%A0.md)

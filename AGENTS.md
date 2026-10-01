@@ -8,7 +8,7 @@
 - `Sources/Core`: 정책 계산, 런타임 동기화, 진단, 관측, XPC 클라이언트
 - `Sources/Shared`: AppUI/Core/Helper 계약 모델과 XPC DTO
 - `Sources/Helper`: privileged helper, backend, helper 진단
-- `BuildSupport`: helper 설치/상태/재시작/제거 스크립트와 개발 보조 도구
+- `BuildSupport`: 앱 빌드·설치, helper 상태/제거 스크립트, 배포 pkg 스크립트와 개발 보조 도구
 
 ## 어디에 무엇을 작성하는가
 - UI 표시 문구와 표시용 상태 해석은 `Sources/AppUI`에 둔다.

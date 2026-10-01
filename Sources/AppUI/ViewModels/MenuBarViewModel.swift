@@ -38,7 +38,7 @@ final class MenuBarViewModel: ObservableObject {
 
     private let policyEngine: PolicyEngine
     private let capabilityChecker: any CapabilityChecking
-    private let controlAvailabilityResolver: any ControlAvailabilityResolving
+    private let controlAvailabilityResolver = ControlAvailabilityResolver()
     private let launchAtLoginManager: any LaunchAtLoginManaging
     private let runtimeService: (any AppRuntimeServicing)?
     private let helperServiceManager: (any HelperServiceManaging)?
@@ -55,7 +55,6 @@ final class MenuBarViewModel: ObservableObject {
         overrideDurationMinutes: Double = 120,
         policyEngine: PolicyEngine = PolicyEngine(),
         capabilityChecker: any CapabilityChecking = CapabilityChecker(),
-        controlAvailabilityResolver: any ControlAvailabilityResolving = ControlAvailabilityResolver(),
         launchAtLoginManager: any LaunchAtLoginManaging = DisabledLaunchAtLoginManager(),
         runtimeService: (any AppRuntimeServicing)? = nil,
         helperServiceManager: (any HelperServiceManaging)? = nil,
@@ -65,7 +64,6 @@ final class MenuBarViewModel: ObservableObject {
         self.overrideDurationMinutes = overrideDurationMinutes
         self.policyEngine = policyEngine
         self.capabilityChecker = capabilityChecker
-        self.controlAvailabilityResolver = controlAvailabilityResolver
         self.launchAtLoginManager = launchAtLoginManager
         self.runtimeService = runtimeService
         self.helperServiceManager = helperServiceManager
@@ -385,16 +383,6 @@ final class MenuBarViewModel: ObservableObject {
         var policy = appState.policy
         policy.rechargeThreshold = min(policy.upperLimit, max(0, value))
         submit(policy: policy)
-    }
-
-    func refreshDiagnostics() {
-        guard let runtimeService else { return }
-        Task {
-            let summary = await runtimeService.diagnosticsSummary()
-            await MainActor.run {
-                self.diagnosticsSummary = summary
-            }
-        }
     }
 
     func setLaunchAtLoginEnabled(_ enabled: Bool) {

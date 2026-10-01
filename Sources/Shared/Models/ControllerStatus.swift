@@ -35,10 +35,6 @@ public struct ControllerStatus: Codable, Sendable, Equatable {
         self.lastErrorDescription = lastErrorDescription
         self.checkedAt = checkedAt
     }
-
-    public var isOperational: Bool {
-        helperConnection == .connected && lastErrorDescription == nil
-    }
 }
 
 public struct ControllerSelfTestResult: Codable, Sendable, Equatable {
