@@ -44,7 +44,7 @@ struct ControlAvailabilityResolver: ControlAvailabilityResolving {
                 plistPath: installStatus.plistPath,
                 helperVersion: installStatus.helperVersion,
                 expectedVersion: installStatus.expectedVersion,
-                reason: "helper XPC 연결이 확인되었습니다. 권한 및 SMC 키 검사를 계속 진행합니다.",
+                reason: "helper XPC 연결이 확인되었습니다. 권한 및 충전 제어 경로 검사를 계속 진행합니다.",
                 checkedAt: installStatus.checkedAt
             )
         case .notInstalled, .xpcReachable, .permissionMismatch, .versionMismatch:

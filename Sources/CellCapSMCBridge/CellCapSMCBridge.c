@@ -270,6 +270,15 @@ static bool cellcap_read_key_info(
         cellcap_set_error(errorMessage, errorMessageLength, message);
         return false;
     }
+    // kernel 호출이 성공해도 SMC가 result(예: 0x84 key not found)로 거절할 수 있다.
+    // 펌웨어에서 제거된 키를 "있음"으로 오판하지 않도록 result와 크기를 함께 확인하고,
+    // 실패한 조회는 캐시하지 않는다.
+    if (output.result != 0 || output.keyInfo.dataSize == 0) {
+        char message[128];
+        snprintf(message, sizeof(message), "SMC 키를 찾지 못했습니다: %s (result=0x%02x)", key, (unsigned char)output.result);
+        cellcap_set_error(errorMessage, errorMessageLength, message);
+        return false;
+    }
 
     *keyInfo = output.keyInfo;
     cellcap_keyinfo_cache_store(fourcc, output.keyInfo);
@@ -307,6 +316,12 @@ static bool cellcap_read_key(
     if (result != KERN_SUCCESS) {
         char message[128];
         snprintf(message, sizeof(message), "SMC 키 읽기에 실패했습니다: %s", key);
+        cellcap_set_error(errorMessage, errorMessageLength, message);
+        return false;
+    }
+    if (output.result != 0) {
+        char message[128];
+        snprintf(message, sizeof(message), "SMC 키 읽기가 거절되었습니다: %s (result=0x%02x)", key, (unsigned char)output.result);
         cellcap_set_error(errorMessage, errorMessageLength, message);
         return false;
     }
@@ -365,6 +380,12 @@ static bool cellcap_write_key(
     if (result != KERN_SUCCESS) {
         char message[128];
         snprintf(message, sizeof(message), "SMC 키 쓰기에 실패했습니다: %s", key);
+        cellcap_set_error(errorMessage, errorMessageLength, message);
+        return false;
+    }
+    if (output.result != 0) {
+        char message[128];
+        snprintf(message, sizeof(message), "SMC 키 쓰기가 거절되었습니다: %s (result=0x%02x)", key, (unsigned char)output.result);
         cellcap_set_error(errorMessage, errorMessageLength, message);
         return false;
     }

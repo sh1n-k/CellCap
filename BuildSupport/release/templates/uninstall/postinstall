@@ -140,6 +140,7 @@ launchctl bootout system "${PLIST_PATH}" >/dev/null 2>&1 || true
 rm -f "${PLIST_PATH}"
 rm -f "${INSTALL_PATH}"
 rm -rf "${LOG_DIR}"
+restore_charge_limit_baseline || true
 
 remove_cellcap_apps
 remove_user_defaults

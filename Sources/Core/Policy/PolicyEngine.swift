@@ -118,10 +118,25 @@ public struct PolicyEngine: Sendable {
             resolution: resolution,
             transition: transition,
             chargingCommand: chargingCommand(
-                for: resolution.state,
+                for: resolution,
                 controllerStatus: context.controllerStatus
             )
         )
+    }
+
+    private func chargingCommand(
+        for resolution: ChargeStateResolution,
+        controllerStatus: ControllerStatus
+    ) -> ChargingCommand {
+        // 사용자가 제어를 끄면 helper에 남은 충전 제한을 해제한다. 시스템 충전 한도
+        // backend는 한도가 재부팅 후에도 유지되므로 그대로 두면 제어 OFF 상태에서도 제한이 남는다.
+        if resolution.state == .suspended,
+           resolution.reason == .controlSuspended,
+           controllerStatus.mode == .fullControl {
+            return controllerStatus.isChargingEnabled == true ? .noChange : .enableCharging
+        }
+
+        return chargingCommand(for: resolution.state, controllerStatus: controllerStatus)
     }
 
     private func stabilizedResolution(

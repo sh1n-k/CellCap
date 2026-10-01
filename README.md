@@ -4,7 +4,8 @@ CellCap은 **Apple Silicon / macOS 26+** 환경에서 배터리 충전 상태를
 조건이 맞으면 **충전 제한(control)** 을 시도하는 macOS 메뉴 막대 유틸리티입니다.
 
 현재는 **개발용 프로토타입** 단계입니다.
-앱 본체와 privileged helper가 분리되어 있고, 직접 충전 제어는 Helper 내부의 **비문서화된 AppleSMC backend**를 전제로 합니다.
+앱 본체와 privileged helper가 분리되어 있고, 충전 제어는 Helper 내부의 **비문서화된 경로**를 사용합니다.
+SMC 충전 키가 있는 펌웨어는 직접 AppleSMC backend를, 키가 제거된 펌웨어(macOS 26.7 이후 등)는 macOS 충전 한도 설정 backend를 씁니다. 자세한 동작은 `docs/adr/0002-charge-limit-backend.md`를 참고하세요.
 
 ## 한눈에 보기
 - 메뉴 막대 UI로 현재 배터리 상태와 제어 상태를 확인할 수 있습니다.
@@ -119,7 +120,7 @@ tail -n 100 /Library/Logs/CellCap/com.shin.cellcap.helper.stderr.log
 Sources/AppUI     SwiftUI 화면과 표시용 상태 해석
 Sources/Core      정책 계산, 런타임 동기화, 진단, 관측, XPC 클라이언트
 Sources/Shared    AppUI/Core/Helper 공용 계약과 모델
-Sources/Helper    privileged helper와 직접 SMC backend
+Sources/Helper    privileged helper와 충전 제어 backend(SMC / macOS 충전 한도)
 BuildSupport/dev  helper 설치/상태/재시작/제거 스크립트
 Tests/CoreTests   Core/Helper 회귀 테스트
 Tests/AppUITests  AppUI 순수 로직 테스트

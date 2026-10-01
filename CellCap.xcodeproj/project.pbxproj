@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5D77A3B18C294A91A4993384 /* ManagedChargeLimitBackendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E86669C62874E2AA5C72B3B /* ManagedChargeLimitBackendTests.swift */; };
+		28FA974A25C44A7EBE5579EC /* SystemChargeLimitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F323FBD99F0E4310906C6D9D /* SystemChargeLimitStore.swift */; };
+		F6C109E1B83C4E7B811CD99C /* ManagedChargeLimitBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E48D457E8AE4473B86D0D7E /* ManagedChargeLimitBackend.swift */; };
+		E738470F96FA49E5AD77999C /* ChargeControlBackendSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26A09E0C05B4F709D5009C6 /* ChargeControlBackendSelector.swift */; };
 		0077FEAD608BB963F4C16215 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4341EFFE8AD2BDCF5B08D86F /* Assets.xcassets */; };
 		03B73BF846376CCF6673FE63 /* XPCChargeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213A6EEE210B6FB27EB5F6C7 /* XPCChargeController.swift */; };
 		0877DC5BFFA0E05D68E6081E /* CellCapTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B1B63484E052C592D2D964 /* CellCapTheme.swift */; };
@@ -218,6 +222,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5E86669C62874E2AA5C72B3B /* ManagedChargeLimitBackendTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ManagedChargeLimitBackendTests.swift; sourceTree = "<group>"; };
+		F323FBD99F0E4310906C6D9D /* SystemChargeLimitStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SystemChargeLimitStore.swift; sourceTree = "<group>"; };
+		7E48D457E8AE4473B86D0D7E /* ManagedChargeLimitBackend.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ManagedChargeLimitBackend.swift; sourceTree = "<group>"; };
+		B26A09E0C05B4F709D5009C6 /* ChargeControlBackendSelector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargeControlBackendSelector.swift; sourceTree = "<group>"; };
 		03ED8719E9A48FE849885FD9 /* ChargePolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChargePolicyTests.swift; sourceTree = "<group>"; };
 		0402FC8F8D75FAEF054FEDD4 /* ControlAvailabilityResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ControlAvailabilityResolver.swift; path = ViewModels/ControlAvailabilityResolver.swift; sourceTree = "<group>"; };
 		0BD4D7C1E5A9D3510804EA51 /* ControllerStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ControllerStatus.swift; path = Models/ControllerStatus.swift; sourceTree = "<group>"; };
@@ -532,6 +540,7 @@
 				50FC87D532CC488230D42350 /* EventLoggerTests.swift */,
 				CADB816EFCF3FD6B474FFD14 /* HelperInstallCheckerTests.swift */,
 				8892B8606A53738F8E676C4B /* HelperXPCDTOsTests.swift */,
+				5E86669C62874E2AA5C72B3B /* ManagedChargeLimitBackendTests.swift */,
 				70F2A37C9BE28901C6714A6E /* MockChargeControllerTests.swift */,
 				B2207ACB1C3F04BCABAAD5AA /* PolicyEngineTests.swift */,
 				B7BCAEFB1228F79BBA66DFB1 /* TestSupport.swift */,
@@ -557,7 +566,10 @@
 				94DC5AA297F3378358B26112 /* CellCapHelperListener.swift */,
 				285BAACF5FF3C8A402214619 /* CellCapHelperService.swift */,
 				AEEEA12C5C01564F170553EE /* ChargeControlBackend.swift */,
+				B26A09E0C05B4F709D5009C6 /* ChargeControlBackendSelector.swift */,
 				134CF161697E46C096994EE4 /* DirectSMCChargeControlBackend.swift */,
+				7E48D457E8AE4473B86D0D7E /* ManagedChargeLimitBackend.swift */,
+				F323FBD99F0E4310906C6D9D /* SystemChargeLimitStore.swift */,
 				7AC459FD4EDBFA0947B84588 /* main.swift */,
 			);
 			name = Helper;
@@ -845,7 +857,10 @@
 				DC874536D7F0E43D870991BD /* CellCapHelperListener.swift in Sources */,
 				3BDB64B191D7A282DF7F2D0B /* CellCapHelperService.swift in Sources */,
 				417CE22DCBEF24A0172B73C2 /* ChargeControlBackend.swift in Sources */,
+				E738470F96FA49E5AD77999C /* ChargeControlBackendSelector.swift in Sources */,
 				67864FAF4C0420F1C13FABCE /* DirectSMCChargeControlBackend.swift in Sources */,
+				F6C109E1B83C4E7B811CD99C /* ManagedChargeLimitBackend.swift in Sources */,
+				28FA974A25C44A7EBE5579EC /* SystemChargeLimitStore.swift in Sources */,
 				0BE6DCF636B4195C9B29DD5D /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -923,6 +938,7 @@
 				1A767F50DD759C676A6D3801 /* ChargeStateMachineTests.swift in Sources */,
 				CD20E05A1EB98F0C7906DA48 /* ChargeStateResolverTests.swift in Sources */,
 				3A21E1FB3588C1D4E9EB057C /* DirectSMCChargeControlBackendTests.swift in Sources */,
+				5D77A3B18C294A91A4993384 /* ManagedChargeLimitBackendTests.swift in Sources */,
 				BA757735A6A2B687A1D786BD /* EventLoggerTests.swift in Sources */,
 				9C9476B35B3080B0B1BED33D /* HelperInstallCheckerTests.swift in Sources */,
 				5B4DD40939C60FB8384C19D4 /* HelperXPCDTOsTests.swift in Sources */,

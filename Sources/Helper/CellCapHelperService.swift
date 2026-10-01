@@ -10,7 +10,7 @@ final class CellCapHelperService: NSObject, CellCapHelperXPCProtocol {
     init(
         capabilityChecker: CapabilityChecker = CapabilityChecker(),
         snapshotProvider: any BatterySnapshotProviding = SystemBatterySnapshotProvider(),
-        backend: any ChargeControlBackend = DirectSMCChargeControlBackend()
+        backend: any ChargeControlBackend = ChargeControlBackendSelector()
     ) {
         self.capabilityChecker = capabilityChecker
         self.snapshotProvider = snapshotProvider
