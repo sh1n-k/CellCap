@@ -763,6 +763,231 @@ func orchestratorCoalescesPowerSourceChangeWhenSnapshotIsUnchanged() async {
 }
 
 @Test
+func orchestratorDoesNotCoalesceSystemFullChargeChangeAndRecordsTransitionsOnce() async {
+    let logger = EventLogger()
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: fullChargeSnapshot(active: false, at: 600)
+    )
+    let orchestrator = makeFullChargeOrchestrator(monitor: monitor, eventLogger: logger)
+    let stream = await orchestrator.makeUpdateStream()
+    let collector = Task {
+        await collectUpdates(from: stream, count: 4)
+    }
+
+    await orchestrator.start()
+    await monitor.waitUntilStreamCount(atLeast: 1)
+
+    // 다른 값은 같고 보정 완충 상태만 바뀐 powerSourceChanged는 코얼레싱되면 안 된다.
+    monitor.emit(
+        BatteryMonitorUpdate(
+            trigger: .powerSourceChanged,
+            snapshot: fullChargeSnapshot(active: true, at: 601),
+            observedAt: Date(timeIntervalSince1970: 601)
+        )
+    )
+    // 같은 상태의 중복 알림은 시작 이벤트를 다시 남기지 않는다.
+    monitor.emit(
+        BatteryMonitorUpdate(
+            trigger: .systemFullChargeChanged,
+            snapshot: fullChargeSnapshot(active: true, at: 602),
+            observedAt: Date(timeIntervalSince1970: 602)
+        )
+    )
+    monitor.emit(
+        BatteryMonitorUpdate(
+            trigger: .systemFullChargeChanged,
+            snapshot: fullChargeSnapshot(active: false, at: 603),
+            observedAt: Date(timeIntervalSince1970: 603)
+        )
+    )
+
+    let updates = await collector.value
+    #expect(updates.map(\.lastTrigger) == [
+        .appLaunch,
+        .batteryEvent(.powerSourceChanged),
+        .batteryEvent(.systemFullChargeChanged),
+        .batteryEvent(.systemFullChargeChanged)
+    ])
+    #expect(updates.map { $0.appState.battery?.isSystemFullChargeActive } == [false, true, true, false])
+
+    let fullChargeEvents = await orchestrator.recentDiagnosticEvents(limit: nil)
+        .filter { $0.message.contains("보정 완충") }
+    #expect(fullChargeEvents.map(\.message) == [
+        "macOS 배터리 보정 완충이 시작되었습니다.",
+        "macOS 배터리 보정 완충이 끝났습니다."
+    ])
+    #expect(fullChargeEvents.first?.details["trigger"] == "batteryEvent:powerSourceChanged")
+    #expect(fullChargeEvents.last?.details["trigger"] == "batteryEvent:systemFullChargeChanged")
+}
+
+@Test
+func orchestratorKeepsSystemFullChargeStateOnCachedSnapshotWhenSystemSnapshotIsMissing() async {
+    let logger = EventLogger()
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: fullChargeSnapshot(active: true, at: 600)
+    )
+    let orchestrator = makeFullChargeOrchestrator(monitor: monitor, eventLogger: logger)
+    let stream = await orchestrator.makeUpdateStream()
+    let collector = Task {
+        await collectUpdates(from: stream, count: 2)
+    }
+
+    await orchestrator.start()
+    await monitor.waitUntilStreamCount(atLeast: 1)
+
+    // 시스템 스냅샷을 일시적으로 읽지 못하면 직전 값을 cached로 쓰며, 보정 완충 상태도 유지해야 한다.
+    monitor.emit(
+        BatteryMonitorUpdate(
+            trigger: .didWake,
+            snapshot: nil,
+            observedAt: Date(timeIntervalSince1970: 601)
+        )
+    )
+
+    let updates = await collector.value
+    #expect(updates.first?.appState.battery?.isSystemFullChargeActive == true)
+    #expect(updates.last?.lastTrigger == .batteryEvent(.didWake))
+    #expect(updates.last?.appState.battery?.source == .cached)
+    #expect(updates.last?.appState.battery?.isSystemFullChargeActive == true)
+
+    // 앱 시작 시 이미 진행 중이면 시작으로 1회 기록하고, 스냅샷 누락을 종료로 오인하지 않는다.
+    let fullChargeEvents = await orchestrator.recentDiagnosticEvents(limit: nil)
+        .filter { $0.message.contains("보정 완충") }
+    #expect(fullChargeEvents.map(\.message) == ["macOS 배터리 보정 완충이 시작되었습니다."])
+}
+
+@Test
+func orchestratorIgnoresUnreadableSystemFullChargeStateWhenRecordingTransitions() async {
+    let logger = EventLogger()
+    let monitor = MockRuntimeBatteryMonitor(
+        currentSnapshotValue: fullChargeSnapshot(active: true, at: 600)
+    )
+    let orchestrator = makeFullChargeOrchestrator(monitor: monitor, eventLogger: logger)
+    let stream = await orchestrator.makeUpdateStream()
+    let collector = Task {
+        await collectUpdates(from: stream, count: 3)
+    }
+
+    await orchestrator.start()
+    await monitor.waitUntilStreamCount(atLeast: 1)
+
+    // 상태를 일시적으로 읽지 못한 nil은 종료로 기록하지 않는다.
+    monitor.emit(
+        BatteryMonitorUpdate(
+            trigger: .systemFullChargeChanged,
+            snapshot: fullChargeSnapshot(active: nil, at: 601, chargePercent: 81),
+            observedAt: Date(timeIntervalSince1970: 601)
+        )
+    )
+    // 다시 읽힌 값이 false면 마지막으로 확인된 true와 비교해 종료를 한 번 남긴다.
+    monitor.emit(
+        BatteryMonitorUpdate(
+            trigger: .systemFullChargeChanged,
+            snapshot: fullChargeSnapshot(active: false, at: 602, chargePercent: 82),
+            observedAt: Date(timeIntervalSince1970: 602)
+        )
+    )
+
+    let updates = await collector.value
+    #expect(updates.map { $0.appState.battery?.isSystemFullChargeActive } == [true, nil, false])
+
+    let fullChargeEvents = await orchestrator.recentDiagnosticEvents(limit: nil)
+        .filter { $0.message.contains("보정 완충") }
+    #expect(fullChargeEvents.map(\.message) == [
+        "macOS 배터리 보정 완충이 시작되었습니다.",
+        "macOS 배터리 보정 완충이 끝났습니다."
+    ])
+    // 종료는 nil(81%) 시점이 아니라 false가 확인된 82% 시점에 기록되어야 한다.
+    #expect(fullChargeEvents.last?.details["chargePercent"] == "82")
+}
+
+private func fullChargeSnapshot(
+    active: Bool?,
+    at seconds: TimeInterval,
+    chargePercent: Int = 80
+) -> BatterySnapshot {
+    BatterySnapshot(
+        chargePercent: chargePercent,
+        isPowerConnected: true,
+        isCharging: false,
+        observedAt: Date(timeIntervalSince1970: seconds),
+        source: .system,
+        isSystemFullChargeActive: active
+    )
+}
+
+private func makeFullChargeOrchestrator(
+    monitor: MockRuntimeBatteryMonitor,
+    eventLogger: EventLogger
+) -> AppRuntimeOrchestrator {
+    AppRuntimeOrchestrator(
+        batteryMonitor: monitor,
+        controller: SequencedChargeController(
+            statuses: [
+                ControllerStatus(mode: .fullControl, helperConnection: .connected, isChargingEnabled: false)
+            ]
+        ),
+        capabilityChecker: CapabilityChecker(
+            environment: MockSystemEnvironmentProvider(
+                operatingSystemVersion: OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0),
+                isAppleSilicon: true
+            )
+        ),
+        capabilityProber: MockHelperCapabilityProber(
+            summary: fullControlProbeSummary(
+                checkedAt: Date(timeIntervalSince1970: 600),
+                isChargingEnabled: false
+            )
+        ),
+        helperInstallChecker: MockHelperInstallChecker(
+            status: bootstrappedHelperInstallStatus(at: Date(timeIntervalSince1970: 600))
+        ),
+        dateProvider: FixedDateProvider(now: Date(timeIntervalSince1970: 600)),
+        eventLogger: eventLogger
+    )
+}
+
+/// count개를 모으거나 timeout이 지나면 반환한다. 기대한 broadcast가 빠지면 멈추지 않고 개수 불일치로 실패한다.
+private func collectUpdates(
+    from stream: AsyncStream<AppRuntimeUpdate>,
+    count: Int,
+    timeout: Duration = .seconds(5)
+) async -> [AppRuntimeUpdate] {
+    let recorder = RuntimeUpdateRecorder()
+    let iteration = Task {
+        for await update in stream {
+            recorder.append(update)
+            if recorder.updates().count >= count {
+                return
+            }
+        }
+    }
+    let deadline = ContinuousClock.now + timeout
+    while recorder.updates().count < count, ContinuousClock.now < deadline {
+        try? await Task.sleep(for: .milliseconds(20))
+    }
+    iteration.cancel()
+    return Array(recorder.updates().prefix(count))
+}
+
+private final class RuntimeUpdateRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: [AppRuntimeUpdate] = []
+
+    func append(_ update: AppRuntimeUpdate) {
+        lock.lock()
+        stored.append(update)
+        lock.unlock()
+    }
+
+    func updates() -> [AppRuntimeUpdate] {
+        lock.lock()
+        defer { lock.unlock() }
+        return stored
+    }
+}
+
+@Test
 func orchestratorTreatsReadOnlyCapabilityModeAsSuspendedNotError() async {
     let monitor = MockRuntimeBatteryMonitor(
         currentSnapshotValue: BatterySnapshot(

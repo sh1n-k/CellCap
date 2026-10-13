@@ -125,6 +125,10 @@ final class MenuBarViewModel: ObservableObject {
         presentation.summarySentence
     }
 
+    var isSystemFullChargeOverridingLimit: Bool {
+        presentation.isSystemFullChargeOverridingLimit
+    }
+
     var powerStatusText: String {
         presentation.powerStatusText
     }

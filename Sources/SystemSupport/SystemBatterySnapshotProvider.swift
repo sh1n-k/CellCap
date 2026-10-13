@@ -63,13 +63,17 @@ public struct BatterySnapshotTranslator: BatterySnapshotTranslating {
 public struct SystemBatterySnapshotProvider: BatterySnapshotProviding {
     private let readingProvider: any PowerSourceReadingProviding
     private let translator: any BatterySnapshotTranslating
+    private let fullChargeStateReader: (any SystemFullChargeStateReading)?
 
+    /// `fullChargeStateReader`가 nil이면 보정 완충 상태를 확인하지 않는다(helper).
     public init(
         readingProvider: any PowerSourceReadingProviding = IOKitPowerSourceReadingProvider(),
-        translator: any BatterySnapshotTranslating = BatterySnapshotTranslator()
+        translator: any BatterySnapshotTranslating = BatterySnapshotTranslator(),
+        fullChargeStateReader: (any SystemFullChargeStateReading)? = nil
     ) {
         self.readingProvider = readingProvider
         self.translator = translator
+        self.fullChargeStateReader = fullChargeStateReader
     }
 
     public func currentSnapshot(now: Date) throws -> BatterySnapshot? {
@@ -77,7 +81,9 @@ public struct SystemBatterySnapshotProvider: BatterySnapshotProviding {
             return nil
         }
 
-        return translator.translate(reading, observedAt: now, source: .system)
+        var snapshot = translator.translate(reading, observedAt: now, source: .system)
+        snapshot.isSystemFullChargeActive = fullChargeStateReader?.isFullChargeRequested()
+        return snapshot
     }
 }
 

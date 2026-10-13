@@ -15,7 +15,9 @@ struct CellCapApp: App {
         let eventLogger = EventLogger()
         let controller = XPCChargeController(eventLogger: eventLogger)
         let batteryMonitor = BatteryMonitor(
-            snapshotProvider: SystemBatterySnapshotProvider(),
+            snapshotProvider: SystemBatterySnapshotProvider(
+                fullChargeStateReader: NotifySystemFullChargeStateReader()
+            ),
             eventSource: SystemBatteryMonitorEventSource()
         )
         let orchestrator = AppRuntimeOrchestrator(

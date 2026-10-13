@@ -4,14 +4,16 @@ import SystemSupport
 
 @MainActor
 enum MenuBarPreviewFactory {
-    static func makeHolding() -> MenuBarViewModel {
+    static func makeHolding(
+        battery: BatterySnapshot = BatterySnapshot(
+            chargePercent: 80,
+            isPowerConnected: true,
+            isCharging: false
+        )
+    ) -> MenuBarViewModel {
         MenuBarViewModel(
             appState: AppState(
-                battery: BatterySnapshot(
-                    chargePercent: 80,
-                    isPowerConnected: true,
-                    isCharging: false
-                ),
+                battery: battery,
                 policy: ChargePolicy(
                     upperLimit: 80,
                     rechargeThreshold: 75
@@ -45,6 +47,17 @@ enum MenuBarPreviewFactory {
                     expectedVersion: CellCapHelperXPC.contractVersion,
                     reason: "개발용 helper가 root로 실행 중입니다."
                 )
+            )
+        )
+    }
+
+    static func makeSystemFullCharge() -> MenuBarViewModel {
+        makeHolding(
+            battery: BatterySnapshot(
+                chargePercent: 92,
+                isPowerConnected: true,
+                isCharging: true,
+                isSystemFullChargeActive: true
             )
         )
     }
@@ -121,5 +134,9 @@ extension MenuBarViewModel {
 
     static func previewErrorReadOnly() -> MenuBarViewModel {
         MenuBarPreviewFactory.makeErrorReadOnly()
+    }
+
+    static func previewSystemFullCharge() -> MenuBarViewModel {
+        MenuBarPreviewFactory.makeSystemFullCharge()
     }
 }

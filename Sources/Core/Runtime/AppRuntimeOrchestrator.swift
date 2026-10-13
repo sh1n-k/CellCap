@@ -60,6 +60,8 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
 
     private var currentUpdate: AppRuntimeUpdate
     private var latestSystemSnapshot: BatterySnapshot?
+    /// 마지막으로 확인된 macOS 보정 완충 상태. 상태를 읽지 못한 nil은 반영하지 않는다.
+    private var lastKnownSystemFullChargeActive: Bool?
     private var continuations: [UUID: AsyncStream<AppRuntimeUpdate>.Continuation] = [:]
     private var monitorTask: Task<Void, Never>?
     private var started = false
@@ -409,6 +411,11 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             userFacingSummary: transitionSummary(for: nextUpdate)
         )
 
+        await recordSystemFullChargeChangeIfNeeded(
+            nextBattery: nextUpdate.appState.battery,
+            trigger: trigger
+        )
+
         if nextUpdate.appState.policy != previousPolicy {
             await persistPolicy(
                 nextUpdate.appState.policy,
@@ -447,13 +454,14 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
         }
     }
 
-    // P1: 충전 제어 판정에 영향을 주는 필드만 비교한다. observedAt/source는 매번
+    // P1: 충전 제어 판정이나 표시에 영향을 주는 필드만 비교한다. observedAt/source는 매번
     // 달라지므로 BatterySnapshot 전체 ==가 아니라 의미있는 필드만 본다.
     private func snapshotsAreEquivalent(_ lhs: BatterySnapshot, _ rhs: BatterySnapshot) -> Bool {
         lhs.chargePercent == rhs.chargePercent
             && lhs.isPowerConnected == rhs.isPowerConnected
             && lhs.isCharging == rhs.isCharging
             && lhs.isBatteryPresent == rhs.isBatteryPresent
+            && lhs.isSystemFullChargeActive == rhs.isSystemFullChargeActive
     }
 
     // P5: 설치/제거가 즉시 반영돼야 하는 트리거에서는 launchctl 캐시를 우회한다.
@@ -466,7 +474,7 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
             switch batteryTrigger {
             case .didWake, .willSleep, .monitorStarted, .manualRefresh:
                 return true
-            case .powerSourceChanged:
+            case .powerSourceChanged, .systemFullChargeChanged:
                 return false
             }
         }
@@ -483,7 +491,8 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
                     isCharging: currentBattery.isCharging,
                     isBatteryPresent: currentBattery.isBatteryPresent,
                     observedAt: currentBattery.observedAt,
-                    source: .cached
+                    source: .cached,
+                    isSystemFullChargeActive: currentBattery.isSystemFullChargeActive
                 )
             )
         }
@@ -523,6 +532,39 @@ public actor AppRuntimeOrchestrator: AppRuntimeServicing {
 
     private func removeContinuation(_ id: UUID) {
         continuations.removeValue(forKey: id)
+    }
+
+    /// macOS 보정 완충은 CellCap 충전 한도를 일시 무시하므로, 나중에 원인을 추적할 수 있게 시작·종료를 남긴다.
+    /// 상태를 읽지 못한 nil은 전이로 보지 않고, 마지막으로 확인된 값과 비교해 시작·종료를 한 번씩만 남긴다.
+    private func recordSystemFullChargeChangeIfNeeded(
+        nextBattery: BatterySnapshot?,
+        trigger: AppRuntimeTrigger
+    ) async {
+        guard let isActive = nextBattery?.isSystemFullChargeActive else {
+            return
+        }
+        let wasActive = lastKnownSystemFullChargeActive ?? false
+        lastKnownSystemFullChargeActive = isActive
+        guard wasActive != isActive else {
+            return
+        }
+
+        await eventLogger.record(
+            level: .notice,
+            category: .runtime,
+            message: isActive
+                ? "macOS 배터리 보정 완충이 시작되었습니다."
+                : "macOS 배터리 보정 완충이 끝났습니다.",
+            details: [
+                "trigger": trigger.debugName,
+                "chargePercent": nextBattery.map { String($0.chargePercent) } ?? "nil",
+                "powerConnected": nextBattery.map { String($0.isPowerConnected) } ?? "nil",
+                "fullChargeState": String(isActive)
+            ],
+            userFacingSummary: isActive
+                ? "macOS가 배터리 보정을 위해 충전 한도를 잠시 무시하고 완충합니다."
+                : "macOS 배터리 보정 완충이 끝나 충전 한도가 다시 적용됩니다."
+        )
     }
 
     private func transitionSummary(for update: AppRuntimeUpdate) -> String? {

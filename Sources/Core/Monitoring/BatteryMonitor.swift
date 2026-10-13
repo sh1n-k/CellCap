@@ -9,6 +9,8 @@ public enum BatteryMonitorTrigger: String, Sendable, Equatable, CaseIterable {
     case powerSourceChanged
     case willSleep
     case didWake
+    /// macOS 보정 완충(충전 한도 일시 무시) 상태가 바뀌었다는 알림.
+    case systemFullChargeChanged
 }
 
 public struct BatteryMonitorUpdate: Sendable, Equatable {
@@ -172,6 +174,30 @@ public final class PowerSourceChangeEventSource: @unchecked Sendable, BatteryMon
     }
 }
 
+public final class SystemFullChargeEventSource: @unchecked Sendable, BatteryMonitorEventSource {
+    private let notificationName: String
+    private let queue: DispatchQueue
+
+    public init(
+        notificationName: String = SystemFullChargeNotification.name,
+        queue: DispatchQueue = .main
+    ) {
+        self.notificationName = notificationName
+        self.queue = queue
+    }
+
+    public func start(_ handler: @escaping @Sendable (BatteryMonitorTrigger) -> Void) -> BatteryMonitorObservation {
+        let observer = SystemFullChargeNotificationObserver(name: notificationName, queue: queue)
+        guard observer.start({ handler(.systemFullChargeChanged) }) else {
+            return BatteryMonitorObservation()
+        }
+
+        return BatteryMonitorObservation {
+            observer.stop()
+        }
+    }
+}
+
 public final class WorkspaceSleepWakeEventSource: @unchecked Sendable, BatteryMonitorEventSource {
     private let workspace: NSWorkspace
 
@@ -210,6 +236,7 @@ public struct SystemBatteryMonitorEventSource: BatteryMonitorEventSource {
         self.composite = CompositeBatteryMonitorEventSource(
             sources: [
                 PowerSourceChangeEventSource(),
+                SystemFullChargeEventSource(),
                 WorkspaceSleepWakeEventSource()
             ]
         )

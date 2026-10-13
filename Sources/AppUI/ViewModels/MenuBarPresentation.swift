@@ -16,7 +16,29 @@ struct MenuBarPresentation {
         appState.battery.map { "\($0.chargePercent)%" } ?? "배터리 없음"
     }
 
+    /// macOS 보정 완충이 CellCap 충전 한도를 일시 무시하는 중인지. 한도를 적용하는 상태에서만 안내한다.
+    /// 임시 해제는 이미 100% 충전을 허용하고, 중단·오류 상태는 기존 안내가 우선한다.
+    /// 보정 요청만으로는 실제 충전 여부를 알 수 없으므로(직접 SMC backend는 계속 막을 수 있다)
+    /// 전원 연결 중 실제로 충전하거나, 완충에 도달했지만 macOS가 아직 요청을 해제하지 않은 경우에만 안내한다.
+    var isSystemFullChargeOverridingLimit: Bool {
+        guard let battery,
+              battery.isSystemFullChargeActive == true,
+              battery.isPowerConnected,
+              battery.isCharging || battery.chargePercent >= 100 else {
+            return false
+        }
+        switch appState.chargeState {
+        case .charging, .holdingAtLimit, .waitingForRecharge:
+            return true
+        case .temporaryOverride, .suspended, .errorReadOnly:
+            return false
+        }
+    }
+
     var chargeStateTitle: String {
+        if isSystemFullChargeOverridingLimit {
+            return "macOS 보정 완충 중"
+        }
         switch appState.chargeState {
         case .charging:
             return isPowerConnected && isCharging ? "다시 충전 중" : "다시 충전 준비"
@@ -34,6 +56,9 @@ struct MenuBarPresentation {
     }
 
     var summarySentence: String {
+        if isSystemFullChargeOverridingLimit {
+            return "오래 완충하지 않아 macOS가 배터리 보정을 위해 한도를 잠시 무시하고 100%까지 충전합니다. 완충 후 한도는 다시 적용되지만 잔량은 사용해야 내려갑니다."
+        }
         switch appState.chargeState {
         case .charging:
             if isPowerConnected && isCharging {

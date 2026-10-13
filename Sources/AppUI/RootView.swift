@@ -59,6 +59,10 @@ struct RootView: View {
     RootView(viewModel: .previewHolding())
 }
 
+#Preview("메뉴 막대 - macOS 보정 완충") {
+    RootView(viewModel: .previewSystemFullCharge())
+}
+
 #Preview("메뉴 막대 - 오류") {
     RootView(viewModel: .previewErrorReadOnly())
 }

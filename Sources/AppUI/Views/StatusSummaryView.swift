@@ -101,7 +101,9 @@ struct StatusSummaryView: View {
         Text(viewModel.summarySentence)
             .font(.callout)
             .foregroundStyle(.secondary)
-            .lineLimit(viewModel.appState.chargeState == .errorReadOnly ? 3 : 2)
+            .lineLimit(
+                viewModel.appState.chargeState == .errorReadOnly || viewModel.isSystemFullChargeOverridingLimit ? 3 : 2
+            )
             .fixedSize(horizontal: false, vertical: true)
     }
 

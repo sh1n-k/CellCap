@@ -127,6 +127,136 @@ func menuBarPresentationPrefersControllerErrorForReadOnlyCopy() {
     #expect(viewModel.summarySentence == "XPC 연결이 끊겼습니다.")
 }
 
+private let systemFullChargeTitle = "macOS 보정 완충 중"
+private let systemFullChargeSummary =
+    "오래 완충하지 않아 macOS가 배터리 보정을 위해 한도를 잠시 무시하고 100%까지 충전합니다. 완충 후 한도는 다시 적용되지만 잔량은 사용해야 내려갑니다."
+
+@MainActor
+@Test(arguments: [ChargeState.charging, .holdingAtLimit, .waitingForRecharge])
+func menuBarPresentationExplainsSystemFullChargeWhileLimitIsApplied(chargeState: ChargeState) {
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 92,
+            isPowerConnected: true,
+            isCharging: true,
+            isSystemFullChargeActive: true
+        ),
+        chargeState: chargeState
+    )
+
+    #expect(viewModel.isSystemFullChargeOverridingLimit)
+    #expect(viewModel.chargeStateTitle == systemFullChargeTitle)
+    #expect(viewModel.summarySentence == systemFullChargeSummary)
+    #expect(viewModel.menuBarAccessibilityLabel == "92%, \(systemFullChargeTitle)")
+}
+
+@MainActor
+@Test(arguments: [ChargeState.temporaryOverride, .suspended, .errorReadOnly])
+func menuBarPresentationKeepsExistingCopyForSystemFullChargeOutsideLimitStates(chargeState: ChargeState) {
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 92,
+            isPowerConnected: true,
+            isCharging: true,
+            isSystemFullChargeActive: true
+        ),
+        chargeState: chargeState
+    )
+
+    #expect(!viewModel.isSystemFullChargeOverridingLimit)
+    #expect(viewModel.chargeStateTitle != systemFullChargeTitle)
+    #expect(viewModel.summarySentence != systemFullChargeSummary)
+}
+
+@MainActor
+@Test(arguments: [false, nil] as [Bool?])
+func menuBarPresentationIgnoresInactiveOrUnknownSystemFullCharge(state: Bool?) {
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 80,
+            isPowerConnected: true,
+            isCharging: false,
+            isSystemFullChargeActive: state
+        ),
+        chargeState: .holdingAtLimit
+    )
+
+    #expect(!viewModel.isSystemFullChargeOverridingLimit)
+    #expect(viewModel.chargeStateTitle == "상한 유지 중")
+}
+
+@MainActor
+@Test
+func menuBarPresentationExplainsSystemFullChargeAfterChargingStopsAboveLimit() {
+    // 완충에 도달해 충전이 멈췄지만 powerd가 아직 상태를 해제하지 않은 구간.
+    let viewModel = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 100,
+            isPowerConnected: true,
+            isCharging: false,
+            isSystemFullChargeActive: true
+        ),
+        policy: ChargePolicy(upperLimit: 41, rechargeThreshold: 36),
+        chargeState: .holdingAtLimit
+    )
+
+    #expect(viewModel.isSystemFullChargeOverridingLimit)
+    #expect(viewModel.chargeStateTitle == systemFullChargeTitle)
+}
+
+@MainActor
+@Test
+func menuBarPresentationKeepsExistingCopyWhenSystemFullChargeHasNoEffect() {
+    // 전원 분리 중(보정 완충 직후 상한 위에서 분리 포함)이거나, 연결돼 있어도 충전이 막혀 상한 이하(직접 SMC backend)면
+    // 지금 완충되고 있지 않으므로 기존 안내를 유지한다.
+    let disconnected = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 95,
+            isPowerConnected: false,
+            isCharging: false,
+            isSystemFullChargeActive: true
+        ),
+        policy: ChargePolicy(upperLimit: 41, rechargeThreshold: 36),
+        chargeState: .holdingAtLimit
+    )
+    let blockedWhileConnected = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 80,
+            isPowerConnected: true,
+            isCharging: false,
+            isSystemFullChargeActive: true
+        ),
+        chargeState: .holdingAtLimit
+    )
+
+    #expect(!disconnected.isSystemFullChargeOverridingLimit)
+    #expect(disconnected.chargeStateTitle == "상한 기준 유지")
+    // 임시 해제가 끝나 상한 위에서 충전 없이 유지 중인 경우도 완충이 진행되는 것이 아니다.
+    let holdingAboveLimitWithoutCharging = makeViewModel(
+        battery: BatterySnapshot(
+            chargePercent: 90,
+            isPowerConnected: true,
+            isCharging: false,
+            isSystemFullChargeActive: true
+        ),
+        chargeState: .holdingAtLimit
+    )
+
+    #expect(!blockedWhileConnected.isSystemFullChargeOverridingLimit)
+    #expect(blockedWhileConnected.chargeStateTitle == "상한 유지 중")
+    #expect(!holdingAboveLimitWithoutCharging.isSystemFullChargeOverridingLimit)
+    #expect(holdingAboveLimitWithoutCharging.chargeStateTitle == "상한 유지 중")
+}
+
+@MainActor
+@Test
+func previewFactoryExposesSystemFullChargeState() {
+    let viewModel = MenuBarPreviewFactory.makeSystemFullCharge()
+
+    #expect(viewModel.isSystemFullChargeOverridingLimit)
+    #expect(viewModel.chargeStateTitle == systemFullChargeTitle)
+}
+
 @MainActor
 @Test
 func controlAvailabilityResolverDisablesControlWhenHelperInstallIsNotReady() {
